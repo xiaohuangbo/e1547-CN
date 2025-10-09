@@ -36,10 +36,10 @@
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screenshots/promo.gif">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_en-US.png" width="30%">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_en-US.png" width="30%">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_en-US.png" width="30%">
 </p>
-
-v1.5.2 GIF by [cynder](https://github.com/cxnder) on iOS
 
 ## Download
 
