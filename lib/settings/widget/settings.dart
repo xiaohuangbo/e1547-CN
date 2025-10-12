@@ -82,11 +82,10 @@ class SettingsPage extends StatelessWidget {
                   keys: [client],
                   builder: (context, countSnapshot) {
                     int? count = countSnapshot.data;
-                    return SubStream(
-                      initialData: client.histories.enabled,
-                      create: () => client.histories.enabledStream,
-                      builder: (context, enabledSnapshot) {
-                        bool enabled = enabledSnapshot.data!;
+                    return ValueListenableBuilder(
+                      valueListenable: client.traits,
+                      builder: (context, traits, child) {
+                        bool enabled = traits.writeHistory ?? true;
                         return DividerListTile(
                           title: const Text('History'),
                           subtitle: enabled && count != null
@@ -94,12 +93,16 @@ class SettingsPage extends StatelessWidget {
                               : null,
                           leading: const Icon(Icons.history),
                           onTap: () => Navigator.pushNamed(context, '/history'),
-                          onTapSeparated: () =>
-                              client.histories.enabled = !enabled,
+                          onTapSeparated: () => client.traits.value = client
+                              .traits
+                              .value
+                              .copyWith(writeHistory: !enabled),
                           separated: Switch(
                             value: enabled,
-                            onChanged: (value) =>
-                                client.histories.enabled = value,
+                            onChanged: (value) => client.traits.value = client
+                                .traits
+                                .value
+                                .copyWith(writeHistory: value),
                           ),
                         );
                       },

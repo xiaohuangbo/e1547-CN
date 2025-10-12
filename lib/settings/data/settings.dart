@@ -20,15 +20,6 @@ class Settings extends NotifiedSettings {
     values: AppTheme.values,
   );
 
-  late final ValueNotifier<bool> writeHistory = createSetting(
-    key: 'writeHistory',
-    initialValue: true,
-  );
-  late final ValueNotifier<bool> trimHistory = createSetting(
-    key: 'trimHistory',
-    initialValue: false,
-  );
-
   late final ValueNotifier<int> tileSize = createSetting(
     key: 'tileSize',
     initialValue: 200,

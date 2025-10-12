@@ -15,6 +15,8 @@ _Traits _$TraitsFromJson(Map<String, dynamic> json) => _Traits(
   homeTags: json['home_tags'] as String,
   avatar: json['avatar'] as String?,
   perPage: (json['per_page'] as num?)?.toInt(),
+  writeHistory: json['write_history'] as bool?,
+  trimHistory: json['trim_history'] as bool?,
 );
 
 Map<String, dynamic> _$TraitsToJson(_Traits instance) => <String, dynamic>{
@@ -24,6 +26,8 @@ Map<String, dynamic> _$TraitsToJson(_Traits instance) => <String, dynamic>{
   'home_tags': instance.homeTags,
   'avatar': instance.avatar,
   'per_page': instance.perPage,
+  'write_history': instance.writeHistory,
+  'trim_history': instance.trimHistory,
 };
 
 _TraitsRequest _$TraitsRequestFromJson(Map<String, dynamic> json) =>
@@ -38,6 +42,8 @@ _TraitsRequest _$TraitsRequestFromJson(Map<String, dynamic> json) =>
       homeTags: json['home_tags'] as String? ?? '',
       avatar: json['avatar'] as String?,
       perPage: (json['per_page'] as num?)?.toInt(),
+      writeHistory: json['write_history'] as bool?,
+      trimHistory: json['trim_history'] as bool?,
     );
 
 Map<String, dynamic> _$TraitsRequestToJson(_TraitsRequest instance) =>
@@ -48,4 +54,6 @@ Map<String, dynamic> _$TraitsRequestToJson(_TraitsRequest instance) =>
       'home_tags': instance.homeTags,
       'avatar': instance.avatar,
       'per_page': instance.perPage,
+      'write_history': instance.writeHistory,
+      'trim_history': instance.trimHistory,
     };

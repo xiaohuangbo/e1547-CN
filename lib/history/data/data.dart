@@ -7,3 +7,4 @@ export 'history.dart';
 export 'query.dart';
 export 'requests.dart';
 export 'search.dart';
+export 'server.dart';

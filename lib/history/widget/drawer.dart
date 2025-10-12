@@ -14,15 +14,15 @@ class HistoryEnableTile extends StatelessWidget {
     return SubStream<int>(
       create: () => client.histories.count().streamed,
       keys: [client],
-      builder: (context, countSnapshot) => SubStream(
-        initialData: client.histories.enabled,
-        create: () => client.histories.enabledStream,
-        builder: (context, enabledSnapshot) => SwitchListTile(
+      builder: (context, countSnapshot) => ValueListenableBuilder(
+        valueListenable: client.traits,
+        builder: (context, traits, child) => SwitchListTile(
           title: const Text('Enabled'),
           subtitle: Text('${countSnapshot.data ?? 0} pages visited'),
           secondary: const Icon(Icons.history),
-          value: enabledSnapshot.data!,
-          onChanged: (value) => client.histories.enabled = value,
+          value: traits.writeHistory ?? true,
+          onChanged: (value) => client.traits.value = client.traits.value
+              .copyWith(writeHistory: value),
         ),
       ),
     );
@@ -32,14 +32,16 @@ class HistoryEnableTile extends StatelessWidget {
 class HistoryLimitTile extends StatelessWidget {
   const HistoryLimitTile({super.key});
 
+  static const int trimAmount = 5000;
+  static const Duration trimAge = Duration(days: 30 * 3);
+
   @override
   Widget build(BuildContext context) {
     final client = context.watch<Client>();
-    return SubStream(
-      create: () => client.histories.trimmingStream,
-      initialData: client.histories.trimming,
-      builder: (context, snapshot) => SwitchListTile(
-        value: snapshot.data!,
+    return ValueListenableBuilder(
+      valueListenable: client.traits,
+      builder: (context, traits, child) => SwitchListTile(
+        value: traits.trimHistory ?? false,
         onChanged: (value) {
           if (value) {
             showDialog(
@@ -47,8 +49,8 @@ class HistoryLimitTile extends StatelessWidget {
               builder: (context) => AlertDialog(
                 title: const Text('History limit'),
                 content: Text(
-                  'Enabling history limit means all history entries beyond ${NumberFormat.compact().format(client.histories.trimAmount)} '
-                  'and all entries older than ${client.histories.trimAge.inDays ~/ 30} months are automatically deleted.',
+                  'Enabling history limit means all history entries beyond ${NumberFormat.compact().format(trimAmount)} '
+                  'and all entries older than ${trimAge.inDays ~/ 30} months are automatically deleted.',
                 ),
                 actions: [
                   TextButton(
@@ -57,7 +59,9 @@ class HistoryLimitTile extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                      client.histories.trimming = value;
+                      client.traits.value = client.traits.value.copyWith(
+                        trimHistory: value,
+                      );
                       Navigator.of(context).maybePop();
                     },
                     child: const Text('OK'),
@@ -66,17 +70,21 @@ class HistoryLimitTile extends StatelessWidget {
               ),
             );
           } else {
-            client.histories.trimming = value;
+            client.traits.value = client.traits.value.copyWith(
+              trimHistory: value,
+            );
           }
         },
         secondary: Icon(
-          snapshot.data! ? Icons.hourglass_bottom : Icons.hourglass_empty,
+          (traits.trimHistory ?? false)
+              ? Icons.hourglass_bottom
+              : Icons.hourglass_empty,
         ),
         title: const Text('Limit history'),
-        subtitle: snapshot.data!
+        subtitle: (traits.trimHistory ?? false)
             ? Text(
-                'Limited to newer than ${client.histories.trimAge.inDays ~/ 30} months or '
-                'less than ${NumberFormat.compact().format(client.histories.trimAmount)} entries.',
+                'Limited to newer than ${trimAge.inDays ~/ 30} months or '
+                'less than ${NumberFormat.compact().format(trimAmount)} entries.',
               )
             : const Text('history is infinite'),
       ),

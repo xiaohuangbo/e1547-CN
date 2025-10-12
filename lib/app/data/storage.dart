@@ -23,7 +23,7 @@ class AppDatabase extends $AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -56,6 +56,14 @@ class AppDatabase extends $AppDatabase {
           TableMigration(
             traitsTable,
             newColumns: [traitsTable.userId, traitsTable.perPage],
+          ),
+        );
+      }
+      if (from < 5) {
+        await m.alterTable(
+          TableMigration(
+            traitsTable,
+            newColumns: [traitsTable.writeHistory, traitsTable.trimHistory],
           ),
         );
       }

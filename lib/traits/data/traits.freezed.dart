@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$Traits {
 
- int get id; int? get userId; List<String> get denylist; String get homeTags; String? get avatar; int? get perPage;
+ int get id; int? get userId; List<String> get denylist; String get homeTags; String? get avatar; int? get perPage; bool? get writeHistory; bool? get trimHistory;
 /// Create a copy of Traits
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -29,16 +29,16 @@ $TraitsCopyWith<Traits> get copyWith => _$TraitsCopyWithImpl<Traits>(this as Tra
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Traits&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other.denylist, denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Traits&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other.denylist, denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage)&&(identical(other.writeHistory, writeHistory) || other.writeHistory == writeHistory)&&(identical(other.trimHistory, trimHistory) || other.trimHistory == trimHistory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(denylist),homeTags,avatar,perPage);
+int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(denylist),homeTags,avatar,perPage,writeHistory,trimHistory);
 
 @override
 String toString() {
-  return 'Traits(id: $id, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage)';
+  return 'Traits(id: $id, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage, writeHistory: $writeHistory, trimHistory: $trimHistory)';
 }
 
 
@@ -49,7 +49,7 @@ abstract mixin class $TraitsCopyWith<$Res>  {
   factory $TraitsCopyWith(Traits value, $Res Function(Traits) _then) = _$TraitsCopyWithImpl;
 @useResult
 $Res call({
- int id, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage
+ int id, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage, bool? writeHistory, bool? trimHistory
 });
 
 
@@ -66,7 +66,7 @@ class _$TraitsCopyWithImpl<$Res>
 
 /// Create a copy of Traits
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,Object? writeHistory = freezed,Object? trimHistory = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,9 @@ as int?,denylist: null == denylist ? _self.denylist : denylist // ignore: cast_n
 as List<String>,homeTags: null == homeTags ? _self.homeTags : homeTags // ignore: cast_nullable_to_non_nullable
 as String,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String?,perPage: freezed == perPage ? _self.perPage : perPage // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,writeHistory: freezed == writeHistory ? _self.writeHistory : writeHistory // ignore: cast_nullable_to_non_nullable
+as bool?,trimHistory: freezed == trimHistory ? _self.trimHistory : trimHistory // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 
@@ -85,7 +87,7 @@ as int?,
 @JsonSerializable()
 
 class _Traits implements Traits {
-  const _Traits({required this.id, required this.userId, required final  List<String> denylist, required this.homeTags, required this.avatar, required this.perPage}): _denylist = denylist;
+  const _Traits({required this.id, required this.userId, required final  List<String> denylist, required this.homeTags, required this.avatar, required this.perPage, this.writeHistory, this.trimHistory}): _denylist = denylist;
   factory _Traits.fromJson(Map<String, dynamic> json) => _$TraitsFromJson(json);
 
 @override final  int id;
@@ -100,6 +102,8 @@ class _Traits implements Traits {
 @override final  String homeTags;
 @override final  String? avatar;
 @override final  int? perPage;
+@override final  bool? writeHistory;
+@override final  bool? trimHistory;
 
 /// Create a copy of Traits
 /// with the given fields replaced by the non-null parameter values.
@@ -114,16 +118,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Traits&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other._denylist, _denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Traits&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other._denylist, _denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage)&&(identical(other.writeHistory, writeHistory) || other.writeHistory == writeHistory)&&(identical(other.trimHistory, trimHistory) || other.trimHistory == trimHistory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(_denylist),homeTags,avatar,perPage);
+int get hashCode => Object.hash(runtimeType,id,userId,const DeepCollectionEquality().hash(_denylist),homeTags,avatar,perPage,writeHistory,trimHistory);
 
 @override
 String toString() {
-  return 'Traits(id: $id, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage)';
+  return 'Traits(id: $id, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage, writeHistory: $writeHistory, trimHistory: $trimHistory)';
 }
 
 
@@ -134,7 +138,7 @@ abstract mixin class _$TraitsCopyWith<$Res> implements $TraitsCopyWith<$Res> {
   factory _$TraitsCopyWith(_Traits value, $Res Function(_Traits) _then) = __$TraitsCopyWithImpl;
 @override @useResult
 $Res call({
- int id, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage
+ int id, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage, bool? writeHistory, bool? trimHistory
 });
 
 
@@ -151,7 +155,7 @@ class __$TraitsCopyWithImpl<$Res>
 
 /// Create a copy of Traits
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,Object? writeHistory = freezed,Object? trimHistory = freezed,}) {
   return _then(_Traits(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -159,7 +163,9 @@ as int?,denylist: null == denylist ? _self._denylist : denylist // ignore: cast_
 as List<String>,homeTags: null == homeTags ? _self.homeTags : homeTags // ignore: cast_nullable_to_non_nullable
 as String,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String?,perPage: freezed == perPage ? _self.perPage : perPage // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,writeHistory: freezed == writeHistory ? _self.writeHistory : writeHistory // ignore: cast_nullable_to_non_nullable
+as bool?,trimHistory: freezed == trimHistory ? _self.trimHistory : trimHistory // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 
@@ -170,7 +176,7 @@ as int?,
 /// @nodoc
 mixin _$TraitsRequest {
 
- int get identity; int? get userId; List<String> get denylist; String get homeTags; String? get avatar; int? get perPage;
+ int get identity; int? get userId; List<String> get denylist; String get homeTags; String? get avatar; int? get perPage; bool? get writeHistory; bool? get trimHistory;
 /// Create a copy of TraitsRequest
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -183,16 +189,16 @@ $TraitsRequestCopyWith<TraitsRequest> get copyWith => _$TraitsRequestCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TraitsRequest&&(identical(other.identity, identity) || other.identity == identity)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other.denylist, denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TraitsRequest&&(identical(other.identity, identity) || other.identity == identity)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other.denylist, denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage)&&(identical(other.writeHistory, writeHistory) || other.writeHistory == writeHistory)&&(identical(other.trimHistory, trimHistory) || other.trimHistory == trimHistory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,identity,userId,const DeepCollectionEquality().hash(denylist),homeTags,avatar,perPage);
+int get hashCode => Object.hash(runtimeType,identity,userId,const DeepCollectionEquality().hash(denylist),homeTags,avatar,perPage,writeHistory,trimHistory);
 
 @override
 String toString() {
-  return 'TraitsRequest(identity: $identity, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage)';
+  return 'TraitsRequest(identity: $identity, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage, writeHistory: $writeHistory, trimHistory: $trimHistory)';
 }
 
 
@@ -203,7 +209,7 @@ abstract mixin class $TraitsRequestCopyWith<$Res>  {
   factory $TraitsRequestCopyWith(TraitsRequest value, $Res Function(TraitsRequest) _then) = _$TraitsRequestCopyWithImpl;
 @useResult
 $Res call({
- int identity, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage
+ int identity, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage, bool? writeHistory, bool? trimHistory
 });
 
 
@@ -220,7 +226,7 @@ class _$TraitsRequestCopyWithImpl<$Res>
 
 /// Create a copy of TraitsRequest
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? identity = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? identity = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,Object? writeHistory = freezed,Object? trimHistory = freezed,}) {
   return _then(_self.copyWith(
 identity: null == identity ? _self.identity : identity // ignore: cast_nullable_to_non_nullable
 as int,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -228,7 +234,9 @@ as int?,denylist: null == denylist ? _self.denylist : denylist // ignore: cast_n
 as List<String>,homeTags: null == homeTags ? _self.homeTags : homeTags // ignore: cast_nullable_to_non_nullable
 as String,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String?,perPage: freezed == perPage ? _self.perPage : perPage // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,writeHistory: freezed == writeHistory ? _self.writeHistory : writeHistory // ignore: cast_nullable_to_non_nullable
+as bool?,trimHistory: freezed == trimHistory ? _self.trimHistory : trimHistory // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 
@@ -239,7 +247,7 @@ as int?,
 @JsonSerializable()
 
 class _TraitsRequest implements TraitsRequest {
-  const _TraitsRequest({required this.identity, this.userId, final  List<String> denylist = const [], this.homeTags = '', this.avatar, this.perPage}): _denylist = denylist;
+  const _TraitsRequest({required this.identity, this.userId, final  List<String> denylist = const [], this.homeTags = '', this.avatar, this.perPage, this.writeHistory, this.trimHistory}): _denylist = denylist;
   factory _TraitsRequest.fromJson(Map<String, dynamic> json) => _$TraitsRequestFromJson(json);
 
 @override final  int identity;
@@ -254,6 +262,8 @@ class _TraitsRequest implements TraitsRequest {
 @override@JsonKey() final  String homeTags;
 @override final  String? avatar;
 @override final  int? perPage;
+@override final  bool? writeHistory;
+@override final  bool? trimHistory;
 
 /// Create a copy of TraitsRequest
 /// with the given fields replaced by the non-null parameter values.
@@ -268,16 +278,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TraitsRequest&&(identical(other.identity, identity) || other.identity == identity)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other._denylist, _denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TraitsRequest&&(identical(other.identity, identity) || other.identity == identity)&&(identical(other.userId, userId) || other.userId == userId)&&const DeepCollectionEquality().equals(other._denylist, _denylist)&&(identical(other.homeTags, homeTags) || other.homeTags == homeTags)&&(identical(other.avatar, avatar) || other.avatar == avatar)&&(identical(other.perPage, perPage) || other.perPage == perPage)&&(identical(other.writeHistory, writeHistory) || other.writeHistory == writeHistory)&&(identical(other.trimHistory, trimHistory) || other.trimHistory == trimHistory));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,identity,userId,const DeepCollectionEquality().hash(_denylist),homeTags,avatar,perPage);
+int get hashCode => Object.hash(runtimeType,identity,userId,const DeepCollectionEquality().hash(_denylist),homeTags,avatar,perPage,writeHistory,trimHistory);
 
 @override
 String toString() {
-  return 'TraitsRequest(identity: $identity, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage)';
+  return 'TraitsRequest(identity: $identity, userId: $userId, denylist: $denylist, homeTags: $homeTags, avatar: $avatar, perPage: $perPage, writeHistory: $writeHistory, trimHistory: $trimHistory)';
 }
 
 
@@ -288,7 +298,7 @@ abstract mixin class _$TraitsRequestCopyWith<$Res> implements $TraitsRequestCopy
   factory _$TraitsRequestCopyWith(_TraitsRequest value, $Res Function(_TraitsRequest) _then) = __$TraitsRequestCopyWithImpl;
 @override @useResult
 $Res call({
- int identity, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage
+ int identity, int? userId, List<String> denylist, String homeTags, String? avatar, int? perPage, bool? writeHistory, bool? trimHistory
 });
 
 
@@ -305,7 +315,7 @@ class __$TraitsRequestCopyWithImpl<$Res>
 
 /// Create a copy of TraitsRequest
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? identity = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? identity = null,Object? userId = freezed,Object? denylist = null,Object? homeTags = null,Object? avatar = freezed,Object? perPage = freezed,Object? writeHistory = freezed,Object? trimHistory = freezed,}) {
   return _then(_TraitsRequest(
 identity: null == identity ? _self.identity : identity // ignore: cast_nullable_to_non_nullable
 as int,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -313,7 +323,9 @@ as int?,denylist: null == denylist ? _self._denylist : denylist // ignore: cast_
 as List<String>,homeTags: null == homeTags ? _self.homeTags : homeTags // ignore: cast_nullable_to_non_nullable
 as String,avatar: freezed == avatar ? _self.avatar : avatar // ignore: cast_nullable_to_non_nullable
 as String?,perPage: freezed == perPage ? _self.perPage : perPage // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,writeHistory: freezed == writeHistory ? _self.writeHistory : writeHistory // ignore: cast_nullable_to_non_nullable
+as bool?,trimHistory: freezed == trimHistory ? _self.trimHistory : trimHistory // ignore: cast_nullable_to_non_nullable
+as bool?,
   ));
 }
 

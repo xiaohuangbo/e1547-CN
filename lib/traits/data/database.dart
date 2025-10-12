@@ -16,6 +16,8 @@ class TraitsTable extends Table {
   TextColumn get homeTags => text()();
   TextColumn get avatar => text().nullable()();
   IntColumn get perPage => integer().nullable()();
+  BoolColumn get writeHistory => boolean().nullable()();
+  BoolColumn get trimHistory => boolean().nullable()();
 
   @override
   Set<Column<Object>>? get primaryKey => {id};
@@ -41,6 +43,8 @@ class TraitsRepository extends DatabaseAccessor<GeneratedDatabase>
         id: Value(value.identity),
         denylist: Value(value.denylist),
         homeTags: Value(value.homeTags),
+        writeHistory: Value(value.writeHistory),
+        trimHistory: Value(value.trimHistory),
       ),
     );
   }

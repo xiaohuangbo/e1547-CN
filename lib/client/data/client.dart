@@ -72,12 +72,13 @@ class Client with Disposable {
     tagsClient: tags,
   );
 
-  late final HistoryClient histories = HistoryClient(
+  late final HistoryServer historyServer = HistoryServer(
     database: storage.sqlite,
-    preferences: storage.preferences,
     identity: identity,
     traits: traits,
   );
+
+  late final HistoryClient histories = HistoryClient(server: historyServer);
 
   @override
   void dispose() {
@@ -96,6 +97,7 @@ class Client with Disposable {
       tickets,
       follows,
       followServer,
+      historyServer,
       histories,
     ]) {
       Disposable.tryDispose(client);

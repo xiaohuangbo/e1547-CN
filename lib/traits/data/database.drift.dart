@@ -17,6 +17,8 @@ typedef $$TraitsTableTableCreateCompanionBuilder =
       required String homeTags,
       i0.Value<String?> avatar,
       i0.Value<int?> perPage,
+      i0.Value<bool?> writeHistory,
+      i0.Value<bool?> trimHistory,
     });
 typedef $$TraitsTableTableUpdateCompanionBuilder =
     i4.TraitsCompanion Function({
@@ -26,6 +28,8 @@ typedef $$TraitsTableTableUpdateCompanionBuilder =
       i0.Value<String> homeTags,
       i0.Value<String?> avatar,
       i0.Value<int?> perPage,
+      i0.Value<bool?> writeHistory,
+      i0.Value<bool?> trimHistory,
     });
 
 final class $$TraitsTableTableReferences
@@ -105,6 +109,16 @@ class $$TraitsTableTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
+  i0.ColumnFilters<bool> get writeHistory => $composableBuilder(
+    column: $table.writeHistory,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<bool> get trimHistory => $composableBuilder(
+    column: $table.trimHistory,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
   i2.$$IdentitiesTableTableFilterComposer get id {
     final i2.$$IdentitiesTableTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -167,6 +181,16 @@ class $$TraitsTableTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
+  i0.ColumnOrderings<bool> get writeHistory => $composableBuilder(
+    column: $table.writeHistory,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i0.ColumnOrderings<bool> get trimHistory => $composableBuilder(
+    column: $table.trimHistory,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i2.$$IdentitiesTableTableOrderingComposer get id {
     final i2.$$IdentitiesTableTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -218,6 +242,16 @@ class $$TraitsTableTableAnnotationComposer
 
   i0.GeneratedColumn<int> get perPage =>
       $composableBuilder(column: $table.perPage, builder: (column) => column);
+
+  i0.GeneratedColumn<bool> get writeHistory => $composableBuilder(
+    column: $table.writeHistory,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<bool> get trimHistory => $composableBuilder(
+    column: $table.trimHistory,
+    builder: (column) => column,
+  );
 
   i2.$$IdentitiesTableTableAnnotationComposer get id {
     final i2.$$IdentitiesTableTableAnnotationComposer composer =
@@ -284,6 +318,8 @@ class $$TraitsTableTableTableManager
                 i0.Value<String> homeTags = const i0.Value.absent(),
                 i0.Value<String?> avatar = const i0.Value.absent(),
                 i0.Value<int?> perPage = const i0.Value.absent(),
+                i0.Value<bool?> writeHistory = const i0.Value.absent(),
+                i0.Value<bool?> trimHistory = const i0.Value.absent(),
               }) => i4.TraitsCompanion(
                 id: id,
                 userId: userId,
@@ -291,6 +327,8 @@ class $$TraitsTableTableTableManager
                 homeTags: homeTags,
                 avatar: avatar,
                 perPage: perPage,
+                writeHistory: writeHistory,
+                trimHistory: trimHistory,
               ),
           createCompanionCallback:
               ({
@@ -300,6 +338,8 @@ class $$TraitsTableTableTableManager
                 required String homeTags,
                 i0.Value<String?> avatar = const i0.Value.absent(),
                 i0.Value<int?> perPage = const i0.Value.absent(),
+                i0.Value<bool?> writeHistory = const i0.Value.absent(),
+                i0.Value<bool?> trimHistory = const i0.Value.absent(),
               }) => i4.TraitsCompanion.insert(
                 id: id,
                 userId: userId,
@@ -307,6 +347,8 @@ class $$TraitsTableTableTableManager
                 homeTags: homeTags,
                 avatar: avatar,
                 perPage: perPage,
+                writeHistory: writeHistory,
+                trimHistory: trimHistory,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -456,6 +498,33 @@ class $TraitsTableTable extends i6.TraitsTable
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const i0.VerificationMeta _writeHistoryMeta =
+      const i0.VerificationMeta('writeHistory');
+  @override
+  late final i0.GeneratedColumn<bool> writeHistory = i0.GeneratedColumn<bool>(
+    'write_history',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("write_history" IN (0, 1))',
+    ),
+  );
+  static const i0.VerificationMeta _trimHistoryMeta = const i0.VerificationMeta(
+    'trimHistory',
+  );
+  @override
+  late final i0.GeneratedColumn<bool> trimHistory = i0.GeneratedColumn<bool>(
+    'trim_history',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("trim_history" IN (0, 1))',
+    ),
+  );
   @override
   List<i0.GeneratedColumn> get $columns => [
     id,
@@ -464,6 +533,8 @@ class $TraitsTableTable extends i6.TraitsTable
     homeTags,
     avatar,
     perPage,
+    writeHistory,
+    trimHistory,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -506,6 +577,24 @@ class $TraitsTableTable extends i6.TraitsTable
         perPage.isAcceptableOrUnknown(data['per_page']!, _perPageMeta),
       );
     }
+    if (data.containsKey('write_history')) {
+      context.handle(
+        _writeHistoryMeta,
+        writeHistory.isAcceptableOrUnknown(
+          data['write_history']!,
+          _writeHistoryMeta,
+        ),
+      );
+    }
+    if (data.containsKey('trim_history')) {
+      context.handle(
+        _trimHistoryMeta,
+        trimHistory.isAcceptableOrUnknown(
+          data['trim_history']!,
+          _trimHistoryMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -541,6 +630,14 @@ class $TraitsTableTable extends i6.TraitsTable
         i0.DriftSqlType.int,
         data['${effectivePrefix}per_page'],
       ),
+      writeHistory: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}write_history'],
+      ),
+      trimHistory: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}trim_history'],
+      ),
     );
   }
 
@@ -560,6 +657,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
   final i0.Value<String> homeTags;
   final i0.Value<String?> avatar;
   final i0.Value<int?> perPage;
+  final i0.Value<bool?> writeHistory;
+  final i0.Value<bool?> trimHistory;
   const TraitsCompanion({
     this.id = const i0.Value.absent(),
     this.userId = const i0.Value.absent(),
@@ -567,6 +666,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
     this.homeTags = const i0.Value.absent(),
     this.avatar = const i0.Value.absent(),
     this.perPage = const i0.Value.absent(),
+    this.writeHistory = const i0.Value.absent(),
+    this.trimHistory = const i0.Value.absent(),
   });
   TraitsCompanion.insert({
     this.id = const i0.Value.absent(),
@@ -575,6 +676,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
     required String homeTags,
     this.avatar = const i0.Value.absent(),
     this.perPage = const i0.Value.absent(),
+    this.writeHistory = const i0.Value.absent(),
+    this.trimHistory = const i0.Value.absent(),
   }) : denylist = i0.Value(denylist),
        homeTags = i0.Value(homeTags);
   static i0.Insertable<i5.Traits> custom({
@@ -584,6 +687,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
     i0.Expression<String>? homeTags,
     i0.Expression<String>? avatar,
     i0.Expression<int>? perPage,
+    i0.Expression<bool>? writeHistory,
+    i0.Expression<bool>? trimHistory,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
@@ -592,6 +697,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
       if (homeTags != null) 'home_tags': homeTags,
       if (avatar != null) 'avatar': avatar,
       if (perPage != null) 'per_page': perPage,
+      if (writeHistory != null) 'write_history': writeHistory,
+      if (trimHistory != null) 'trim_history': trimHistory,
     });
   }
 
@@ -602,6 +709,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
     i0.Value<String>? homeTags,
     i0.Value<String?>? avatar,
     i0.Value<int?>? perPage,
+    i0.Value<bool?>? writeHistory,
+    i0.Value<bool?>? trimHistory,
   }) {
     return i4.TraitsCompanion(
       id: id ?? this.id,
@@ -610,6 +719,8 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
       homeTags: homeTags ?? this.homeTags,
       avatar: avatar ?? this.avatar,
       perPage: perPage ?? this.perPage,
+      writeHistory: writeHistory ?? this.writeHistory,
+      trimHistory: trimHistory ?? this.trimHistory,
     );
   }
 
@@ -636,6 +747,12 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
     if (perPage.present) {
       map['per_page'] = i0.Variable<int>(perPage.value);
     }
+    if (writeHistory.present) {
+      map['write_history'] = i0.Variable<bool>(writeHistory.value);
+    }
+    if (trimHistory.present) {
+      map['trim_history'] = i0.Variable<bool>(trimHistory.value);
+    }
     return map;
   }
 
@@ -647,7 +764,9 @@ class TraitsCompanion extends i0.UpdateCompanion<i5.Traits> {
           ..write('denylist: $denylist, ')
           ..write('homeTags: $homeTags, ')
           ..write('avatar: $avatar, ')
-          ..write('perPage: $perPage')
+          ..write('perPage: $perPage, ')
+          ..write('writeHistory: $writeHistory, ')
+          ..write('trimHistory: $trimHistory')
           ..write(')'))
         .toString();
   }
@@ -665,6 +784,8 @@ class _$TraitsInsertable implements i0.Insertable<i5.Traits> {
       homeTags: i0.Value(_object.homeTags),
       avatar: i0.Value(_object.avatar),
       perPage: i0.Value(_object.perPage),
+      writeHistory: i0.Value(_object.writeHistory),
+      trimHistory: i0.Value(_object.trimHistory),
     ).toColumns(false);
   }
 }

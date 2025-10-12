@@ -12,6 +12,8 @@ abstract class Traits with _$Traits {
     required String homeTags,
     required String? avatar,
     required int? perPage,
+    bool? writeHistory,
+    bool? trimHistory,
   }) = _Traits;
 
   factory Traits.fromJson(Map<String, dynamic> json) => _$TraitsFromJson(json);
@@ -26,6 +28,8 @@ abstract class TraitsRequest with _$TraitsRequest {
     @Default('') String homeTags,
     String? avatar,
     int? perPage,
+    bool? writeHistory,
+    bool? trimHistory,
   }) = _TraitsRequest;
 
   factory TraitsRequest.fromJson(Map<String, dynamic> json) =>
