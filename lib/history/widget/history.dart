@@ -89,6 +89,7 @@ class HistoriesPage extends StatelessWidget {
               children: [
                 HistoryEnableTile(),
                 HistoryLimitTile(),
+                HistoryClearTile(),
                 Divider(),
                 HistoryCategoryFilterTile(),
                 HistoryTypeFilterTile(),

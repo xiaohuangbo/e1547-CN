@@ -29,6 +29,42 @@ class HistoryEnableTile extends StatelessWidget {
   }
 }
 
+class HistoryClearTile extends StatelessWidget {
+  const HistoryClearTile({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final client = context.watch<Client>();
+    return ListTile(
+      title: const Text('Clear history'),
+      subtitle: const Text('Delete all entries'),
+      leading: const Icon(Icons.clear_all),
+      onTap: () => showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Clear history?'),
+          content: const Text(
+            'All history entries will be permanently deleted. This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                client.histories.removeAll(null);
+              },
+              child: const Text('Clear'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class HistoryLimitTile extends StatelessWidget {
   const HistoryLimitTile({super.key});
 
