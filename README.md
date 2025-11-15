@@ -6,11 +6,11 @@
     <td width="80%">
       <h1>e1547</h1>
       <h4>A sophisticated e621 browser</h4>
-      <a href="https://github.com/clragon/e1547/commits/master"><img src="https://badgen.net/github/commits/clragon/e1547"></a>
-      <a href="https://github.com/clragon/e1547/commits/master"><img src="https://badgen.net/github/last-commit/clragon/e1547"></a>
+      <a href="https://github.com/clragon/e1547/commits/master"><img src="https://img.shields.io/github/commit-activity/m/clragon/e1547"></a>
+      <a href="https://github.com/clragon/e1547/commits/master"><img src="https://img.shields.io/github/last-commit/clragon/e1547"></a>
       <a href="blob/master/LICENSE"><img src="https://img.shields.io/github/license/clragon/e1547"></a>
       <a href="https://discord.gg/MRwKGqfmUz"><img src="https://img.shields.io/discord/763321712766877727.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2"></a>
-      <a href="https://e1547.clynamic.net"><img src="https://badgen.net/badge/website/clynamic?color=FDB245&icon=https://upload.wikimedia.org/wikipedia/commons/f/f7/Bananas.svg"></a>
+      <a href="https://e1547.clynamic.net"><img src="https://img.shields.io/badge/website-clynamic-FDB245"></a>
       <a href="https://f-droid.org/packages/net.e1547"><img src="https://img.shields.io/f-droid/v/net.e1547"></a>
       <a href="https://play.google.com/store/apps/details?id=net.e1547"><img src="https://img.shields.io/endpoint?color=green&logo=google-play&logoColor=green&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dnet.e1547%26gl%3DUS%26hl%3Den%26l%3DGoogle%2520Play%26m%3D%24version"></a>
       <a href="https://github.com/clragon/e1547/releases/latest"><img src="https://img.shields.io/github/downloads/clragon/e1547/total"></a>
@@ -49,7 +49,7 @@ the [releases](https://github.com/clragon/e1547/releases/latest).
 You can also find the app on the Google PlayStore:
 
 <a href="https://play.google.com/store/apps/details?id=net.e1547">
-    <img src="https://github.com/steverichey/google-play-badge-svg/blob/master/img/en_get.svg" width="30%"/>
+    <img src="https://github.com/steverichey/google-play-badge-svg/blob/266d2b2df26f10d3c00b8129a0bd9f6da6b19f00/img/en_get.svg" width="30%"/>
 </a>
 
 ### Certificate Fingerprints
@@ -101,17 +101,23 @@ You can compile the app from source:
 
 Is the app currently under development?
 
-<a href="https://github.com/clragon/e1547/commits/master"><img src="https://badgen.net/github/last-commit/clragon/e1547"></a>
+**No**
 
-If you want to participate in development decisions, you can join the discord:
+e1547 is now end of life. Thank you to everyone who stopped by over the years!
+
+<a href="https://github.com/clragon/e1547/commits/master"><img src="https://img.shields.io/github/last-commit/clragon/e1547"></a>
+
+For archival reasons, here are the communities where the app previously was discussed:
+
+Discord:
 
 [![Discord](https://img.shields.io/discord/763321712766877727.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/MRwKGqfmUz)
 
-You can also post on the forum thread:
+Forum thread:
 
-[![Forum](https://badgen.net/badge/e621/forum/00549f?icon=https://e621.net/safari-pinned-tab.svg&labelColor=1F3C67)](https://e926.net/forum_topics/25854)
+[![Forum](https://img.shields.io/badge/e621-forum-00549f)](https://e926.net/forum_topics/25854)
 
-If you notice something not working, feel free to open a github issue:
+Github issues:
 
 [![GitHub issues](https://img.shields.io/github/issues/clragon/e1547)](https://github.com/clragon/e1547/issues)
 
@@ -119,12 +125,9 @@ If you notice something not working, feel free to open a github issue:
 
 [<img src="https://github.com/clragon.png" width="100px;"/>](https://github.com/clragon)
 
-I am [clragon](https://github.com/clragon)! I write the code for this app.
+I am [clragon](https://github.com/clragon)! I wrote the code for this app.
 
-This is a passion project!  
-If you like the app, you can support me by buying me a coffee:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Q5Q22W6FW)
+This was a passion project. If you enjoyed using it, I am glad you did!
 
 #### Additional thanks to
 
