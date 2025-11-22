@@ -63,12 +63,19 @@ class Donors extends StatelessWidget {
         ...donors.sortByDonation().map(
           (summary) => ListTile(
             selected: username != null && summary.handles['e621'] == username,
-            leading: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              backgroundImage: summary.avatar != null
-                  ? CachedNetworkImageProvider(summary.avatar!)
-                  : null,
-              child: summary.avatar == null ? const Icon(Icons.person) : null,
+            leading: Container(
+              decoration: const BoxDecoration(shape: BoxShape.circle),
+              clipBehavior: Clip.antiAlias,
+              width: 40,
+              height: 40,
+              child: summary.avatar != null
+                  ? CachedNetworkImage(
+                      imageUrl: summary.avatar!,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.person),
+                    )
+                  : const Icon(Icons.person),
             ),
             title: Text(summary.name),
             subtitle: Text(summary.formattedAmounts()),
