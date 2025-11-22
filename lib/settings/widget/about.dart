@@ -35,9 +35,9 @@ class _AboutPageState extends State<AboutPage> {
       appBar: const TransparentAppBar(
         child: DefaultAppBar(leading: CloseButton()),
       ),
-      body: RefreshablePage(
-        refresh: (refreshController) async {
-          try {
+      body: LimitedWidthLayout.builder(
+        builder: (context) => PullToRefresh(
+          onRefresh: () async {
             setState(() {
               versions = client?.getNewVersions(force: true);
               bundledDonors = client?.getBundledDonors();
@@ -46,40 +46,36 @@ class _AboutPageState extends State<AboutPage> {
             await versions;
             await bundledDonors;
             await donors;
-            refreshController.refreshCompleted();
-          } on AppUpdaterException {
-            refreshController.refreshFailed();
-          }
-        },
-        builder: (context, child) => LimitedWidthLayout(child: child),
-        child: (context) => ListView(
-          padding: LimitedWidthLayout.of(context).padding,
-          children: [
-            const SizedBox(height: 100),
-            const DevOptionEnabler(child: AboutLogo()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Card(
-                child: Column(
-                  children: [
-                    AboutVersion(newVersions: versions),
-                    const AboutLinks(),
-                  ],
+          },
+          child: ListView(
+            padding: LimitedWidthLayout.of(context).padding,
+            children: [
+              const SizedBox(height: 100),
+              const DevOptionEnabler(child: AboutLogo()),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Card(
+                  child: Column(
+                    children: [
+                      AboutVersion(newVersions: versions),
+                      const AboutLinks(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Card(
-                child: AboutDonations(
-                  bundledDonors: bundledDonors,
-                  donors: donors,
+              const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Card(
+                  child: AboutDonations(
+                    bundledDonors: bundledDonors,
+                    donors: donors,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
