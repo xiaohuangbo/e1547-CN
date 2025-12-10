@@ -94,6 +94,7 @@ TODO:
 我是 [clragon](https://github.com/clragon)！我编写了这个应用的代码。
 
 [<img src="https://github.com/xiaohuangbo.png" width="100px;"/>](https://github.com/xiaohuangbo)
+
 我是 [xiaohuangbo](https://github.com/xiaohuangbo)！我汉化了这个应用。
 
 这是一个充满激情的项目！
