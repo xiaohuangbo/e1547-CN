@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:recase/recase.dart';
 
@@ -32,11 +32,11 @@ class LogRecordDrawer extends StatelessWidget {
     };
 
     return ContextDrawer(
-      title: const Text('Logs'),
+      title: const Text('日志'),
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 12),
-          child: ListTileHeader(title: 'Levels'),
+          child: ListTileHeader(title: '级别'),
         ),
         for (final filter in filters)
           Padding(

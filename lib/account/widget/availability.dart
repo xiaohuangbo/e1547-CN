@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:e1547/account/account.dart';
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class AvailabilityCheck extends StatefulWidget {
@@ -31,7 +31,7 @@ class _AvailabilityCheckState extends State<AvailabilityCheck> {
 
   Future<void> check(BuildContext context) async {
     bool? offerResolve;
-    final client = context.read<Client>();
+    Client client = context.read<Client>();
     try {
       await client.accounts.available();
       logger.info('Client is available!');

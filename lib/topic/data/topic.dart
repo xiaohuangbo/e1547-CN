@@ -4,7 +4,7 @@ part 'topic.freezed.dart';
 part 'topic.g.dart';
 
 @freezed
-abstract class Topic with _$Topic {
+class Topic with _$Topic {
   const factory Topic({
     required int id,
     required int creatorId,

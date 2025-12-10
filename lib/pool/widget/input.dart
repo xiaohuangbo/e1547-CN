@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/data/controller.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -29,46 +29,46 @@ class PoolsPageFloatingActionButton extends StatelessWidget {
               filters: const [
                 TextFilterTag(
                   tag: 'description_matches',
-                  name: 'Description',
+                  name: '描述',
                   icon: Icon(Icons.description),
                 ),
                 TextFilterTag(
                   tag: 'creator_name',
-                  name: 'Creator',
+                  name: '创建者',
                   icon: Icon(Icons.person),
                 ),
                 ToggleFilterTag(
                   tag: 'is_active',
-                  name: 'Active',
+                  name: '活跃',
                   enabled: 'true',
                   disabled: 'false',
-                  description: 'Is active',
+                  description: '是否活跃',
                 ),
                 ChoiceFilterTag(
                   tag: 'category',
-                  name: 'Category',
+                  name: '类别',
                   icon: Icon(Icons.category),
                   options: [
-                    ChoiceFilterTagValue(value: null, name: 'Default'),
-                    ChoiceFilterTagValue(value: 'series', name: 'Series'),
+                    ChoiceFilterTagValue(value: null, name: '默认'),
+                    ChoiceFilterTagValue(value: 'series', name: '系列'),
                     ChoiceFilterTagValue(
                       value: 'collection',
-                      name: 'Collection',
+                      name: '合集',
                     ),
                   ],
                 ),
                 ChoiceFilterTag(
                   tag: 'order',
-                  name: 'Sort by',
+                  name: '排序方式',
                   icon: Icon(Icons.sort),
                   options: [
-                    ChoiceFilterTagValue(value: null, name: 'Default'),
-                    ChoiceFilterTagValue(value: 'name', name: 'Name'),
-                    ChoiceFilterTagValue(value: 'created_at', name: 'Created'),
-                    ChoiceFilterTagValue(value: 'updated_at', name: 'Updated'),
+                    ChoiceFilterTagValue(value: null, name: '默认'),
+                    ChoiceFilterTagValue(value: 'name', name: '名称'),
+                    ChoiceFilterTagValue(value: 'created_at', name: '创建时间'),
+                    ChoiceFilterTagValue(value: 'updated_at', name: '更新时间'),
                     ChoiceFilterTagValue(
                       value: 'post_count',
-                      name: 'Post count',
+                      name: '帖子数量',
                     ),
                   ],
                 ),
@@ -116,7 +116,7 @@ class PoolNameFilter extends StatelessWidget {
             direction: VerticalDirection.up,
             submit: (value) => state.onSubmit?.call(value),
             controller: controller,
-            labelText: 'Pool title',
+            labelText: '池标题',
             decoration: theme.decoration,
             focusNode: theme.focusNode,
             onSelected: (value) {
@@ -130,7 +130,7 @@ class PoolNameFilter extends StatelessWidget {
             },
             suggestionsCallback: (value) async {
               value = value.trim();
-              final client = context.read<Client>();
+              Client client = context.read<Client>();
               return (await client.histories.page(
                     page: 1,
                     query: HistoryQuery(

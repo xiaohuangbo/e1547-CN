@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:e1547/app/app.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -173,7 +173,7 @@ class _LogFileListState extends State<LogFileList> {
                                 Expanded(
                                   child: Center(
                                     child: Icon(
-                                      Icons.videocam,
+                                      Icons.note_add,
                                       size: 38,
                                       color: dimTextColor(context),
                                     ),
@@ -182,7 +182,7 @@ class _LogFileListState extends State<LogFileList> {
                                 Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Text(
-                                    'Live\n',
+                                    'Current\n',
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: Theme.of(
@@ -343,7 +343,7 @@ class _LogPageState extends State<LogPage> {
                       onPressed: () => Share.asFile(
                         context,
                         logs!.map((e) => e.toString()).join('\n'),
-                        '${logFileDateFormat.format(DateTime.now())}.log',
+                        name: '${logFileDateFormat.format(DateTime.now())}.log',
                       ),
                       child: const Icon(Icons.file_download),
                     )

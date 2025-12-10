@@ -1,7 +1,7 @@
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 
@@ -12,7 +12,7 @@ class LikeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = context.watch<Client>();
+    Client client = context.watch<Client>();
     PostController controller = context.watch<PostController>();
     ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     bool canVote = client.hasLogin;
@@ -34,7 +34,7 @@ class LikeDisplay extends StatelessWidget {
                                 SnackBar(
                                   duration: const Duration(seconds: 1),
                                   content: Text(
-                                    'Failed to upvote Post #${post.id}',
+                                    '点赞帖子 #${post.id} 失败',
                                   ),
                                 ),
                               );
@@ -53,7 +53,7 @@ class LikeDisplay extends StatelessWidget {
                                 SnackBar(
                                   duration: const Duration(seconds: 1),
                                   content: Text(
-                                    'Failed to downvote Post #${post.id}',
+                                    '点踩帖子 #${post.id} 失败',
                                   ),
                                 ),
                               );
@@ -115,7 +115,7 @@ class FavoriteButton extends StatelessWidget {
                   SnackBar(
                     duration: const Duration(seconds: 1),
                     content: Text(
-                      'Failed to remove Post #${post.id} from favorites',
+                      '从收藏夹中移除帖子 #${post.id} 失败',
                     ),
                   ),
                 );
@@ -138,7 +138,7 @@ class FavoriteButton extends StatelessWidget {
                   SnackBar(
                     duration: const Duration(seconds: 1),
                     content: Text(
-                      'Failed to add Post #${post.id} to favorites',
+                      '将帖子 #${post.id} 添加到收藏夹失败',
                     ),
                   ),
                 );

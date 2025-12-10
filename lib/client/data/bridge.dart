@@ -1,7 +1,7 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/traits/traits.dart';
 
-abstract class BridgeClient {
+abstract class BridgeService {
   Future<void> available();
 
   Future<void> push({required Traits traits, CancelToken? cancelToken});

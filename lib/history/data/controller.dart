@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/foundation.dart';
 
 class HistoryController extends PageClientDataController<History> {
@@ -35,7 +35,7 @@ class HistoryProvider
     : super(
         create: (context, client) =>
             HistoryController(client: client, query: search),
-        update: (context, client, controller) {
+        update: (context, service, controller) {
           if (search != null) {
             controller.search = search;
           }

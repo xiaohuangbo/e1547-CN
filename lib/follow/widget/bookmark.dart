@@ -1,7 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -20,20 +20,21 @@ class FollowsBookmarkPage extends StatelessWidget {
               // remove this when the paged grid view is implemented
               controller.getNextPage();
               final client = context.read<Client>();
-              client.followServer.sync();
+              client.follows.sync();
               return null;
             },
             keys: const [],
             child: SelectionLayout<Follow>(
               items: controller.items,
               child: PromptActions(
-                child: AdaptiveScaffold(
+                child: RefreshableDataPage.builder(
+                  controller: controller,
                   appBar: const FollowSelectionAppBar(
-                    child: DefaultAppBar(title: Text('Bookmarks')),
+                    child: DefaultAppBar(title: Text('书签')),
                   ),
                   drawer: const RouterDrawer(),
                   floatingActionButton: AddTagFloatingActionButton(
-                    title: 'Add to bookmarks',
+                    title: '添加到书签',
                     onSubmit: (value) async {
                       value = value.trim();
                       if (value.isEmpty) return;
@@ -43,13 +44,12 @@ class FollowsBookmarkPage extends StatelessWidget {
                       );
                     },
                   ),
-                  body: TileLayout(
-                    child: ListenableBuilder(
-                      listenable: controller,
-                      builder: (context, _) => PullToRefresh(
-                        onRefresh: () =>
-                            controller.refresh(force: true, background: true),
-                        child: PagedAlignedGridView<int, Follow>.count(
+                  builder: (context, child) =>
+                      LimitedWidthLayout(child: TileLayout(child: child)),
+                  child: (context) => ListenableBuilder(
+                    listenable: controller,
+                    builder: (context, _) =>
+                        PagedAlignedGridView<int, Follow>.count(
                           primary: true,
                           padding: defaultActionListPadding,
                           addAutomaticKeepAlives: false,
@@ -59,13 +59,11 @@ class FollowsBookmarkPage extends StatelessWidget {
                             onRetry: controller.getNextPage,
                             itemBuilder: (context, item, index) =>
                                 FollowTile(follow: item),
-                            onEmpty: const Text('No bookmarks'),
-                            onError: const Text('Failed to load bookmarks'),
+                            onEmpty: const Text('没有书签'),
+                            onError: const Text('加载书签失败'),
                           ),
                           crossAxisCount: TileLayout.of(context).crossAxisCount,
                         ),
-                      ),
-                    ),
                   ),
                 ),
               ),

@@ -1,7 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 Future<bool> replyComment({
@@ -37,7 +37,7 @@ Future<bool> writeComment({
   await Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => DTextEditor(
-        title: Text('#$postId comment'),
+        title: Text('#$postId 评论'),
         content: text ?? (comment?.body),
         onSubmitted: (text) async {
           ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
@@ -56,13 +56,13 @@ Future<bool> writeComment({
                 );
               }
             } on ClientException {
-              return 'Failed to send comment!';
+              return '发送评论失败！';
             }
             sent = true;
             messenger.showSnackBar(
               const SnackBar(
                 duration: Duration(seconds: 1),
-                content: Text('Comment sent!'),
+                content: Text('评论已发送！'),
               ),
             );
           }

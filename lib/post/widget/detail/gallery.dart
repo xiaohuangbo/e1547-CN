@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -42,8 +42,8 @@ class PostDetailGallery extends StatelessWidget {
                     appBar: const TransparentAppBar(child: DefaultAppBar()),
                     body: child,
                   ),
-                  onEmpty: const Text('No posts'),
-                  onError: const Text('Failed to load posts'),
+                  onEmpty: const Text('没有帖子'),
+                  onError: const Text('无法加载帖子'),
                   itemBuilder: (context, item, index) => SubScrollController(
                     builder: (context, scrollController) =>
                         PrimaryScrollController(

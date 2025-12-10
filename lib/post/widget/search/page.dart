@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/traits/traits.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +37,7 @@ class _PostsPageState extends State<PostsPage> {
 
     Widget? endDrawer() {
       return ContextDrawer(
-        title: const Text('Posts'),
+        title: const Text('帖子'),
         children: [
           CrossFade.builder(
             showChild: widget.drawerActions?.isNotEmpty ?? false,
@@ -57,7 +57,7 @@ class _PostsPageState extends State<PostsPage> {
         builder: (context, controller, child) => SelectionLayout<Post>(
           enabled: widget.canSelect,
           items: controller.items,
-          child: AdaptiveScaffold(
+          child: RefreshableDataPage.builder(
             appBar: PostSelectionAppBar(
               controller: widget.controller,
               child: widget.appBar,
@@ -65,26 +65,20 @@ class _PostsPageState extends State<PostsPage> {
             drawer: const RouterDrawer(),
             endDrawer: endDrawer(),
             floatingActionButton: floatingActionButton(),
-            body: LimitedWidthLayout(
-              child: TileLayout(
-                child: PullToRefresh(
-                  onRefresh: () =>
-                      widget.controller.refresh(force: true, background: true),
-                  child: CustomScrollView(
-                    primary: true,
-                    slivers: [
-                      SliverPadding(
-                        padding: defaultActionListPadding,
-                        sliver: PostSliverDisplay(
-                          controller: widget.controller,
-                          displayType:
-                              widget.displayType ?? PostDisplayType.grid,
-                        ),
-                      ),
-                    ],
+            builder: (context, child) =>
+                LimitedWidthLayout(child: TileLayout(child: child)),
+            controller: widget.controller,
+            child: (context) => CustomScrollView(
+              primary: true,
+              slivers: [
+                SliverPadding(
+                  padding: defaultActionListPadding,
+                  sliver: PostSliverDisplay(
+                    controller: widget.controller,
+                    displayType: widget.displayType ?? PostDisplayType.grid,
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

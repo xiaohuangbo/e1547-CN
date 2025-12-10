@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,10 +15,10 @@ class LogSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
       child: child,
       titleBuilder: (context, data) => data.selections.length == 1
           ? Text(data.selections.first.body, maxLines: 1)
-          : Text('${data.selections.length} logs'),
+          : Text('${data.selections.length} 条日志'),
       actionBuilder: (context, data) => [
         IconButton(
-          tooltip: 'Copy',
+          tooltip: '复制',
           icon: const Icon(Icons.copy),
           onPressed: () {
             Clipboard.setData(
@@ -29,7 +29,7 @@ class LogSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 duration: Duration(seconds: 1),
-                content: Text('Copied to clipboard'),
+                content: Text('已复制到剪贴板'),
               ),
             );
             data.onChanged({});
@@ -52,12 +52,12 @@ class LogFileSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
     return SelectionAppBar<LogFileInfo>(
       child: child,
       titleBuilder: (context, data) => data.selections.length == 1
-          ? Text('Logs - ${data.selections.first.date}')
-          : Text('${data.selections.length} log files'),
+          ? Text('日志 - ${data.selections.first.date}')
+          : Text('${data.selections.length} 个日志文件'),
       actionBuilder: (context, data) => [
         if (onDelete != null)
           IconButton(
-            tooltip: 'Delete',
+            tooltip: '删除',
             icon: const Icon(Icons.delete),
             onPressed: () => showDialog(
               context: context,
@@ -88,19 +88,19 @@ class LogFileDeleteConfirmation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Delete ${files.length} log files?'),
-      content: const Text('This action cannot be undone.'),
+      title: Text('删除 ${files.length} 个日志文件？'),
+      content: const Text('此操作无法撤消。'),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: const Text('取消'),
         ),
         TextButton(
           onPressed: () {
             onConfirm?.call();
             Navigator.of(context).pop();
           },
-          child: const Text('Delete'),
+          child: const Text('删除'),
         ),
       ],
     );

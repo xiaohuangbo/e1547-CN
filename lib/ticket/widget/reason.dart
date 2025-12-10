@@ -1,4 +1,4 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
 
@@ -20,13 +20,13 @@ class ReportFormReason extends StatelessWidget {
         enabled: !isLoading,
         controller: controller,
         decoration: const InputDecoration(
-          labelText: 'Reason',
+          labelText: '原因',
           border: OutlineInputBorder(),
         ),
         maxLines: null,
         validator: (value) {
           if (value!.trim().isEmpty) {
-            return 'Reason cannot be empty';
+            return '原因不能为空';
           }
           return null;
         },
@@ -103,7 +103,7 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
                             SnackBar(
                               duration: const Duration(seconds: 1),
                               content: Text(
-                                widget.onSuccess ?? 'Submitted report',
+                                widget.onSuccess ?? '已提交报告',
                               ),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -114,7 +114,7 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
                             SnackBar(
                               duration: const Duration(seconds: 1),
                               content: Text(
-                                widget.onFailure ?? 'Failed to submit report',
+                                widget.onFailure ?? '提交报告失败',
                               ),
                             ),
                           );
@@ -149,7 +149,7 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
                       ],
                     ),
                   ),
-                  const ReportFormHeader(title: Text('Report')),
+                  const ReportFormHeader(title: Text('报告')),
                   ReportFormReason(
                     controller: reasonController,
                     isLoading: isLoading,

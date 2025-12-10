@@ -2,8 +2,8 @@ import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
 import 'package:e1547/flag/flag.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
 
@@ -37,31 +37,16 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
   Post post,
 ) {
   return [
-    PopupMenuTile(
-      title: 'Edit',
-      icon: Icons.edit,
-      value: () => guardWithLogin(
-        context: context,
-        callback: () {
-          PostController? controller = context.read<PostController?>();
-          int? cacheSize = context.read<ImageCacheSize?>()?.size;
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ImageCacheSizeProvider(
-                size: cacheSize,
-                child: controller != null
-                    ? PostsRouteConnector(
-                        controller: controller,
-                        child: PostEditPage(post: post),
-                      )
-                    : PostEditPage(post: post),
-              ),
-            ),
-          );
-        },
-        error: 'You must be logged in to edit posts!',
+    if (context.read<PostEditingController?>() != null)
+      PopupMenuTile(
+        title: 'Edit',
+        icon: Icons.edit,
+        value: () => guardWithLogin(
+          context: context,
+          callback: context.read<PostEditingController>().startEditing,
+          error: 'You must be logged in to edit posts!',
+        ),
       ),
-    ),
     PopupMenuTile(
       title: 'Comment',
       icon: Icons.comment,

@@ -8,7 +8,10 @@ import 'package:workmanager/workmanager.dart';
 void executeBackgroundTasks() =>
     Workmanager().executeTask((task, inputData) async {
       await initializeAppInfo();
-      await initializeLogger(postfix: 'background');
+      await initializeLogger(
+        path: await getTemporaryAppDirectory(),
+        postfix: 'background',
+      );
 
       final logger = Logger('BackgroundTasks');
       logger.info('Executing Task $task');

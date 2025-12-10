@@ -6,8 +6,8 @@ import 'package:drift/native.dart';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/identity/identity.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -317,7 +317,7 @@ class _LoginLoadingDialogState extends State<LoginLoadingDialog> {
 
   Future<void> login() async {
     NavigatorState navigator = Navigator.of(context);
-    IdentityClient client = context.read<IdentityClient>();
+    IdentityService service = context.read<IdentityService>();
     Identity? identity = widget.identity;
     String host = widget.host;
     String? username = widget.username;
@@ -341,11 +341,11 @@ class _LoginLoadingDialogState extends State<LoginLoadingDialog> {
     }
     try {
       if (identity != null) {
-        await client.replace(
+        await service.replace(
           identity.copyWith(host: host, username: username, headers: headers),
         );
       } else {
-        await client.add(
+        await service.add(
           IdentityRequest(host: host, username: username, headers: headers),
         );
       }

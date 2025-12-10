@@ -1,42 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
-
-class HistoryAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const HistoryAppBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<HistoryController>(
-      builder: (context, controller, child) => HistorySelectionAppBar(
-        child: DefaultAppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('History'),
-              CrossFade.builder(
-                showChild: HistoryQuery.from(controller.search).date != null,
-                builder: (context) => Text(
-                  DateFormatting.named(
-                    HistoryQuery.from(controller.search).date!,
-                  ),
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall!.color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: const [ContextDrawerButton()],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-}
 
 class HistorySelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
   const HistorySelectionAppBar({super.key, required this.child});

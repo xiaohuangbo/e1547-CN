@@ -6,7 +6,7 @@ import 'package:e1547/identity/data/database.drift.dart' as i2;
 import 'package:drift/internal/modular.dart' as i3;
 import 'package:e1547/identity/data/identity.dart' as i4;
 import 'package:e1547/identity/data/database.dart' as i5;
-import 'package:e1547/shared/data/sql.dart' as i6;
+import 'package:e1547/interface/data/sql.dart' as i6;
 
 typedef $$IdentitiesTableTableCreateCompanionBuilder =
     i2.IdentityCompanion Function({
@@ -296,7 +296,7 @@ class $IdentitiesTableTable extends i5.IdentitiesTable
   @override
   i4.Identity map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return i4.Identity.new(
+    return i4.Identity(
       id: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
         data['${effectivePrefix}id'],

@@ -1,11 +1,11 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'post.freezed.dart';
 part 'post.g.dart';
 
 @freezed
-abstract class Post with _$Post {
+class Post with _$Post {
   const factory Post({
     required int id,
     required String? file,
@@ -38,7 +38,7 @@ abstract class Post with _$Post {
 enum Rating { s, q, e }
 
 @freezed
-abstract class Relationships with _$Relationships {
+class Relationships with _$Relationships {
   const factory Relationships({
     required int? parentId,
     required bool hasChildren,

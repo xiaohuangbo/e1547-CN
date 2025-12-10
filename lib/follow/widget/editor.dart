@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
 
 class FollowEditor extends StatefulWidget {
@@ -16,7 +16,7 @@ class _FollowEditorState extends State<FollowEditor> {
   final String subscribe = FollowType.update.name;
   final String bookmark = FollowType.bookmark.name;
 
-  late final client = context.read<Client>();
+  late Client client = context.read<Client>();
   late Future<List<Follow>> all = client.follows.all();
   late Future<Map<String, String>> follows = all.then(
     (all) => {

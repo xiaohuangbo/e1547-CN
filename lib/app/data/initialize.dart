@@ -28,26 +28,25 @@ Future<String> getTemporaryAppDirectory() => getTemporaryDirectory().then(
   (dir) => join(dir.path, AppInfo.instance.appName),
 );
 
-Future<String> getAppDatabasePath() =>
-    getApplicationSupportDirectory().then((dir) => join(dir.path, 'app.db'));
-
 /// Initializes the logger used by the app with default production values.
 Future<Logs> initializeLogger({
-  String? path,
+  required String path,
   String? postfix,
   List<LogPrinter>? printers,
 }) async {
   Logger.root.level = Level.ALL;
-  path ??= await getTemporaryAppDirectory();
 
-  final logFile = createLogFile(path, postfix);
-  final logs = Logs([
-    ...?printers,
-    FileLogPrinter(logFile),
-    ConsoleLogPrinter(),
-  ]);
+  Logs logs = Logs();
+  File logFile = createLogFile(path, postfix);
 
-  logs.connect(Logger.root.onRecord);
+  printers ??= [];
+  printers.add(logs);
+  printers.add(FileLogPrinter(logFile));
+  printers.add(const ConsoleLogPrinter());
+
+  for (final printer in printers) {
+    printer.connect(Logger.root.onRecord);
+  }
 
   registerFlutterErrorHandler(
     (error, trace) => Logger('Flutter').log(Level.SHOUT, error, error, trace),
@@ -105,7 +104,6 @@ void registerFlutterErrorHandler(
 Future<AppStorage> initializeAppStorage({bool cache = true}) async {
   final String temporaryFiles = await getTemporaryAppDirectory();
   cleanupImageCache();
-  await completeDbImport();
   return AppStorage(
     preferences: await SharedPreferences.getInstance(),
     temporaryFiles: temporaryFiles,
@@ -113,32 +111,15 @@ Future<AppStorage> initializeAppStorage({bool cache = true}) async {
     sqlite: AppDatabase(
       driftDatabase(
         name: 'app',
-        native: const DriftNativeOptions(
+        native: DriftNativeOptions(
           shareAcrossIsolates: true,
-          databasePath: getAppDatabasePath,
+          databasePath: () => getApplicationSupportDirectory().then(
+            (dir) => join(dir.path, 'app.db'),
+          ),
         ),
       ),
     ),
   );
-}
-
-Future<void> completeDbImport() async {
-  final dbPath = await getAppDatabasePath();
-  final newDbPath = '$dbPath.new';
-  final newDbFile = File(newDbPath);
-
-  if (newDbFile.existsSync()) {
-    final oldDbFile = File(dbPath);
-    try {
-      if (oldDbFile.existsSync()) {
-        await oldDbFile.delete();
-      }
-      await newDbFile.rename(dbPath);
-    } on Exception {
-      await newDbFile.copy(dbPath);
-      await newDbFile.delete();
-    }
-  }
 }
 
 /// Workaround for flutter_cache_manager not evicting files properly.

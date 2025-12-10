@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
 
 class CommentController extends PageClientDataController<Comment> {
@@ -54,7 +54,12 @@ class CommentController extends PageClientDataController<Comment> {
   }) async {
     assertOwnsItem(comment);
     replaceComment(
-      comment.copyWith(vote: comment.vote?.withVote(upvote, replace)),
+      comment.copyWith(
+        vote: comment.vote?.withVote(
+          upvote ? VoteStatus.upvoted : VoteStatus.downvoted,
+          replace,
+        ),
+      ),
     );
     try {
       await client.comments.vote(

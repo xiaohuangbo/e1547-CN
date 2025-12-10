@@ -1,5 +1,5 @@
 import 'package:e1547/identity/identity.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class CurrentIdentityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final identity = context.watch<IdentityClient>().identity;
+    final identity = context.watch<IdentityService>().identity;
     return IntrinsicHeight(
       child: Row(
         children: [

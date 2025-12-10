@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostImageTile extends StatelessWidget {
@@ -110,16 +110,16 @@ class PostTileOverlay extends StatelessWidget {
       builder: (context, post) {
         PostController? controller = context.watch<PostController?>();
         if (post.isDeleted) {
-          return const Center(child: Text('deleted'));
+          return const Center(child: Text('已删除'));
         }
         if (post.type == PostType.unsupported) {
-          return const Center(child: Text('unsupported'));
+          return const Center(child: Text('不支持'));
         }
         if (post.file == null) {
-          return const Center(child: Text('unavailable'));
+          return const Center(child: Text('不可用'));
         }
         if (controller?.isDenied(post) ?? false) {
-          return const Center(child: Text('blacklisted'));
+          return const Center(child: Text('已拉黑'));
         }
         return child;
       },
@@ -317,7 +317,7 @@ class PostFeedTile extends StatelessWidget {
                             SnackBar(
                               duration: const Duration(seconds: 1),
                               content: Text(
-                                'Failed to upvote Post #${post.id}',
+                                '点赞帖子 #${post.id} 失败',
                               ),
                             ),
                           );
@@ -342,7 +342,7 @@ class PostFeedTile extends StatelessWidget {
                             SnackBar(
                               duration: const Duration(seconds: 1),
                               content: Text(
-                                'Failed to downvote Post #${post.id}',
+                                '点踩帖子 #${post.id} 失败',
                               ),
                             ),
                           );
@@ -382,12 +382,12 @@ class PostFeedTile extends StatelessWidget {
           if (post.file != null)
             PopupMenuTile(
               value: () => postDownloadingNotification(context, {post}),
-              title: 'Download',
+              title: '下载',
               icon: Icons.file_download,
             ),
           PopupMenuTile(
             value: () => launch(context.read<Client>().withHost(post.link)),
-            title: 'Browse',
+            title: '浏览',
             icon: Icons.open_in_browser,
           ),
         ],

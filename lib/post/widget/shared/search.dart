@@ -1,4 +1,4 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +26,6 @@ class TagSearchFilter extends StatelessWidget {
         labelText: state.filter.name,
         decoration: theme.decoration,
         focusNode: theme.focusNode,
-        autofocus: theme.primary,
         controller: controller,
         submit: (value) => state.onSubmit?.call(value),
       ),

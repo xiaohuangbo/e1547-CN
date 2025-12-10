@@ -52,7 +52,7 @@ class LoggerErrorNotifier extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'A critical error has occured!',
+                      '发生严重错误！',
                       style: style.copyWith(color: textColor),
                     ),
                     Text(
@@ -68,7 +68,7 @@ class LoggerErrorNotifier extends StatelessWidget {
             backgroundColor: background,
             behavior: SnackBarBehavior.floating,
             action: onOpenLogs != null
-                ? SnackBarAction(label: 'LOGS', onPressed: onOpenLogs!)
+                ? SnackBarAction(label: '日志', onPressed: onOpenLogs!)
                 : null,
           ),
         );

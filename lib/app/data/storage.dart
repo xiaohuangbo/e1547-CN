@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:e1547/follow/data/database.dart';
 import 'package:e1547/history/history.dart';
 import 'package:e1547/identity/data/database.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/traits/traits.dart';
 import 'package:notified_preferences/notified_preferences.dart';
 
@@ -23,7 +23,7 @@ class AppDatabase extends $AppDatabase {
   AppDatabase(super.e);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -56,14 +56,6 @@ class AppDatabase extends $AppDatabase {
           TableMigration(
             traitsTable,
             newColumns: [traitsTable.userId, traitsTable.perPage],
-          ),
-        );
-      }
-      if (from < 5) {
-        await m.alterTable(
-          TableMigration(
-            traitsTable,
-            newColumns: [traitsTable.writeHistory, traitsTable.trimHistory],
           ),
         );
       }

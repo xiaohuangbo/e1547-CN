@@ -1,3 +1,4 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/user/user.dart';
@@ -32,7 +33,7 @@ class ArtistDisplay extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         duration: const Duration(seconds: 1),
-                        content: Text('Copied post id #${post.id}'),
+                        content: Text('已复制帖子 ID #${post.id}'),
                       ),
                     );
                   },
@@ -78,7 +79,12 @@ class ArtistName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<String> artists = filterArtists(post.tags['artist'] ?? []);
+    Map<String, List<String>> tags = context
+        .select<PostEditingController?, Map<String, List<String>>>(
+          (value) => value?.value?.tags ?? post.tags,
+        );
+
+    List<String> artists = filterArtists((tags)['artist'] ?? []);
     if (artists.isNotEmpty) {
       return OverflowBar(
         children: [
@@ -111,7 +117,7 @@ class ArtistName extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(8),
         child: Text(
-          'no artist',
+          '没有艺术家',
           style: TextStyle(
             color: Theme.of(context).textTheme.titleSmall!.color,
             fontStyle: FontStyle.italic,

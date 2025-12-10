@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 import 'package:e1547/history/history.dart';
 import 'package:e1547/identity/data/database.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 
 @UseRowClass(History, generateInsertable: true)
 class HistoriesTable extends Table {
@@ -222,6 +222,10 @@ class HistoryRepository extends DatabaseAccessor<GeneratedDatabase>
             ..where((tbl) => _identityQuery(tbl, identity))
             ..where((tbl) => Variable(ids).isNull() | tbl.id.isIn(ids!)))
           .go();
+
+  Future<void> clear({int? identity}) => (delete(historiesTable)
+        ..where((tbl) => _identityQuery(tbl, identity)))
+      .go();
 
   Future<void> trim({
     required int maxAmount,

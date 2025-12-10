@@ -5,132 +5,104 @@
     </td>
     <td width="80%">
       <h1>e1547</h1>
-      <h4>A sophisticated e621 browser</h4>
-      <a href="https://github.com/clynamic/e1547/commits/master"><img src="https://img.shields.io/github/commit-activity/m/clynamic/e1547"></a>
-      <a href="https://github.com/clynamic/e1547/commits/master"><img src="https://img.shields.io/github/last-commit/clynamic/e1547"></a>
-      <a href="blob/master/LICENSE"><img src="https://img.shields.io/github/license/clynamic/e1547"></a>
+      <h4>一个精致的 e621 浏览器中文汉化版</h4>
+      <a href="https://github.com/xiaohuangbo/e1547-CN/commits/master"><img src="https://badgen.net/github/commits/xiaohuangbo/e1547-CN"></a>
+      <a href="https://github.com/xiaohuangbo/e1547-CN/commits/master"><img src="https://badgen.net/github/last-commit/xiaohuangbo/e1547-CN"></a>
+      <a href="blob/master/LICENSE"><img src="https://img.shields.io/github/license/xiaohuangbo/e1547-CN"></a>
       <a href="https://discord.gg/MRwKGqfmUz"><img src="https://img.shields.io/discord/763321712766877727.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2"></a>
-      <a href="https://e1547.clynamic.net"><img src="https://img.shields.io/badge/website-clynamic-FDB245"></a>
-      <a href="https://f-droid.org/packages/net.e1547"><img src="https://img.shields.io/f-droid/v/net.e1547"></a>
-      <a href="https://play.google.com/store/apps/details?id=net.e1547"><img src="https://img.shields.io/endpoint?color=green&logo=google-play&logoColor=green&url=https%3A%2F%2Fplay.cuzi.workers.dev%2Fplay%3Fi%3Dnet.e1547%26gl%3DUS%26hl%3Den%26l%3DGoogle%2520Play%26m%3D%24version"></a>
-      <a href="https://github.com/clynamic/e1547/releases/latest"><img src="https://img.shields.io/github/downloads/clynamic/e1547/total"></a>
+      <a href="https://github.com/xiaohuangbo/e1547-CN/releases/latest"><img src="https://img.shields.io/github/downloads/xiaohuangbo/e1547-CN/total"></a>
     </td>
   </tr>
 </table>
 
-## Features
+[简体中文版](https://github.com/xiaohuangbo/e1547-CN/blob/master/README.md "中文版")
+[English](https://github.com/clragon/e1547/blob/master/README.md "English")
+## 特性
 
-- Crossplatform (Android, iOS)
-- Browse posts and pools
-- Edit posts
-- Comment on posts
-- Download Images
-- Favorite, Up and down vote posts
-- Follow tags with notifications
-- Local blacklist
-- DText parsing
-- Video support
-- Multiple logins
-- Multiple App Themes
+- 跨平台 (Android,~~iOS~~)
+- 浏览帖子和图集
+- 编辑帖子
+- 评论帖子
+- 下载图片
+- 收藏、赞成和反对帖子
+- 关注标签并接收通知
+- 本地黑名单
+- DText 解析
+- 视频支持
+- 多账户登录
+- 多种应用主题
 
-## Screenshots
+## 截图
 
 <p align="center">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_en-US.png" width="30%">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_en-US.png" width="30%">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_en-US.png" width="30%">
+  <img src="assets/screenshots/promo.gif">
 </p>
 
-## Download
 
-APK and IPA files can be found over at
-the [releases](https://github.com/clynamic/e1547/releases/latest).
 
-You can also find the app on the Google PlayStore:
+## 下载
 
-<a href="https://play.google.com/store/apps/details?id=net.e1547">
-    <img src="https://github.com/steverichey/google-play-badge-svg/blob/266d2b2df26f10d3c00b8129a0bd9f6da6b19f00/img/en_get.svg" width="30%"/>
-</a>
+APK 文件和共存版可以在 [releases](https://github.com/xiaohuangbo/e1547-CN/releases/latest) 页面找到。
 
-### Certificate Fingerprints
 
-To verify the authenticity of downloaded APK files, you can check the signing certificate fingerprints:
 
-- **SHA1:** `8B:4B:8C:D7:FF:D6:04:DB:36:69:1B:D2:1A:BD:0E:54:0A:95:C8:28`
-- **SHA256:** `8D:32:4E:43:4B:97:5A:A3:38:A7:A9:C7:F3:07:7E:1F:C0:DB:F1:30:3E:C5:D9:B9:63:4F:E8:3E:9D:DB:63:80`
 
-via a tool like [AppVerifier](https://github.com/soupslurpr/AppVerifier).
 
-## Installation
+## 安装
 
-### Installing on Android
+### 在 Android 上安装
 
-- Install through the [Google PlayStore](https://play.google.com/store/apps/details?id=net.e1547)
+1. 下载 [最新的 APK](https://github.com/xiaohuangbo/e1547-CN/releases/latest)
+2. 在你的 Android 设备上使用文件管理器打开它
+3. 点击安装
 
-or
+### ~~在 iOS 上安装~~
 
-1. Download the [latest APK](https://github.com/clynamic/e1547/releases/latest)
-2. Open it on your Android device with a file manager
-3. Click install
+TODO:
+- [] 编写并编译汉化过的.ipa版本
 
-#### Which APK should I download?
+## 编译
 
-- New phone (2019+) -> `e1547-arm64.apk`
-- Old phone -> `e1547-armv7.apk`
-- Doesn't work? -> `e1547-universal.apk`
+你可以从源代码编译该应用：
 
-### Installing on iOS
+1. 安装 [Flutter](https://flutter.dev/docs/get-started/install)
+2. 克隆此 github 仓库
+3. 运行 `flutter build <file>`，其中 `<file>` 是 `apk` 或 `ipa`
 
-The app is not available in the AppStore.
+## 状态
 
-- Follow the instructions on [Sideloadly](https://sideloadly.io/)
+该应用目前正在开发中吗？
 
-or
+<a href="https://github.com/xiaohuangbo/e1547-CN/commits/master"><img src="https://badgen.net/github/last-commit/xiaohuangbo/e1547-CN"></a>
 
-- Jailbreak your device and install the [IPA](https://github.com/clragon/clynamic/releases/latest) directly
-
-## Compilation
-
-You can compile the app from source:
-
-1. Install [Flutter](https://flutter.dev/docs/get-started/install)
-2. Clone this github repository
-3. Run `flutter build <file>` where `<file>` is either `apk` or `ipa`
-
-## Status
-
-Is the app currently under development?
-
-The project is currently under limited support. I no longer have as much time to develop this project as I used to.  
-If you would like to help out, drop by in [#167](https://github.com/clynamic/e1547/issues/167) or shoot us a message!
-
-<a href="https://github.com/clynamic/e1547/commits/master"><img src="https://img.shields.io/github/last-commit/clynamic/e1547"></a>
-
-## Community
-
-Places to talk about this thing.
-
-Discord:
+如果你想参与开发决策，可以加入 discord：
 
 [![Discord](https://img.shields.io/discord/763321712766877727.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/MRwKGqfmUz)
 
-Forum thread:
+你也可以在论坛帖子中发帖：
 
-[![Forum](https://img.shields.io/badge/e621-forum-00549f)](https://e926.net/forum_topics/25854)
+[![Forum](https://badgen.net/badge/e621/forum/00549f?icon=https://e621.net/safari-pinned-tab.svg&labelColor=1F3C67)](https://e926.net/forum_topics/25854)
 
-Github issues:
+如果你发现任何问题，请随时在 github 上提出 issue：
 
-[![GitHub issues](https://img.shields.io/github/issues/clynamic/e1547)](https://github.com/clynamic/e1547/issues)
+[![GitHub issues](https://img.shields.io/github/issues/xiaohuangbo/e1547-CN)](https://github.com/xiaohuangbo/e1547-CN/issues)
 
-## Credit
+## 鸣谢
 
 [<img src="https://github.com/clragon.png" width="100px;"/>](https://github.com/clragon)
 
-I am [clragon](https://github.com/clragon)! I wrote (most of) the code for this app.
+我是 [clragon](https://github.com/clragon)！我编写了这个应用的代码。
 
-This is a passion project. If you enjoy using it, I am glad you do!
+[<img src="https://github.com/xiaohuangbo.png" width="100px;"/>](https://github.com/xiaohuangbo)
 
-#### Additional thanks to
+这是一个充满激情的项目！
+如果你喜欢这个应用，可以通过给我买杯咖啡来支持我：
 
-- [Miyoyo](https://github.com/miyoyo) for performance optimisations.
-- [Perlatus](https://github.com/perlatus) for writing the original code base.
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Q5Q22W6FW)
+
+当然也可以支持一下本软件的汉化者小黄泊：https://x.com/Timfurry233
+#### 特别鸣谢
+
+- [Miyoyo](https://github.com/miyoyo) 的性能优化。
+- [Perlatus](https://github.com/perlatus) 编写了最初的代码库。
+- [xiaohuangbo](https://github.com/xiaohuangbo)进行了中文汉化

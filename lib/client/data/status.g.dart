@@ -6,18 +6,17 @@ part of 'status.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_ClientSyncStatus _$ClientSyncStatusFromJson(Map<String, dynamic> json) =>
-    _ClientSyncStatus(
-      denyList: $enumDecodeNullable(
-        _$DenyListSyncStatusEnumMap,
-        json['deny_list'],
-      ),
-    );
+_$ClientSyncStatusImpl _$$ClientSyncStatusImplFromJson(
+  Map<String, dynamic> json,
+) => _$ClientSyncStatusImpl(
+  denyList: $enumDecodeNullable(_$DenyListSyncStatusEnumMap, json['deny_list']),
+);
 
-Map<String, dynamic> _$ClientSyncStatusToJson(_ClientSyncStatus instance) =>
-    <String, dynamic>{
-      'deny_list': _$DenyListSyncStatusEnumMap[instance.denyList],
-    };
+Map<String, dynamic> _$$ClientSyncStatusImplToJson(
+  _$ClientSyncStatusImpl instance,
+) => <String, dynamic>{
+  'deny_list': _$DenyListSyncStatusEnumMap[instance.denyList],
+};
 
 const _$DenyListSyncStatusEnumMap = {
   DenyListSyncStatus.idle: 'idle',

@@ -1,9 +1,8 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +46,7 @@ class _PostsSearchPageState extends State<PostsSearchPage> {
               follow = null;
             }
             if (follow != null) {
-              await client.followServer.syncWith(
+              await client.follows.syncWith(
                 id: follow!.id,
                 posts: controller.items,
                 pool: pool,
@@ -91,21 +90,17 @@ class _PostsSearchPageState extends State<PostsSearchPage> {
             if (!mounted) return;
             if (mapEquals(lastQuery, controller.query)) return;
             lastQuery = controller.query;
-            final client = context.read<Client>();
+            Client client = context.read<Client>();
             await updatePool();
             await controller.waitForNextPage();
             if (controller.error != null) return;
             await updateFollow();
             if (pool != null) {
-              client.histories.add(
-                PoolHistoryRequest.item(pool: pool!, posts: controller.items),
-              );
+              client.histories.addPool(pool: pool!, posts: controller.items);
             } else {
-              client.histories.add(
-                PostHistoryRequest.search(
-                  query: controller.query,
-                  posts: controller.items,
-                ),
+              client.histories.addPostSearch(
+                query: controller.query,
+                posts: controller.items,
               );
             }
           }
@@ -118,7 +113,7 @@ class _PostsSearchPageState extends State<PostsSearchPage> {
               return tagToName(pool!.name);
             }
             String tags = (controller.query['tags'] ?? '').trim();
-            if (tags.isEmpty) return 'Search';
+            if (tags.isEmpty) return '搜索';
             return tagToName(tags);
           }
 
@@ -140,6 +135,7 @@ class _PostsSearchPageState extends State<PostsSearchPage> {
                         (controller.query['tags']?.trim().isNotEmpty ?? false),
                     child: IconButton(
                       icon: const Icon(Icons.info_outline),
+                      tooltip: '信息',
                       onPressed: pool != null
                           ? () => showPoolPrompt(context: context, pool: pool!)
                           : () => showTagSearchPrompt(

@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/reply/reply.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:flutter/material.dart';
 
@@ -22,7 +22,7 @@ class _TopicLoadingPageState extends State<TopicLoadingPage> {
     return FutureLoadingPage<Topic>(
       future: topic,
       builder: (context, value) =>
-          TopicRepliesPage(topic: value, orderByOldest: widget.orderByOldest),
+          RepliesPage(topic: value, orderByOldest: widget.orderByOldest),
       title: Text('Topic #${widget.id}'),
       onError: const Text('Failed to load topic'),
       onEmpty: const Text('Topic not found'),

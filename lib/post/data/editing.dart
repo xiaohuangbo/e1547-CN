@@ -1,38 +1,67 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/material.dart';
 
-part 'editing.freezed.dart';
+class PostEdit {
+  PostEdit({
+    required this.post,
+    required this.editReason,
+    required this.rating,
+    required this.description,
+    required this.parentId,
+    required this.sources,
+    required this.tags,
+  });
 
-@freezed
-abstract class PostEdit with _$PostEdit {
-  const factory PostEdit({
-    required Post post,
+  factory PostEdit.fromPost(Post post) {
+    return PostEdit(
+      post: post,
+      rating: post.rating,
+      description: post.description,
+      parentId: post.relationships.parentId,
+      sources: post.sources,
+      tags: post.tags.map((key, value) => MapEntry(key, List.from(value))),
+      editReason: null,
+    );
+  }
+
+  final Post post;
+  final String? editReason;
+  final Rating rating;
+  final String description;
+  final int? parentId;
+  final List<String> sources;
+  final Map<String, List<String>> tags;
+
+  PostEdit copyWith({
+    Post? post,
     String? editReason,
-    required Rating rating,
-    required String description,
+    Rating? rating,
+    String? description,
     int? parentId,
-    required List<String> sources,
-    required List<String> tags,
-  }) = _PostEdit;
-
-  const PostEdit._();
-
-  factory PostEdit.fromPost(Post post) => PostEdit(
-    post: post,
-    rating: post.rating,
-    description: post.description,
-    parentId: post.relationships.parentId,
-    sources: post.sources,
-    tags: post.tags.values.expand((tagList) => tagList).toList(),
+    List<String>? sources,
+    Map<String, List<String>>? tags,
+  }) => PostEdit(
+    post: post ?? this.post,
+    editReason: editReason ?? this.editReason,
+    rating: rating ?? this.rating,
+    description: description ?? this.description,
+    parentId: parentId ?? this.parentId,
+    sources: sources ?? this.sources,
+    tags: tags ?? this.tags,
   );
 
   Map<String, String?>? toForm() {
     Map<String, String?> body = {};
 
-    List<String> oldTags = post.tags.values
-        .expand((category) => category)
-        .toList();
-    List<String> newTags = tags;
+    List<String> extractTags(Map<String, List<String>> tags) {
+      return tags.values.reduce(
+        (value, element) => List.from(value)..addAll(element),
+      );
+    }
+
+    List<String> oldTags = extractTags(post.tags);
+    List<String> newTags = extractTags(tags);
     List<String> removedTags = oldTags
         .where((element) => !newTags.contains(element))
         .toList();
@@ -60,7 +89,7 @@ abstract class PostEdit with _$PostEdit {
     sourceDiff.addAll(addedSource);
 
     if (sourceDiff.isNotEmpty) {
-      body.addEntries([MapEntry('post[source_diff]', sourceDiff.join('\n'))]);
+      body.addEntries([MapEntry('post[source_diff]', sourceDiff.join(' '))]);
     }
 
     if (post.relationships.parentId != parentId) {
@@ -83,5 +112,62 @@ abstract class PostEdit with _$PostEdit {
     } else {
       return null;
     }
+  }
+}
+
+class PostEditingController extends PromptActionController
+    implements ValueNotifier<PostEdit?> {
+  PostEditingController({required Post post}) : _post = post;
+
+  Post _post;
+
+  Post get post => _post;
+
+  set post(Post value) {
+    if (value == _post) return;
+    _post = value;
+    if (editing) {
+      startEditing();
+    }
+  }
+
+  PostEdit? _value;
+
+  @override
+  PostEdit? get value => _value;
+
+  @override
+  set value(PostEdit? value) {
+    _value = value;
+    notifyListeners();
+  }
+
+  bool get editing => value != null;
+
+  bool get canEdit => editing && !loading;
+
+  bool _loading = false;
+
+  bool get loading => _loading;
+
+  @override
+  void reset() {
+    super.reset();
+    if (_loading) {
+      stopEditing();
+    }
+  }
+
+  void startEditing() => value = PostEdit.fromPost(post);
+
+  void stopEditing() {
+    _loading = false;
+    value = null;
+    close();
+  }
+
+  void setLoading(bool value) {
+    _loading = value;
+    notifyListeners();
   }
 }

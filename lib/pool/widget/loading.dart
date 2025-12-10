@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PoolLoadingPage extends StatefulWidget {
@@ -22,9 +22,9 @@ class _PoolLoadingPageState extends State<PoolLoadingPage> {
       future: pool,
       builder: (context, value) =>
           PoolPage(pool: value, orderByOldest: widget.orderByOldest),
-      title: Text('Pool #${widget.id}'),
-      onError: const Text('Failed to load pool'),
-      onEmpty: const Text('Pool not found'),
+      title: Text('池 #${widget.id}'),
+      onError: const Text('加载池失败'),
+      onEmpty: const Text('未找到池'),
     );
   }
 }

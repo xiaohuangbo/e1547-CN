@@ -4,45 +4,28 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:e1547/logs/logs.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rxdart/rxdart.dart';
 
 export 'package:logging/logging.dart';
 
 abstract class LogPrinter {
-  LogPrinter();
-
-  final List<StreamSubscription<LogRecord>> _subscriptions = [];
+  const LogPrinter();
 
   /// Called when a log record is added.
   void onLog(LogRecord record);
 
   /// Called when the printer is no longer needed.
-  void close() {
-    for (final subscription in _subscriptions) {
-      subscription.cancel();
-    }
-  }
+  void close() {}
 
   /// Connects this printer to a stream of log records.
-  void connect(Stream<LogRecord> stream) {
-    late StreamSubscription<LogRecord> subscription;
-    subscription = stream.listen(
-      onLog,
-      onDone: () => _subscriptions.remove(subscription),
-    );
-    _subscriptions.add(subscription);
-  }
+  void connect(Stream<LogRecord> stream) => stream.listen(onLog, onDone: close);
 }
 
 /// Holds application logs
 class Logs extends LogPrinter {
-  Logs([this.printers = const []]);
-
   /// All log records that have been emitted
   List<LogRecord> get records => List.unmodifiable(_records);
 
   final List<LogRecord> _records = [];
-  final List<LogPrinter> printers;
 
   final StreamController<List<LogRecord>> _stream =
       StreamController.broadcast();
@@ -69,27 +52,15 @@ class Logs extends LogPrinter {
     return stream.distinct(const DeepCollectionEquality().equals);
   }
 
-  static const int _maxRecords = 500;
-
-  void _truncate() {
-    if (_records.length > _maxRecords) {
-      _records.removeRange(0, _records.length - _maxRecords);
-    }
-  }
-
   @override
   void onLog(LogRecord record) {
     _records.add(record);
     _stream.add(records);
-    _truncate();
   }
 
   @override
-  void connect(Stream<LogRecord> stream) {
-    super.connect(stream);
-    for (final printer in printers) {
-      printer.connect(stream);
-    }
+  void close() {
+    _stream.close();
   }
 }
 
@@ -99,34 +70,25 @@ class FileLogPrinter extends LogPrinter {
   }
 
   final File file;
-  final Duration flushInterval = const Duration(seconds: 5);
-  final StreamController<LogRecord> _stream = StreamController.broadcast();
-  IOSink? _sink;
+  final StreamController<LogRecord> _stream = StreamController();
 
   void _write() async {
-    _sink = file.openWrite(mode: FileMode.append);
-    await for (final batch
-        in _stream.stream
-            .bufferTime(flushInterval)
-            .where((e) => e.isNotEmpty)) {
-      for (final r in batch) {
-        _sink!.writeln(r.toFullString());
-      }
-      await _sink!.flush();
+    IOSink sink = file.openWrite(mode: FileMode.append);
+    await for (final record in _stream.stream) {
+      sink.writeln(record.toFullString());
     }
-    await _sink?.flush();
-    await _sink?.close();
+    sink.close();
   }
 
   @override
   void onLog(LogRecord record) => _stream.add(record);
 
   @override
-  Future<void> close() => _stream.close();
+  void close() => _stream.close();
 }
 
 class ConsoleLogPrinter extends LogPrinter {
-  ConsoleLogPrinter();
+  const ConsoleLogPrinter();
 
   String getColor(Level level) {
     switch (level) {

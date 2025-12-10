@@ -1,10 +1,8 @@
 export 'actions.dart';
-export 'client.dart';
 export 'controller.dart';
 export 'database.dart';
 export 'database.drift.dart';
 export 'history.dart';
 export 'query.dart';
-export 'requests.dart';
 export 'search.dart';
-export 'server.dart';
+export 'service.dart';

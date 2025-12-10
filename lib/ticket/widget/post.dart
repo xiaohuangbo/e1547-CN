@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
@@ -98,7 +98,7 @@ class _PostReportScreenState extends State<PostReportScreen> {
         messenger.showSnackBar(
           SnackBar(
             duration: const Duration(seconds: 1),
-            content: Text('Reported post #${widget.post.id}'),
+            content: Text('已举报帖子 #${widget.post.id}'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -106,7 +106,7 @@ class _PostReportScreenState extends State<PostReportScreen> {
         messenger.showSnackBar(
           SnackBar(
             duration: const Duration(seconds: 1),
-            content: Text('Failed to report post #${widget.post.id}'),
+            content: Text('举报帖子 #${widget.post.id} 失败'),
           ),
         );
       }
@@ -121,7 +121,7 @@ class _PostReportScreenState extends State<PostReportScreen> {
         child: Scaffold(
           appBar: DefaultAppBar(
             elevation: 0,
-            title: Text('Post #${widget.post.id}'),
+            title: Text('帖子 #${widget.post.id}'),
             leading: const CloseButton(),
           ),
           floatingActionButton: Builder(
@@ -144,7 +144,7 @@ class _PostReportScreenState extends State<PostReportScreen> {
                     isLoading: isLoading,
                   ),
                   ReportFormHeader(
-                    title: const Text('Report'),
+                    title: const Text('举报'),
                     icon: IconButton(
                       onPressed: () => showTagSearchPrompt(
                         context: context,

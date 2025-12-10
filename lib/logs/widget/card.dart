@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:recase/recase.dart';
 
@@ -62,7 +62,7 @@ class LogStringBody extends StatelessWidget {
             key: ValueKey(Object.hash(item, content)),
             color: item.level.color,
             title: Text(title),
-            content: Text(short.trim().isNotEmpty ? short : 'No content'),
+            content: Text(short.trim().isNotEmpty ? short : '无内容'),
             fullContent: short != content ? Text(content) : null,
           ),
         ),

@@ -1,4 +1,3 @@
 export 'actions.dart';
-export 'client.dart';
-export 'json.dart';
+export 'service.dart';
 export 'wiki.dart';

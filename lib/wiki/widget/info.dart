@@ -1,4 +1,4 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -26,7 +26,7 @@ class WikiInfo extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('id'),
+              const Text('ID'),
               InkWell(
                 child: Text('#${wiki.id}'),
                 onLongPress: () async {
@@ -38,7 +38,7 @@ class WikiInfo extends StatelessWidget {
                   messenger.showSnackBar(
                     SnackBar(
                       duration: const Duration(seconds: 1),
-                      content: Text('Copied wiki id #${wiki.id}'),
+                      content: Text('已复制百科 ID #${wiki.id}'),
                     ),
                   );
                 },
@@ -46,19 +46,19 @@ class WikiInfo extends StatelessWidget {
             ],
           ),
           if (wiki.otherNames case final otherNames?)
-            textInfoRow('alias', otherNames.join(', ')),
+            textInfoRow('别名', otherNames.join(', ')),
           textInfoRow(
-            'created',
+            '创建于',
             DateFormatting.dateTime(wiki.createdAt.toLocal()),
           ),
           textInfoRow(
-            'updated',
+            '更新于',
             DateFormatting.dateTime(
               (wiki.updatedAt ?? wiki.createdAt).toLocal(),
             ),
           ),
           if (wiki.isLocked case final isLocked?)
-            textInfoRow('locked', isLocked ? 'yes' : 'no'),
+            textInfoRow('已锁定', isLocked ? '是' : '否'),
         ],
       ),
     );

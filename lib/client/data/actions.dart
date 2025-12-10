@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/identity/identity.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
 
 class NoUserLoginException implements Exception {
@@ -21,9 +21,9 @@ Future<void> guardWithLogin({
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 3),
-        content: Text(error ?? 'You must be logged in to perform this action.'),
+        content: Text(error ?? '您必须登录才能执行此操作。'),
         action: SnackBarAction(
-          label: 'Choose identity',
+          label: '选择身份',
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const IdentitiesPage()),
           ),
@@ -40,10 +40,10 @@ String? findFavicon(String html) {
     caseSensitive: false,
   );
   final linkRegExp = RegExp(
-    r'<link\s+[^>]*?rel=".*?icon.*?"[^>]*?>',
+    r'<link\\s+[^>]*?rel=".*?icon.*?".*?>',
     caseSensitive: false,
   );
-  final sizeRegExp = RegExp(r'(\d+)x\d+');
+  final sizeRegExp = RegExp(r'(\\d+)x\\d+');
 
   final headMatch = headRegExp.firstMatch(html);
   if (headMatch == null) return null;

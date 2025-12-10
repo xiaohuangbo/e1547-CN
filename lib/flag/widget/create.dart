@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:e1547/client/client.dart';
 import 'package:e1547/flag/flag.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +56,7 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
         messenger.showSnackBar(
           SnackBar(
             duration: const Duration(seconds: 1),
-            content: Text('Flagged post #${widget.post.id}'),
+            content: Text('已标记帖子 #${widget.post.id}'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -64,7 +64,7 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
         messenger.showSnackBar(
           SnackBar(
             duration: const Duration(seconds: 1),
-            content: Text('Failed to flag post #${widget.post.id}'),
+            content: Text('标记帖子 #${widget.post.id} 失败'),
           ),
         );
       }
@@ -81,7 +81,7 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
         child: Scaffold(
           appBar: DefaultAppBar(
             elevation: 0,
-            title: Text('Post #${widget.post.id}'),
+            title: Text('帖子 #${widget.post.id}'),
             leading: const CloseButton(),
           ),
           floatingActionButton: Builder(
@@ -104,7 +104,7 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
                     isLoading: isLoading,
                   ),
                   ReportFormHeader(
-                    title: const Text('Flag'),
+                    title: const Text('标记'),
                     icon: IconButton(
                       onPressed: () => showTagSearchPrompt(
                         context: context,
@@ -130,7 +130,7 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
                         enabled: !isLoading,
                         controller: parentController,
                         decoration: const InputDecoration(
-                          labelText: 'Parent ID',
+                          labelText: '父级 ID',
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.number,
@@ -139,10 +139,10 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
                         ],
                         validator: (value) {
                           if (value!.trim().isEmpty) {
-                            return 'Parent ID cannot be empty';
+                            return '父级 ID 不能为空';
                           }
                           if (int.tryParse(value) == null) {
-                            return 'Parent ID must be a number';
+                            return '父级 ID 必须是数字';
                           }
                           return null;
                         },

@@ -9,12 +9,6 @@
     },
     "donations": [
       {
-        "amount": 5.0,
-        "currency": "USD",
-        "date": "2024-07-23T10:03:00",
-        "platform": "ko-fi"
-      },
-      {
         "amount": 6.0,
         "currency": "USD",
         "date": "2024-02-13T00:00:00",
@@ -323,6 +317,7 @@
   },
   {
     "name": "Liuk",
+    "avatar": "https://github.com/FuzzyLiuk.png",
     "handles": {
       "ko-fi": "Liuk",
       "github": "FuzzyLiuk",
@@ -403,42 +398,6 @@
       {
         "amount": 25.0,
         "currency": "USD",
-        "date": "2025-11-24T00:12:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 25.0,
-        "currency": "USD",
-        "date": "2025-10-24T01:02:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 25.0,
-        "currency": "USD",
-        "date": "2025-09-24T01:17:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 25.0,
-        "currency": "USD",
-        "date": "2025-08-24T00:45:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 25.0,
-        "currency": "USD",
-        "date": "2025-07-24T00:52:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 25.0,
-        "currency": "USD",
-        "date": "2025-06-24T00:50:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 25.0,
-        "currency": "USD",
         "date": "2025-05-24T19:55:00",
         "platform": "ko-fi"
       }
@@ -454,40 +413,6 @@
         "amount": 10.0,
         "currency": "USD",
         "date": "2025-06-02T20:48:00",
-        "platform": "ko-fi"
-      },
-      {
-        "amount": 10.0,
-        "currency": "USD",
-        "date": "2025-09-10T22:24:00",
-        "platform": "ko-fi"
-      }
-    ]
-  },
-  {
-    "name": "THED4NIEL",
-    "handles": {
-      "ko-fi": "THED4NIEL"
-    },
-    "donations": [
-      {
-        "amount": 50.0,
-        "currency": "USD",
-        "date": "2025-07-30T12:48:00",
-        "platform": "ko-fi"
-      }
-    ]
-  },
-  {
-    "name": "IwVeElElK",
-    "handles": {
-      "ko-fi": "IwVeElElK"
-    },
-    "donations": [
-      {
-        "amount": 5.0,
-        "currency": "USD",
-        "date": "2025-10-08T13:40:00",
         "platform": "ko-fi"
       }
     ]

@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:e1547/client/client.dart';
 import 'package:e1547/identity/identity.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_cookie_manager_plus/webview_cookie_manager_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -25,10 +25,12 @@ class _CookieCapturePageState extends State<CookieCapturePage> {
     ..loadRequest(Uri.https(context.read<Client>().host));
 
   Future<void> setCookies(BuildContext context) async {
-    IdentityClient client = context.read<IdentityClient>();
+    IdentityService service = context.read<IdentityService>();
     WebviewCookieManager cookieManager = WebviewCookieManager();
-    List<Cookie> cookies = await cookieManager.getCookies(client.identity.host);
-    Map<String, String> headers = client.identity.headers ?? {};
+    List<Cookie> cookies = await cookieManager.getCookies(
+      service.identity.host,
+    );
+    Map<String, String> headers = service.identity.headers ?? {};
     String? cookieHeader = headers['Cookie'];
     if (cookieHeader != null) {
       cookieHeader.split('; ').forEach((String cookie) {
@@ -47,7 +49,7 @@ class _CookieCapturePageState extends State<CookieCapturePage> {
     }
     String newCookieHeader = cookieList.join('; ');
     headers[HttpHeaders.cookieHeader] = newCookieHeader;
-    client.replace(client.identity.copyWith(headers: headers));
+    service.replace(service.identity.copyWith(headers: headers));
   }
 
   @override

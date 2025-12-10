@@ -1,5 +1,5 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -8,9 +8,9 @@ class DenyListEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = context.read<Client>();
+    Client client = context.read<Client>();
     return TextEditor(
-      title: const Text('Blacklist'),
+      title: const Text('黑名单'),
       actions: [
         IconButton(
           icon: const Icon(Icons.help_outline),
@@ -28,7 +28,7 @@ class DenyListEditor extends StatelessWidget {
             traits: client.traits.value.copyWith(denylist: tags),
           );
         } on ClientException {
-          return 'Failed to update blacklist!';
+          return '更新黑名单失败！';
         }
         return null;
       },

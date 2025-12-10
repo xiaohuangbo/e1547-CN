@@ -1,7 +1,7 @@
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -15,7 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with RouterDrawerEntryWidget {
   @override
   Widget build(BuildContext context) {
-    final client = context.watch<Client>();
+    Client client = context.watch<Client>();
     return PostProvider(
       query: {'tags': client.traits.value.homeTags},
       child: Consumer<PostController>(

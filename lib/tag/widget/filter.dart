@@ -1,4 +1,4 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
@@ -382,7 +382,7 @@ class ChoiceFilter extends StatelessWidget {
     }
     return DropdownButtonFormField<String>(
       key: Key('FilterList/${state.filter.tag}'),
-      initialValue: value,
+      value: value,
       decoration: theme.decoration.copyWith(labelText: state.filter.name),
       icon: state.filter.icon,
       isExpanded: true,

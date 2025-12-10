@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:filesize/filesize.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +16,7 @@ class FileDisplay extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: Text('File', style: TextStyle(fontSize: 16)),
+          child: Text('文件', style: TextStyle(fontSize: 16)),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),

@@ -1,10 +1,9 @@
 export 'actions.dart';
-export 'client.dart';
 export 'controller.dart';
 export 'download.dart';
 export 'editing.dart';
 export 'filter.dart';
 export 'image.dart';
-export 'json.dart';
 export 'post.dart';
 export 'searches.dart';
+export 'service.dart';

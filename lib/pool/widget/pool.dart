@@ -1,7 +1,7 @@
 import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -30,11 +30,9 @@ class _PoolPageState extends State<PoolPage> {
         builder: (context, controller, child) => ControllerHistoryConnector(
           controller: controller,
           addToHistory: (context, client, data) {
-            client.histories.add(
-              PoolHistoryRequest.item(
-                pool: widget.pool,
-                posts: controller.items,
-              ),
+            client.histories.addPool(
+              pool: widget.pool,
+              posts: controller.items,
             );
           },
           child: PostsPage(
@@ -45,7 +43,7 @@ class _PoolPageState extends State<PoolPage> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.info_outline),
-                  tooltip: 'Info',
+                  tooltip: '信息',
                   onPressed: () =>
                       showPoolPrompt(context: context, pool: widget.pool),
                 ),
@@ -94,8 +92,8 @@ class PoolOrderSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile(
       secondary: const Icon(Icons.sort),
-      title: const Text('Pool order'),
-      subtitle: Text(oldestFirst ? 'oldest first' : 'newest first'),
+      title: const Text('池顺序'),
+      subtitle: Text(oldestFirst ? '最旧的在前' : '最新的在前'),
       value: oldestFirst,
       onChanged: onChange,
     );
@@ -116,8 +114,8 @@ class PoolReaderSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile(
       secondary: const Icon(Icons.auto_stories),
-      title: const Text('Pool reader mode'),
-      subtitle: Text(readerMode ? 'large images' : 'normal grid'),
+      title: const Text('池阅读器模式'),
+      subtitle: Text(readerMode ? '大图' : '普通网格'),
       value: readerMode,
       onChanged: onChange,
     );

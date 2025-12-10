@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 import 'package:intl/intl.dart';
@@ -10,55 +10,19 @@ class HistoryEnableTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = context.watch<Client>();
+    Client client = context.watch<Client>();
     return SubStream<int>(
-      create: () => client.histories.count().streamed,
+      create: () => client.histories.count().asStream(),
       keys: [client],
-      builder: (context, countSnapshot) => ValueListenableBuilder(
-        valueListenable: client.traits,
-        builder: (context, traits, child) => SwitchListTile(
-          title: const Text('Enabled'),
-          subtitle: Text('${countSnapshot.data ?? 0} pages visited'),
+      builder: (context, countSnapshot) => SubStream<bool>(
+        initialData: client.histories.enabled,
+        create: () => client.histories.enabledStream,
+        builder: (context, enabledSnapshot) => SwitchListTile(
+          title: const Text('已启用'),
+          subtitle: Text('${countSnapshot.data ?? 0} 个页面已访问'),
           secondary: const Icon(Icons.history),
-          value: traits.writeHistory ?? true,
-          onChanged: (value) => client.traits.value = client.traits.value
-              .copyWith(writeHistory: value),
-        ),
-      ),
-    );
-  }
-}
-
-class HistoryClearTile extends StatelessWidget {
-  const HistoryClearTile({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final client = context.watch<Client>();
-    return ListTile(
-      title: const Text('Clear history'),
-      subtitle: const Text('Delete all entries'),
-      leading: const Icon(Icons.clear_all),
-      onTap: () => showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Clear history?'),
-          content: const Text(
-            'All history entries will be permanently deleted. This action cannot be undone.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                client.histories.removeAll(null);
-              },
-              child: const Text('Clear'),
-            ),
-          ],
+          value: enabledSnapshot.data!,
+          onChanged: (value) => client.histories.enabled = value,
         ),
       ),
     );
@@ -68,61 +32,51 @@ class HistoryClearTile extends StatelessWidget {
 class HistoryLimitTile extends StatelessWidget {
   const HistoryLimitTile({super.key});
 
-  static const int trimAmount = 5000;
-  static const Duration trimAge = Duration(days: 30 * 3);
-
   @override
   Widget build(BuildContext context) {
-    final client = context.watch<Client>();
-    return ValueListenableBuilder(
-      valueListenable: client.traits,
-      builder: (context, traits, child) => SwitchListTile(
-        value: traits.trimHistory ?? false,
+    Client client = context.watch<Client>();
+    return SubStream<bool>(
+      create: () => client.histories.trimmingStream,
+      initialData: client.histories.trimming,
+      builder: (context, snapshot) => SwitchListTile(
+        value: snapshot.data!,
         onChanged: (value) {
           if (value) {
             showDialog(
               context: context,
               builder: (context) => AlertDialog(
-                title: const Text('History limit'),
+                title: const Text('历史记录限制'),
                 content: Text(
-                  'Enabling history limit means all history entries beyond ${NumberFormat.compact().format(trimAmount)} '
-                  'and all entries older than ${trimAge.inDays ~/ 30} months are automatically deleted.',
+                  '启用历史记录限制意味着将自动删除超过 ${NumberFormat.compact().format(client.histories.trimAmount)} 条的所有历史记录条目以及所有早于 ${client.histories.trimAge.inDays ~/ 30} 个月的条目。',
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(context).maybePop(),
-                    child: const Text('CANCEL'),
+                    child: const Text('取消'),
                   ),
                   TextButton(
                     onPressed: () {
-                      client.traits.value = client.traits.value.copyWith(
-                        trimHistory: value,
-                      );
+                      client.histories.trimming = value;
                       Navigator.of(context).maybePop();
                     },
-                    child: const Text('OK'),
+                    child: const Text('确定'),
                   ),
                 ],
               ),
             );
           } else {
-            client.traits.value = client.traits.value.copyWith(
-              trimHistory: value,
-            );
+            client.histories.trimming = value;
           }
         },
         secondary: Icon(
-          (traits.trimHistory ?? false)
-              ? Icons.hourglass_bottom
-              : Icons.hourglass_empty,
+          snapshot.data! ? Icons.hourglass_bottom : Icons.hourglass_empty,
         ),
-        title: const Text('Limit history'),
-        subtitle: (traits.trimHistory ?? false)
+        title: const Text('限制历史记录'),
+        subtitle: snapshot.data!
             ? Text(
-                'Limited to newer than ${trimAge.inDays ~/ 30} months or '
-                'less than ${NumberFormat.compact().format(trimAmount)} entries.',
+                '限制为新于 ${client.histories.trimAge.inDays ~/ 30} 个月或少于 ${NumberFormat.compact().format(client.histories.trimAmount)} 个条目。',
               )
-            : const Text('history is infinite'),
+            : const Text('历史记录是无限的'),
       ),
     );
   }
@@ -139,7 +93,7 @@ class HistoryCategoryFilterTile extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(left: 12),
-            child: ListTileHeader(title: 'Entries'),
+            child: ListTileHeader(title: '条目'),
           ),
           for (final filter in HistoryCategory.values)
             AnimatedBuilder(
@@ -184,7 +138,7 @@ class HistoryTypeFilterTile extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(left: 12),
-            child: ListTileHeader(title: 'Type'),
+            child: ListTileHeader(title: '类型'),
           ),
           for (final filter in HistoryType.values)
             AnimatedBuilder(

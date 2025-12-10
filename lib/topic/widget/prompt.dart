@@ -1,5 +1,5 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:flutter/material.dart';
@@ -59,7 +59,7 @@ class TopicSheet extends StatelessWidget {
                     context,
                     context.read<Client>().withHost(topic.link),
                   ),
-                  label: const Text('Share'),
+                  label: const Text('分享'),
                 ),
               ],
             ),
@@ -96,11 +96,11 @@ class TopicInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          textInfoRow('replies', topic.responseCount.toString()),
+          textInfoRow('回复', topic.responseCount.toString()),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('id'),
+              const Text('ID'),
               InkWell(
                 child: Text('#${topic.id}'),
                 onLongPress: () async {
@@ -112,20 +112,20 @@ class TopicInfo extends StatelessWidget {
                   messenger.showSnackBar(
                     SnackBar(
                       duration: const Duration(seconds: 1),
-                      content: Text('Copied topic id #${topic.id}'),
+                      content: Text('已复制主题 ID #${topic.id}'),
                     ),
                   );
                 },
               ),
             ],
           ),
-          textInfoRow('locked', topic.locked ? 'yes' : 'no'),
+          textInfoRow('已锁定', topic.locked ? '是' : '否'),
           textInfoRow(
-            'created',
+            '创建于',
             DateFormatting.dateTime(topic.createdAt.toLocal()),
           ),
           textInfoRow(
-            'updated',
+            '更新于',
             DateFormatting.dateTime(topic.updatedAt.toLocal()),
           ),
         ],
@@ -177,7 +177,7 @@ class TopicDialog extends StatelessWidget {
                     context,
                     context.read<Client>().withHost(topic.link),
                   ),
-                  label: const Text('Share'),
+                  label: const Text('分享'),
                 ),
               ],
             ),

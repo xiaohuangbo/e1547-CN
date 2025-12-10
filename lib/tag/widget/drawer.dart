@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -83,7 +83,7 @@ class DrawerTagCounterBody extends StatelessWidget {
             ),
             child: ExpandablePanel(
               header: const ListTile(
-                title: Text('Tags'),
+                title: Text('标签'),
                 leading: Icon(Icons.tag),
               ),
               collapsed: const SizedBox.shrink(),
@@ -95,7 +95,7 @@ class DrawerTagCounterBody extends StatelessWidget {
                     builder: (context) => CrossFade(
                       showChild: children!.isNotEmpty,
                       secondChild: Text(
-                        'no tags',
+                        '没有标签',
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
                           color: dimTextColor(context),
@@ -130,7 +130,7 @@ class DrawerTagCounterBody extends StatelessWidget {
                             Padding(
                               padding: EdgeInsets.all(8),
                               child: Text(
-                                'failed to load tags',
+                                '加载标签失败',
                                 style: TextStyle(fontStyle: FontStyle.italic),
                               ),
                             ),

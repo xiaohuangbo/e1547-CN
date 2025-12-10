@@ -12,11 +12,11 @@ class TopicTagEditingTile extends StatelessWidget {
       animation: controller,
       builder: (context, child) => SwitchListTile(
         secondary: const Icon(Icons.inventory_outlined),
-        title: const Text('hide tags edits'),
+        title: const Text('隐藏标签编辑'),
         subtitle: Text(
           controller.hideTagEditing
-              ? 'hide tag alias and implications'
-              : 'show tag alias and implications',
+              ? '隐藏标签别名和含义'
+              : '显示标签别名和含义',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

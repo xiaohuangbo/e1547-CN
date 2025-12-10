@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -252,7 +251,12 @@ mixin PostActionController<KeyType> on ClientDataController<KeyType, Post> {
     required bool replace,
   }) async {
     assertOwnsItem(post);
-    post = post.copyWith(vote: post.vote.withVote(upvote, replace));
+    post = post.copyWith(
+      vote: post.vote.withVote(
+        upvote ? VoteStatus.upvoted : VoteStatus.downvoted,
+        replace,
+      ),
+    );
     replacePost(post);
     try {
       await client.posts.vote(post.id, upvote, replace);

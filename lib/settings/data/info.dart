@@ -85,7 +85,7 @@ final class AppInfo extends PackageInfo {
   static AppInfo? _instance;
   static AppInfo get instance {
     if (_instance == null) {
-      throw StateError('AppInfo has not been initialized');
+      throw StateError('AppInfo 尚未初始化');
     }
     return _instance!;
   }

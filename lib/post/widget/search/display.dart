@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 enum PostDisplayType { grid, comic, timeline }
@@ -40,8 +40,8 @@ class PostSliverGrid extends StatelessWidget {
       ItemWidgetBuilder<Post> itemBuilder,
     ) => defaultPagedChildBuilderDelegate<Post>(
       onRetry: controller.getNextPage,
-      onEmpty: const Text('No posts'),
-      onError: const Text('Failed to load posts'),
+      onEmpty: const Text('没有帖子'),
+      onError: const Text('无法加载帖子'),
       itemBuilder: itemBuilder,
     );
 
@@ -98,15 +98,11 @@ class PostSliverComic extends StatelessWidget {
         fetchNextPage: controller.getNextPage,
         builderDelegate: defaultPagedChildBuilderDelegate<Post>(
           onRetry: controller.getNextPage,
-          onEmpty: const Text('No posts'),
-          onError: const Text('Failed to load posts'),
-          itemBuilder: (context, item, index) => Padding(
-            padding:
-                LimitedWidthLayout.maybeOf(context)?.padding ?? EdgeInsets.zero,
-            child: ImageCacheSizeProvider(
-              size: 800,
-              child: PostComicTile(post: item),
-            ),
+          onEmpty: const Text('没有帖子'),
+          onError: const Text('无法加载帖子'),
+          itemBuilder: (context, item, index) => ImageCacheSizeProvider(
+            size: 800,
+            child: PostComicTile(post: item),
           ),
         ),
       ),
@@ -128,8 +124,8 @@ class PostSliverTimeline extends StatelessWidget {
         fetchNextPage: controller.getNextPage,
         builderDelegate: defaultPagedChildBuilderDelegate<Post>(
           onRetry: controller.getNextPage,
-          onEmpty: const Text('No posts'),
-          onError: const Text('Failed to load posts'),
+          onEmpty: const Text('没有帖子'),
+          onError: const Text('无法加载帖子'),
           itemBuilder: (context, item, index) => Padding(
             padding:
                 LimitedWidthLayout.maybeOf(context)?.padding ?? EdgeInsets.zero,

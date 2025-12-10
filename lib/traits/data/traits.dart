@@ -4,7 +4,7 @@ part 'traits.freezed.dart';
 part 'traits.g.dart';
 
 @freezed
-abstract class Traits with _$Traits {
+class Traits with _$Traits {
   const factory Traits({
     required int id,
     required int? userId,
@@ -12,15 +12,13 @@ abstract class Traits with _$Traits {
     required String homeTags,
     required String? avatar,
     required int? perPage,
-    bool? writeHistory,
-    bool? trimHistory,
   }) = _Traits;
 
   factory Traits.fromJson(Map<String, dynamic> json) => _$TraitsFromJson(json);
 }
 
 @freezed
-abstract class TraitsRequest with _$TraitsRequest {
+class TraitsRequest with _$TraitsRequest {
   const factory TraitsRequest({
     required int identity,
     int? userId,
@@ -28,8 +26,6 @@ abstract class TraitsRequest with _$TraitsRequest {
     @Default('') String homeTags,
     String? avatar,
     int? perPage,
-    bool? writeHistory,
-    bool? trimHistory,
   }) = _TraitsRequest;
 
   factory TraitsRequest.fromJson(Map<String, dynamic> json) =>

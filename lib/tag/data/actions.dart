@@ -30,6 +30,29 @@ enum TagCategory {
   contributor,
   invalid;
 
+  String get title {
+    switch (this) {
+      case general:
+        return '常规';
+      case species:
+        return '物种';
+      case character:
+        return '角色';
+      case copyright:
+        return '版权';
+      case meta:
+        return '元数据';
+      case lore:
+        return '传说';
+      case artist:
+        return '艺术家';
+      case contributor:
+        return '贡献者';
+      case invalid:
+        return '无效';
+    }
+  }
+
   Color? get color {
     switch (this) {
       case general:
@@ -86,10 +109,10 @@ enum TagCategory {
 
 List<String> filterArtists(List<String> artists) {
   List<String> excluded = [
-    'epilepsy_warning',
-    'conditional_dnp',
-    'sound_warning',
-    'avoid_posting',
+    'epilepsy_warning', // 癫痫警告
+    'conditional_dnp', // 有条件的请勿发布
+    'sound_warning', // 声音警告
+    'avoid_posting', // 避免发布
   ];
 
   return List.from(artists)..removeWhere((artist) => excluded.contains(artist));

@@ -1,8 +1,8 @@
 import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/traits/traits.dart';
 import 'package:flutter/material.dart';
@@ -25,16 +25,14 @@ class _PoolsPageState extends State<PoolsPage> with RouterDrawerEntryWidget {
         builder: (context, controller, child) => ControllerHistoryConnector(
           controller: controller,
           addToHistory: (context, client, controller) async =>
-              client.histories.add(
-                PoolHistoryRequest.search(
-                  query: controller.query,
-                  pools: controller.items,
-                  posts: controller.thumbnails.items,
-                ),
+              client.histories.addPoolSearch(
+                query: controller.query,
+                pools: controller.items,
+                posts: controller.thumbnails.items,
               ),
-          child: AdaptiveScaffold(
+          child: RefreshableDataPage.builder(
             appBar: const DefaultAppBar(
-              title: Text('Pools'),
+              title: Text('池'),
               actions: [ContextDrawerButton()],
             ),
             floatingActionButton: PoolsPageFloatingActionButton(
@@ -42,52 +40,50 @@ class _PoolsPageState extends State<PoolsPage> with RouterDrawerEntryWidget {
             ),
             drawer: const RouterDrawer(),
             endDrawer: ContextDrawer(
-              title: const Text('Pools'),
+              title: const Text('池'),
               children: [
                 DrawerDenySwitch(controller: controller.thumbnails),
                 DrawerTagCounter(controller: controller.thumbnails),
               ],
             ),
-            body: ValueListenableBuilder<int>(
-              valueListenable: context.watch<Settings>().tileSize,
-              builder: (context, value, child) =>
-                  TileLayout(tileSize: value, child: child!),
-              child: PullToRefresh(
-                onRefresh: () =>
-                    controller.refresh(force: true, background: true),
-                child: ListenableBuilder(
-                  listenable: controller,
-                  builder: (context, _) =>
-                      PagedMasonryGridView<int, Pool>.count(
-                        primary: true,
-                        showNewPageProgressIndicatorAsGridChild: false,
-                        showNewPageErrorIndicatorAsGridChild: false,
-                        showNoMoreItemsIndicatorAsGridChild: false,
-                        padding: defaultListPadding,
-                        state: controller.state,
-                        fetchNextPage: controller.getNextPage,
-                        crossAxisCount:
-                            (TileLayout.of(context).crossAxisCount * 0.5)
-                                .round(),
-                        builderDelegate: defaultPagedChildBuilderDelegate<Pool>(
-                          onRetry: controller.getNextPage,
-                          itemBuilder: (context, item, index) =>
-                              ImageCacheSizeProvider(
-                                size: TileLayout.of(context).tileSize * 4,
-                                child: PoolTile(
-                                  pool: item,
-                                  onPressed: () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          PoolPage(pool: item),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          onEmpty: const Text('No pools'),
-                          onError: const Text('Failed to load pools'),
+            controller: controller,
+            builder: (context, child) => AnimatedBuilder(
+              animation: context.watch<Settings>().tileSize,
+              builder: (context, child) {
+                return TileLayout(
+                  tileSize: context.watch<Settings>().tileSize.value,
+                  child: child!,
+                );
+              },
+              child: child,
+            ),
+            child: (context) => ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) => PagedMasonryGridView<int, Pool>.count(
+                primary: true,
+                showNewPageProgressIndicatorAsGridChild: false,
+                showNewPageErrorIndicatorAsGridChild: false,
+                showNoMoreItemsIndicatorAsGridChild: false,
+                padding: defaultListPadding,
+                state: controller.state,
+                fetchNextPage: controller.getNextPage,
+                crossAxisCount: (TileLayout.of(context).crossAxisCount * 0.5)
+                    .round(),
+                builderDelegate: defaultPagedChildBuilderDelegate<Pool>(
+                  onRetry: controller.getNextPage,
+                  itemBuilder: (context, item, index) => ImageCacheSizeProvider(
+                    size: TileLayout.of(context).tileSize * 4,
+                    child: PoolTile(
+                      pool: item,
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PoolPage(pool: item),
                         ),
                       ),
+                    ),
+                  ),
+                  onEmpty: const Text('没有池'),
+                  onError: const Text('加载池失败'),
                 ),
               ),
             ),

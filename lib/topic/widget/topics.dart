@@ -1,5 +1,6 @@
 import 'package:e1547/history/history.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
+import 'package:e1547/reply/reply.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:flutter/material.dart';
 
@@ -16,24 +17,53 @@ class TopicsPage extends StatelessWidget {
         child: Consumer<TopicController>(
           builder: (context, controller, child) => ControllerHistoryConnector(
             controller: controller,
-            addToHistory: (context, client, controller) => client.histories.add(
-              TopicHistoryRequest.search(
-                query: controller.query,
-                topics: controller.items!,
-              ),
-            ),
-            child: AdaptiveScaffold(
+            addToHistory: (context, client, controller) =>
+                client.histories.addTopicSearch(
+                  query: controller.query,
+                  topics: controller.items!,
+                ),
+            child: RefreshableDataPage(
               appBar: const DefaultAppBar(
-                title: Text('Topics'),
+                title: Text('话题'),
                 actions: [ContextDrawerButton()],
               ),
-              floatingActionButton: const TopicSearchFab(),
+              floatingActionButton: TopicsPageFloatingActionButton(
+                controller: controller,
+              ),
               drawer: const RouterDrawer(),
               endDrawer: ContextDrawer(
-                title: const Text('Topics'),
+                title: const Text('话题'),
                 children: [TopicTagEditingTile(controller: controller)],
               ),
-              body: const TopicList(),
+              controller: controller,
+              child: ListenableBuilder(
+                listenable: controller,
+                builder: (context, _) => PagedListView(
+                  primary: true,
+                  padding: defaultListPadding,
+                  state: controller.state,
+                  fetchNextPage: controller.getNextPage,
+                  builderDelegate: defaultPagedChildBuilderDelegate<Topic>(
+                    onRetry: controller.getNextPage,
+                    itemBuilder: (context, item, index) => TopicTile(
+                      topic: item,
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => RepliesPage(topic: item),
+                        ),
+                      ),
+                      onCountPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              RepliesPage(topic: item, orderByOldest: false),
+                        ),
+                      ),
+                    ),
+                    onEmpty: const Text('没有话题'),
+                    onError: const Text('加载话题失败'),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

@@ -1,7 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class FavPage extends StatelessWidget {
@@ -15,28 +15,27 @@ class FavPage extends StatelessWidget {
         child: Consumer<PostController>(
           builder: (context, controller, child) => ControllerHistoryConnector(
             controller: controller,
-            addToHistory: (context, client, controller) => client.histories.add(
-              PostHistoryRequest.search(
-                query: controller.query,
-                posts: controller.items,
-              ),
-            ),
+            addToHistory: (context, client, controller) =>
+                client.histories.addPostSearch(
+                  query: controller.query,
+                  posts: controller.items,
+                ),
             child: LoadingPage(
               isEmpty: controller.error is NoUserLoginException,
               isError: controller.error is NoUserLoginException,
               onError: const IconMessage(
                 icon: Icon(Icons.person_search),
-                title: Text('Favorites are unavailable for anonymous users'),
+                title: Text('收藏夹不适用于匿名用户'),
               ),
               loadingBuilder: (context, child) => AdaptiveScaffold(
-                appBar: const DefaultAppBar(title: Text('Favorites')),
+                appBar: const DefaultAppBar(title: Text('收藏')),
                 body: Center(child: child(context)),
                 drawer: const RouterDrawer(),
               ),
               child: (context) => PostsPage(
                 controller: controller,
                 appBar: const DefaultAppBar(
-                  title: Text('Favorites'),
+                  title: Text('收藏'),
                   actions: [ContextDrawerButton()],
                 ),
                 drawerActions: [
@@ -44,11 +43,11 @@ class FavPage extends StatelessWidget {
                     SwitchListTile(
                       secondary: const Icon(Icons.sort),
                       title: Text(
-                        'Favorite order',
+                        '收藏顺序',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       subtitle: Text(
-                        controller.orderFavorites ? 'added order' : 'id order',
+                        controller.orderFavorites ? '按添加顺序' : '按 ID 顺序',
                       ),
                       value: controller.orderFavorites,
                       onChanged: (value) {

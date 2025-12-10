@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:e1547/app/app.dart';
-import 'package:e1547/client/client.dart';
+import 'package:e1547/client/data/client.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/logs/logs.dart';
 import 'package:workmanager/workmanager.dart';
@@ -54,7 +54,7 @@ Future<void> registerFollowBackgroundTask(List<Follow> follows) async {
       followsBackgroundTaskKey,
       initialDelay: const Duration(hours: 1),
       frequency: const Duration(hours: 1),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+      existingWorkPolicy: ExistingWorkPolicy.update,
       constraints: Constraints(networkType: NetworkType.connected),
     );
   }

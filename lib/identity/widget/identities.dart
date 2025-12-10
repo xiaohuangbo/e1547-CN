@@ -1,6 +1,6 @@
 import 'package:e1547/identity/identity.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -8,7 +8,7 @@ class IdentitiesPage extends StatelessWidget {
   const IdentitiesPage({super.key});
 
   Widget tile(BuildContext context, Identity identity) {
-    bool selected = context.watch<IdentityClient>().identity == identity;
+    bool selected = context.watch<IdentityService>().identity == identity;
     return Row(
       children: [
         Container(
@@ -23,7 +23,7 @@ class IdentitiesPage extends StatelessWidget {
           child: IdentityTile(
             identity: identity,
             onTap: () {
-              context.read<IdentityClient>().activate(identity.id);
+              context.read<IdentityService>().activate(identity.id);
               Navigator.of(context).maybePop();
             },
             trailing: PopupMenuButton<VoidCallback>(
@@ -58,7 +58,7 @@ class IdentitiesPage extends StatelessWidget {
                           child: const Text('DELETE'),
                           onPressed: () {
                             Navigator.of(context).maybePop();
-                            context.read<IdentityClient>().remove(identity);
+                            context.read<IdentityService>().remove(identity);
                           },
                         ),
                       ],
@@ -97,7 +97,7 @@ class IdentitiesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SubStream(
-      create: () => context.watch<IdentityClient>().all().stream,
+      create: () => context.watch<IdentityService>().all().stream,
       builder: (context, snapshot) => LimitedWidthLayout.builder(
         builder: (context) {
           List<Identity>? identities = snapshot.data;

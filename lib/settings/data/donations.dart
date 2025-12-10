@@ -4,7 +4,7 @@ part 'donations.freezed.dart';
 part 'donations.g.dart';
 
 @freezed
-abstract class Donor with _$Donor {
+class Donor with _$Donor {
   const factory Donor({
     required String name,
     String? avatar,
@@ -16,7 +16,7 @@ abstract class Donor with _$Donor {
 }
 
 @freezed
-abstract class Donation with _$Donation {
+class Donation with _$Donation {
   const factory Donation({
     required double amount,
     required String currency,

@@ -4,7 +4,7 @@ part 'pool.freezed.dart';
 part 'pool.g.dart';
 
 @freezed
-abstract class Pool with _$Pool {
+class Pool with _$Pool {
   const factory Pool({
     required int id,
     required String name,

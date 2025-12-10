@@ -1,9 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:flutter/material.dart';
@@ -213,7 +212,7 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
   late Future<Wiki?> wiki = retrieveWiki();
 
   Future<Wiki?> retrieveWiki() async {
-    final client = context.read<Client>();
+    Client client = context.read<Client>();
     List<Wiki> results = await client.wikis.page(
       query: {'search[title]': tagToRaw(widget.tag)},
     );
@@ -224,15 +223,13 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
   void initState() {
     super.initState();
     // TODO: history connector?
-    final client = context.read<Client>();
+    Client client = context.read<Client>();
     wiki.then((value) {
       if (value != null) {
-        client.histories.add(WikiHistoryRequest.item(wiki: value));
+        client.histories.addWiki(wiki: value);
       } else {
-        client.histories.add(
-          WikiHistoryRequest.search(
-            query: {'search[title]': tagToRaw(widget.tag)},
-          ),
+        client.histories.addWikiSearch(
+          query: {'search[title]': tagToRaw(widget.tag)},
         );
       }
     });
@@ -250,7 +247,7 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
             return DText(snapshot.data!.body);
           } else if (snapshot.hasError) {
             return const IconMessage(
-              title: Text('unable to retrieve wiki entry'),
+              title: Text('无法检索百科条目'),
               icon: Icon(Icons.warning_amber_outlined),
               direction: Axis.horizontal,
             );
@@ -261,7 +258,7 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    'no wiki entry',
+                    '没有百科条目',
                     style: TextStyle(
                       color: dimTextColor(context, 0.5),
                       fontStyle: FontStyle.italic,

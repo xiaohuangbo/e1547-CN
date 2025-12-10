@@ -1,8 +1,8 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -30,23 +30,44 @@ class FollowsSubscriptionsPage extends StatelessWidget {
               // remove this when the paged grid view is implemented
               controller.getNextPage();
               final client = context.read<Client>();
-              client.followServer.sync();
+              client.follows.sync();
               return null;
             },
             keys: [controller],
             child: SelectionLayout<Follow>(
               items: controller.items,
               child: PromptActions(
-                child: AdaptiveScaffold(
+                child: RefreshableDataPage.builder(
+                  controller: controller,
+                  builder: (context, child) => TileLayout(child: child),
+                  child: (context) => ListenableBuilder(
+                    listenable: controller,
+                    builder: (context, _) =>
+                        PagedAlignedGridView<int, Follow>.count(
+                          primary: true,
+                          padding: defaultActionListPadding,
+                          state: controller.state,
+                          fetchNextPage: controller.getNextPage,
+                          addAutomaticKeepAlives: false,
+                          builderDelegate: defaultPagedChildBuilderDelegate(
+                            onRetry: controller.getNextPage,
+                            itemBuilder: (context, item, index) =>
+                                FollowTile(follow: item),
+                            onEmpty: const Text('没有订阅'),
+                            onError: const Text('加载订阅失败'),
+                          ),
+                          crossAxisCount: TileLayout.of(context).crossAxisCount,
+                        ),
+                  ),
                   appBar: const FollowSelectionAppBar(
                     child: DefaultAppBar(
-                      title: Text('Subscriptions'),
+                      title: Text('订阅'),
                       actions: [ContextDrawerButton()],
                     ),
                   ),
                   drawer: const RouterDrawer(),
                   endDrawer: const ContextDrawer(
-                    title: Text('Subscriptions'),
+                    title: Text('订阅'),
                     children: [
                       FollowEditingTile(),
                       Divider(),
@@ -57,7 +78,7 @@ class FollowsSubscriptionsPage extends StatelessWidget {
                     ],
                   ),
                   floatingActionButton: AddTagFloatingActionButton(
-                    title: 'Add to subscriptions',
+                    title: '添加到订阅',
                     onSubmit: (value) async {
                       value = value.trim();
                       if (value.isEmpty) return;
@@ -66,30 +87,6 @@ class FollowsSubscriptionsPage extends StatelessWidget {
                         type: FollowType.update,
                       );
                     },
-                  ),
-                  body: TileLayout(
-                    child: ListenableBuilder(
-                      listenable: controller,
-                      builder: (context, _) => PullToRefresh(
-                        onRefresh: () =>
-                            controller.refresh(force: true, background: true),
-                        child: PagedAlignedGridView<int, Follow>.count(
-                          primary: true,
-                          padding: defaultActionListPadding,
-                          state: controller.state,
-                          fetchNextPage: controller.getNextPage,
-                          addAutomaticKeepAlives: false,
-                          builderDelegate: defaultPagedChildBuilderDelegate(
-                            onRetry: controller.getNextPage,
-                            itemBuilder: (context, item, index) =>
-                                FollowTile(follow: item),
-                            onEmpty: const Text('No subscriptions'),
-                            onError: const Text('Failed to load subscriptions'),
-                          ),
-                          crossAxisCount: TileLayout.of(context).crossAxisCount,
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),

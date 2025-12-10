@@ -1,5 +1,5 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -27,14 +27,14 @@ class _ItemHistoryConnectorState<T> extends State<ItemHistoryConnector<T>> {
   @override
   void initState() {
     super.initState();
-    final client = context.read<Client>();
+    Client client = context.read<Client>();
     widget.addToHistory(context, client, widget.item);
   }
 
   @override
   void didUpdateWidget(covariant ItemHistoryConnector<T> oldWidget) {
     if (oldWidget.item != widget.item) {
-      final client = context.read<Client>();
+      Client client = context.read<Client>();
       widget.addToHistory(context, client, widget.item);
     }
     super.didUpdateWidget(oldWidget);
@@ -75,7 +75,7 @@ class _ControllerHistoryConnectorState<T extends DataController?>
         await controller.waitForNextPage();
         if (controller.error != null) return;
         if (!context.mounted) return;
-        final client = context.read<Client>();
+        Client client = context.read<Client>();
         widget.addToHistory(context, client, controller);
       },
       builder: (context) => widget.child,

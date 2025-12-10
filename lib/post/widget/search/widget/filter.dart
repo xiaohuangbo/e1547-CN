@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -52,6 +52,7 @@ class PostsPageFloatingActionButton extends StatelessWidget {
                   icon: Icon(Icons.sort),
                   options: [
                     ChoiceFilterTagValue(value: null, name: 'Default'),
+                    ChoiceFilterTagValue(value: 'new', name: 'New'),
                     ChoiceFilterTagValue(value: 'score', name: 'Score'),
                     ChoiceFilterTagValue(value: 'favcount', name: 'Favorites'),
                     ChoiceFilterTagValue(value: 'rank', name: 'Rank'),

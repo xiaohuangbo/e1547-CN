@@ -1,11 +1,11 @@
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'comment.freezed.dart';
 part 'comment.g.dart';
 
 @freezed
-abstract class Comment with _$Comment {
+class Comment with _$Comment {
   const factory Comment({
     required int id,
     required int postId,

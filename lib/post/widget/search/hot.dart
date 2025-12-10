@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class HotPage extends StatelessWidget {
@@ -16,7 +16,7 @@ class HotPage extends StatelessWidget {
                 controller: controller,
                 child: PostsPage(
                   appBar: const DefaultAppBar(
-                    title: Text('Hot'),
+                    title: Text('热门'),
                     actions: [ContextDrawerButton()],
                   ),
                   controller: controller,

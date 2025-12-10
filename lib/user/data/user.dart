@@ -4,7 +4,7 @@ part 'user.freezed.dart';
 part 'user.g.dart';
 
 @freezed
-abstract class User with _$User {
+class User with _$User {
   const factory User({
     required int id,
     required String name,
@@ -17,7 +17,7 @@ abstract class User with _$User {
 }
 
 @freezed
-abstract class UserAbout with _$UserAbout {
+class UserAbout with _$UserAbout {
   const factory UserAbout({required String? bio, required String? comission}) =
       _UserAbout;
 
@@ -25,7 +25,7 @@ abstract class UserAbout with _$UserAbout {
 }
 
 @freezed
-abstract class UserStats with _$UserStats {
+class UserStats with _$UserStats {
   const factory UserStats({
     required DateTime? createdAt,
     required String? levelString,

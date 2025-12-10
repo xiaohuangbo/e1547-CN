@@ -1,6 +1,6 @@
 import 'package:e1547/app/app.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostDetailImage extends StatelessWidget {
@@ -94,7 +94,7 @@ class PostDetailImageToggle extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: Text(controller.isAllowed(post) ? 'hide' : 'show'),
+                      child: Text(controller.isAllowed(post) ? '隐藏' : '显示'),
                     ),
                   ],
                 ),

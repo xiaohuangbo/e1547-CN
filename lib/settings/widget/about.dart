@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:e1547/app/app.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -35,9 +35,9 @@ class _AboutPageState extends State<AboutPage> {
       appBar: const TransparentAppBar(
         child: DefaultAppBar(leading: CloseButton()),
       ),
-      body: LimitedWidthLayout.builder(
-        builder: (context) => PullToRefresh(
-          onRefresh: () async {
+      body: RefreshablePage(
+        refresh: (refreshController) async {
+          try {
             setState(() {
               versions = client?.getNewVersions(force: true);
               bundledDonors = client?.getBundledDonors();
@@ -46,36 +46,40 @@ class _AboutPageState extends State<AboutPage> {
             await versions;
             await bundledDonors;
             await donors;
-          },
-          child: ListView(
-            padding: LimitedWidthLayout.of(context).padding,
-            children: [
-              const SizedBox(height: 100),
-              const DevOptionEnabler(child: AboutLogo()),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Card(
-                  child: Column(
-                    children: [
-                      AboutVersion(newVersions: versions),
-                      const AboutLinks(),
-                    ],
-                  ),
+            refreshController.refreshCompleted();
+          } on AppUpdaterException {
+            refreshController.refreshFailed();
+          }
+        },
+        builder: (context, child) => LimitedWidthLayout(child: child),
+        child: (context) => ListView(
+          padding: LimitedWidthLayout.of(context).padding,
+          children: [
+            const SizedBox(height: 100),
+            const DevOptionEnabler(child: AboutLogo()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Card(
+                child: Column(
+                  children: [
+                    AboutVersion(newVersions: versions),
+                    const AboutLinks(),
+                  ],
                 ),
               ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Card(
-                  child: AboutDonations(
-                    bundledDonors: bundledDonors,
-                    donors: donors,
-                  ),
+            ),
+            const SizedBox(height: 30),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Card(
+                child: AboutDonations(
+                  bundledDonors: bundledDonors,
+                  donors: donors,
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
@@ -107,7 +111,7 @@ class _DevOptionEnablerState extends State<DevOptionEnabler> {
           messenger.showSnackBar(
             const SnackBar(
               duration: Duration(seconds: 2),
-              content: Text('You are now a developer!'),
+              content: Text('您现在是开发者了！'),
             ),
           );
           context.read<Settings>().showDev.value = true;
@@ -160,9 +164,7 @@ class AboutVersion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void openGithub() {
-      AppInfoClient? updater = context.read<AppInfoClient?>();
-      if (updater == null) return;
-      launch(updater.latestReleaseUrl());
+      launch('https://github.com/xiaohuangbo/e1547-CN/releases/latest');
     }
 
     Widget changesDialog(List<AppVersion> versions) {
@@ -176,7 +178,7 @@ class AboutVersion extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'A newer version is available: ',
+                  '有可用的新版本：',
                   style: TextStyle(color: dimTextColor(context, 0.5)),
                 ),
                 ...versions
@@ -200,9 +202,9 @@ class AboutVersion extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: Navigator.of(context).maybePop,
-            child: const Text('CANCEL'),
+            child: const Text('取消'),
           ),
-          TextButton(onPressed: openGithub, child: const Text('DOWNLOAD')),
+          TextButton(onPressed: openGithub, child: const Text('下载')),
         ],
       );
     }
@@ -214,18 +216,18 @@ class AboutVersion extends StatelessWidget {
         Widget icon;
         VoidCallback? onTap;
         if (snapshot.connectionState != ConnectionState.done) {
-          message = 'Fetching updates...';
+          message = '正在获取更新...';
           icon = const FaIcon(FontAwesomeIcons.clockRotateLeft);
         } else if (snapshot.data == null) {
-          message = 'Failed to check for updates';
+          message = '检查更新失败';
           onTap = openGithub;
           icon = const FaIcon(FontAwesomeIcons.circleExclamation);
         } else if (snapshot.data!.isEmpty) {
-          message = 'You have the newest version';
+          message = '您使用的是最新版本';
           icon = const FaIcon(FontAwesomeIcons.clockRotateLeft);
         } else {
           message =
-              'A newer version is available: ${snapshot.data!.first.version}';
+              '有可用的新版本： ${snapshot.data!.first.version}';
           onTap = () => showDialog(
             context: context,
             builder: (context) => changesDialog(snapshot.data!),
@@ -240,7 +242,7 @@ class AboutVersion extends StatelessWidget {
               children: [
                 ListTile(
                   leading: icon,
-                  title: const Text('Version'),
+                  title: const Text('版本'),
                   subtitle: Text(message),
                   onTap: onTap,
                 ),
@@ -292,9 +294,14 @@ class AboutLinks extends StatelessWidget {
       children: [
         linkListTile(
           leading: const FaIcon(FontAwesomeIcons.github),
-          title: const Text('GitHub'),
+          title: const Text('作者的 GitHub'),
           link: 'https://github.com/',
           extra: appInfo.github,
+        ),
+        linkListTile(
+          leading: const FaIcon(FontAwesomeIcons.github),
+          title: const Text('汉化者的 GitHub'),
+          link: 'https://github.com/xiaohuangbo',
         ),
         linkListTile(
           leading: const FaIcon(FontAwesomeIcons.discord),
@@ -305,7 +312,7 @@ class AboutLinks extends StatelessWidget {
         if (appInfo.website != null)
           linkListTile(
             leading: const FaIcon(FontAwesomeIcons.house),
-            title: const Text('Website'),
+            title: const Text('网站'),
             link: 'https://',
             extra: appInfo.website,
           ),
@@ -323,14 +330,14 @@ class AboutLinks extends StatelessWidget {
         if (appInfo.email != null)
           linkListTile(
             leading: const FaIcon(FontAwesomeIcons.solidEnvelope),
-            title: const Text('Email'),
+            title: const Text('电子邮件'),
             link: 'mailto:',
             extra: appInfo.email,
           ),
         const Divider(),
         linkListTile(
           leading: const FaIcon(FontAwesomeIcons.googlePlay),
-          title: const Text('Playstore'),
+          title: const Text('Play 商店'),
           link: Platform.isAndroid
               ? 'https://play.google.com/store/apps/details?id='
               : 'https://play.google.com/store/search?q=',
@@ -365,7 +372,7 @@ class AboutDonations extends StatelessWidget {
           if (githubDonations.hasError && assetDonations.hasError) {
             return const IconMessage(
               icon: Icon(Icons.warning_amber),
-              title: Text('Failed to fetch donors'),
+              title: Text('获取捐赠者失败'),
             );
           }
 
@@ -376,9 +383,9 @@ class AboutDonations extends StatelessWidget {
           return Column(
             children: [
               const ListTile(
-                title: Text('Donors'),
+                title: Text('捐赠者'),
                 leading: FaIcon(FontAwesomeIcons.handHoldingHeart),
-                subtitle: Text('Thanks for helping me keep up development!'),
+                subtitle: Text('感谢您帮助我保持开发！'),
               ),
               const Divider(),
               const SizedBox(height: 8),
@@ -393,7 +400,7 @@ class AboutDonations extends StatelessWidget {
               else if (donors.isEmpty)
                 // I dont like whining about no donors
                 const ListTile(
-                  title: Text('No donors yet'),
+                  title: Text('暂无捐赠者'),
                   leading: FaIcon(FontAwesomeIcons.heartCrack),
                 )
               else

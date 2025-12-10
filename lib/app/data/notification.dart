@@ -4,7 +4,7 @@ part 'notification.freezed.dart';
 part 'notification.g.dart';
 
 @freezed
-abstract class NotificationPayload with _$NotificationPayload {
+class NotificationPayload with _$NotificationPayload {
   const factory NotificationPayload({
     required int identity,
     required String type,

@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,34 +11,28 @@ import 'package:intl/intl.dart';
 class TagInput extends StatelessWidget {
   const TagInput({
     super.key,
+    required this.submit,
     required this.controller,
-    this.submit,
     this.multiInput = true,
     this.category,
     this.direction,
     this.readOnly = false,
-    this.autofocus,
     this.labelText,
     this.decoration,
     this.textInputAction,
     this.focusNode,
-    this.maxLines = 1,
-    this.cutoutForFab,
   });
 
-  final SubmitString? submit;
+  final SubmitString submit;
   final TextEditingController? controller;
   final bool multiInput;
   final int? category;
   final VerticalDirection? direction;
   final bool readOnly;
-  final bool? autofocus;
   final String? labelText;
   final InputDecoration? decoration;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
-  final int? maxLines;
-  final bool? cutoutForFab;
 
   int findTag(List<String> tags, int offset) {
     List<String> before = [];
@@ -59,7 +53,6 @@ class TagInput extends StatelessWidget {
       builder: (context, controller) => SubValue(
         create: () {
           if (controller.text.isNotEmpty) {
-            controller.text = controller.text.trimRight();
             controller.text += ' ';
           }
           return controller;
@@ -70,7 +63,6 @@ class TagInput extends StatelessWidget {
           submit: submit,
           direction: direction,
           readOnly: readOnly,
-          autofocus: autofocus ?? true,
           labelText: labelText,
           decoration: decoration,
           inputFormatters: [
@@ -80,8 +72,6 @@ class TagInput extends StatelessWidget {
           private: PrivateTextFields.of(context),
           textInputAction: textInputAction,
           focusNode: focusNode,
-          maxLines: maxLines,
-          cutoutForFab: cutoutForFab ?? true,
           onSelected: (suggestion) {
             List<String> tags = controller.text.split(' ');
             int selection = findTag(tags, controller.selection.extent.offset);
@@ -125,7 +115,7 @@ class TagInput extends StatelessWidget {
             ],
           ),
           suggestionsCallback: (pattern) async {
-            final client = context.read<Client>();
+            Client client = context.read<Client>();
             List<String> tags = controller.text.split(' ');
             int selection = findTag(tags, controller.selection.extent.offset);
             String tag = tags[selection];

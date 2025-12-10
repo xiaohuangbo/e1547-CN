@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -23,11 +23,11 @@ class PoolInfo extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          textInfoRow('posts', pool.postIds.length.toString()),
+          textInfoRow('帖子', pool.postIds.length.toString()),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('id'),
+              const Text('ID'),
               InkWell(
                 child: Text('#${pool.id}'),
                 onLongPress: () async {
@@ -39,20 +39,20 @@ class PoolInfo extends StatelessWidget {
                   messenger.showSnackBar(
                     SnackBar(
                       duration: const Duration(seconds: 1),
-                      content: Text('Copied pool id #${pool.id}'),
+                      content: Text('已复制池 ID #${pool.id}'),
                     ),
                   );
                 },
               ),
             ],
           ),
-          textInfoRow('activity', pool.active ? 'active' : 'inactive'),
+          textInfoRow('活动', pool.active ? '活跃' : '不活跃'),
           textInfoRow(
-            'created',
+            '创建于',
             DateFormatting.dateTime(pool.createdAt.toLocal()),
           ),
           textInfoRow(
-            'updated',
+            '更新于',
             DateFormatting.dateTime(pool.updatedAt.toLocal()),
           ),
         ],

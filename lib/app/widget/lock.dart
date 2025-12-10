@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screen_lock/flutter_screen_lock.dart';
@@ -33,7 +33,7 @@ class _LockScreenState extends State<LockScreen> {
 
     if (pin != null) {
       lock = ScreenLock(
-        title: const Text('Enter PIN'),
+        title: const Text('输入 PIN 码'),
         correctString: pin!,
         customizedButtonChild: biometrics
             ? const Icon(Icons.fingerprint)
@@ -119,12 +119,12 @@ class _BiometricsLockScreenState extends State<BiometricsLockScreen> {
             const Icon(Icons.fingerprint, size: 60),
             const SizedBox(height: 20),
             Text(
-              failed ? 'Failed to authenticate' : 'Please authenticate',
+              failed ? '认证失败' : '请进行认证',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             if (failed)
-              TextButton(onPressed: tryAuth, child: const Text('Retry')),
+              TextButton(onPressed: tryAuth, child: const Text('重试')),
           ],
         ),
       ),
@@ -142,7 +142,7 @@ Future<void> tryLocalAuth({
   await localAuth.stopAuthentication();
   try {
     bool success = await localAuth.authenticate(
-      localizedReason: 'Authenticate to unlock.',
+      localizedReason: '认证以解锁。',
       options: const AuthenticationOptions(stickyAuth: true),
     );
     if (success) {
@@ -153,7 +153,7 @@ Future<void> tryLocalAuth({
   } on PlatformException {
     messenger.showSnackBar(
       const SnackBar(
-        content: Text('Severe failure in biometric authentication'),
+        content: Text('生物识别认证严重失败'),
         duration: Duration(milliseconds: 300),
       ),
     );
@@ -164,8 +164,8 @@ Future<void> tryLocalAuth({
 Future<String?> registerPin(BuildContext context) async {
   Completer<String?> completer = Completer();
   await screenLockCreate(
-    title: const Text('Enter new PIN'),
-    confirmTitle: const Text('Confirm new PIN'),
+    title: const Text('输入新的 PIN 码'),
+    confirmTitle: const Text('确认新的 PIN 码'),
     context: context,
     onConfirmed: (result) {
       completer.complete(result);

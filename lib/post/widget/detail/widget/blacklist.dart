@@ -1,5 +1,5 @@
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +21,7 @@ class DenylistTagDisplay extends StatelessWidget {
             children: [
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: Text('Blacklisted', style: TextStyle(fontSize: 16)),
+                child: Text('已拉黑', style: TextStyle(fontSize: 16)),
               ),
               ...controller
                   .getDeniers(post)!

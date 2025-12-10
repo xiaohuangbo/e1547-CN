@@ -22,6 +22,19 @@ enum AppTheme {
   light,
   blue;
 
+  String get title {
+    switch (this) {
+      case AppTheme.dark:
+        return '深色';
+      case AppTheme.amoled:
+        return 'Amoled';
+      case AppTheme.light:
+        return '浅色';
+      case AppTheme.blue:
+        return '蓝色';
+    }
+  }
+
   ThemeData get data {
     switch (this) {
       case AppTheme.light:
@@ -118,7 +131,7 @@ extension M2ThemeData on ThemeData {
             ? Brightness.dark
             : Brightness.light,
       ),
-      backgroundColor: theme.canvasColor,
+      color: theme.canvasColor,
       foregroundColor: theme.iconTheme.color,
     ),
     dialogTheme: theme.dialogTheme.copyWith(
@@ -132,12 +145,6 @@ extension M2ThemeData on ThemeData {
     bannerTheme: theme.bannerTheme.copyWith(backgroundColor: theme.canvasColor),
     tooltipTheme: theme.tooltipTheme.copyWith(
       waitDuration: const Duration(milliseconds: 400),
-    ),
-    snackBarTheme: theme.snackBarTheme.copyWith(
-      behavior: SnackBarBehavior.floating,
-      width: 600,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
     pageTransitionsTheme: SnapshotlessPageTransitionTheme(
       parent: theme.pageTransitionsTheme,

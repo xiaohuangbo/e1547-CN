@@ -24,17 +24,17 @@ Future<void> runFollowUpdates({
     await allFollows.all(types: [FollowType.notify]),
   );
 
-  List<Identity> identities = await IdentityClient(
+  List<Identity> identities = await IdentityService(
     database: storage.sqlite,
   ).all();
 
   final clientFactory = ClientFactory();
 
   for (final identity in identities) {
-    TraitsClient traits = TraitsClient(database: storage.sqlite);
+    TraitsService traits = TraitsService(database: storage.sqlite);
     await traits.activate(identity.id);
 
-    final client = clientFactory.create(
+    Client client = clientFactory.create(
       ClientConfig(
         identity: identity,
         traits: traits.notifier,
@@ -63,11 +63,9 @@ Future<void> runClientFollowUpdate({
     query: FollowsQuery(types: [FollowType.notify]),
   );
 
-  cancelToken?.whenCancel.then(
-    (_) => client.followServer.currentSync?.cancel(),
-  );
+  cancelToken?.whenCancel.then((_) => client.follows.currentSync?.cancel());
 
-  await client.followServer.sync();
+  await client.follows.sync();
 
   List<Follow> updated = await client.follows.all(
     query: FollowsQuery(types: [FollowType.notify]),

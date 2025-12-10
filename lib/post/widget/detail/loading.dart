@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostLoadingPage extends StatelessWidget {
@@ -22,9 +22,9 @@ class PostLoadingPage extends StatelessWidget {
                 controller: value,
                 child: PostDetailGallery(controller: value),
               ),
-              title: Text('Post #$id'),
-              onError: const Text('Failed to load post'),
-              onEmpty: const Text('Post not found'),
+              title: Text('帖子 #$id'),
+              onError: const Text('无法加载帖子'),
+              onEmpty: const Text('未找到帖子'),
             ),
       ),
     );

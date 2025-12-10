@@ -1,9 +1,9 @@
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/traits/traits.dart';
@@ -33,14 +33,14 @@ class UserPage extends StatelessWidget {
             Widget body;
             PreferredSizeWidget? appbar;
             Map<Widget, WidgetBuilder> tabs = {
-              const Tab(text: 'Favorites'): (context) =>
+              const Tab(text: '收藏'): (context) =>
                   ChangeNotifierProvider<PostController>.value(
                     value: controllers.favoritePosts,
                     builder: (context, child) => PostSliverDisplay(
                       controller: controllers.favoritePosts,
                     ),
                   ),
-              const Tab(text: 'Uploads'): (context) =>
+              const Tab(text: '上传'): (context) =>
                   ChangeNotifierProvider<PostController>.value(
                     value: controllers.uploadedPosts,
                     builder: (context, child) => PostSliverDisplay(
@@ -88,7 +88,7 @@ class UserPage extends StatelessWidget {
                   ),
                 ),
               );
-              tabs[const Tab(text: 'About')] = (context) => SliverPadding(
+              tabs[const Tab(text: '关于')] = (context) => SliverPadding(
                 padding: defaultListPadding.add(
                   LimitedWidthLayout.of(context).padding,
                 ),
@@ -174,13 +174,8 @@ class UserPage extends StatelessWidget {
 
             return ControllerHistoryConnector<PostController?>(
               controller: controllers.profilePost,
-              addToHistory: (context, client, controller) =>
-                  client.histories.add(
-                    UserHistoryRequest.item(
-                      user: user,
-                      avatar: controller?.items?.first,
-                    ),
-                  ),
+              addToHistory: (context, client, controller) => client.histories
+                  .addUser(user: user, avatar: controller?.items?.first),
               child: DefaultTabController(
                 length: tabs.length,
                 initialIndex: initialPage.index,
@@ -188,7 +183,7 @@ class UserPage extends StatelessWidget {
                   appBar: appbar,
                   drawer: const RouterDrawer(),
                   endDrawer: ContextDrawer(
-                    title: const Text('Posts'),
+                    title: const Text('帖子'),
                     children: [
                       DrawerMultiDenySwitch(controllers: controllers.all),
                       DrawerMultiTagCounter(controllers: controllers.all),
@@ -288,12 +283,12 @@ class _UserProfileActions extends StatelessWidget {
       onSelected: (value) => value(),
       itemBuilder: (context) => [
         PopupMenuTile(
-          title: 'Browse',
+          title: '浏览',
           icon: Icons.open_in_browser,
           value: () async => launch(context.read<Client>().withHost(user.link)),
         ),
         PopupMenuTile(
-          title: 'Report',
+          title: '举报',
           icon: Icons.report,
           value: () => guardWithLogin(
             context: context,
@@ -304,20 +299,20 @@ class _UserProfileActions extends StatelessWidget {
                 ),
               );
             },
-            error: 'You must be logged in to report users!',
+            error: '必须登录才能举报用户！',
           ),
         ),
         PopupMenuTile(
-          title: blocked ? 'Unblock' : 'Block',
+          title: blocked ? '取消拉黑' : '拉黑',
           icon: blocked ? Icons.check : Icons.block,
           value: () {
             if (blocked) {
               traits.value = traits.value.copyWith(
-                denylist: traits.value.denylist.toList()..remove(userTag),
+                denylist: traits.value.denylist..remove(userTag),
               );
             } else {
               traits.value = traits.value.copyWith(
-                denylist: traits.value.denylist.toList()..add(userTag),
+                denylist: traits.value.denylist..add(userTag),
               );
             }
           },
@@ -401,7 +396,7 @@ class UserInfo extends StatelessWidget {
                   controller: Expandables.of(context, 'about'),
                   header: const ListTile(
                     leading: Icon(Icons.person),
-                    title: Text('About'),
+                    title: Text('关于'),
                   ),
                   collapsed: const SizedBox.shrink(),
                   expanded: Padding(
@@ -420,7 +415,7 @@ class UserInfo extends StatelessWidget {
                   controller: Expandables.of(context, 'comission'),
                   header: const ListTile(
                     leading: Icon(Icons.attach_money),
-                    title: Text('Comission'),
+                    title: Text('委托'),
                   ),
                   collapsed: const SizedBox.shrink(),
                   expanded: Padding(
@@ -437,7 +432,7 @@ class UserInfo extends StatelessWidget {
                 controller: Expandables.of(context, 'info'),
                 header: const ListTile(
                   leading: Icon(Icons.info_outline),
-                  title: Text('Info'),
+                  title: Text('信息'),
                 ),
                 collapsed: const SizedBox.shrink(),
                 expanded: Padding(
@@ -455,7 +450,7 @@ class UserInfo extends StatelessWidget {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               duration: const Duration(seconds: 1),
-                              content: Text('Copied user id #${user.id}'),
+                              content: Text('已复制用户 ID #${user.id}'),
                             ),
                           );
                         },
@@ -463,21 +458,21 @@ class UserInfo extends StatelessWidget {
                       if (user.stats case final stats?) ...[
                         info(
                           Icons.calendar_today,
-                          'joined',
+                          '加入时间',
                           stats.createdAt != null
                               ? DateFormatting.named(stats.createdAt!)
                               : null,
                         ),
                         info(
                           Icons.shield,
-                          'rank',
+                          '等级',
                           stats.levelString?.toLowerCase(),
                         ),
-                        info(Icons.upload, 'posts', stats.postUploadCount),
-                        info(Icons.edit, 'edits', stats.postUpdateCount),
-                        info(Icons.favorite, 'favorites', stats.favoriteCount),
-                        info(Icons.comment, 'comments', stats.commentCount),
-                        info(Icons.forum, 'forum', stats.forumPostCount),
+                        info(Icons.upload, '帖子', stats.postUploadCount),
+                        info(Icons.edit, '编辑', stats.postUpdateCount),
+                        info(Icons.favorite, '收藏', stats.favoriteCount),
+                        info(Icons.comment, '评论', stats.commentCount),
+                        info(Icons.forum, '论坛', stats.forumPostCount),
                       ],
                     ],
                   ),

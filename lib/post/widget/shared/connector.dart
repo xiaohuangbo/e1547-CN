@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/history/history.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -72,10 +72,10 @@ class PostsIdConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    PostController? controller = context.watch<PostController?>();
+    PostController? controller = context.watch<PostController>();
     return SubValue(
-      create: () => controller?.items?.firstWhereOrNull((e) => e.id == id),
-      keys: [controller?.items.hashCode],
+      create: () => controller.items?.firstWhereOrNull((e) => e.id == id),
+      keys: [controller.items.hashCode],
       builder: builder,
     );
   }
@@ -131,7 +131,7 @@ class PostHistoryConnector extends StatelessWidget {
   Widget build(BuildContext context) => ItemHistoryConnector<Post>(
     item: post,
     addToHistory: (context, client, item) =>
-        client.histories.add(PostHistoryRequest.item(post: post)),
+        client.histories.addPost(post: post),
     child: child,
   );
 }
@@ -150,8 +150,9 @@ class PostsControllerHistoryConnector extends StatelessWidget {
   Widget build(BuildContext context) =>
       ControllerHistoryConnector<PostController>(
         controller: controller,
-        addToHistory: (context, client, data) => client.histories.add(
-          PostHistoryRequest.search(query: data.query, posts: data.items),
+        addToHistory: (context, client, data) => client.histories.addPostSearch(
+          query: data.query,
+          posts: data.items,
         ),
         child: child,
       );

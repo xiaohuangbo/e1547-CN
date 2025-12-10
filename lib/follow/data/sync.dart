@@ -5,10 +5,10 @@ import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/identity/identity.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/pool/data/client.dart';
+import 'package:e1547/pool/data/service.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/traits/traits.dart';
 import 'package:flutter/cupertino.dart';
@@ -33,9 +33,9 @@ class FollowSync {
   final FollowRepository repository;
   final Identity identity;
   final ValueNotifier<Traits> traits;
-  final PostClient postsClient;
-  final PoolClient? poolsClient;
-  final TagClient? tagsClient;
+  final PostService postsClient;
+  final PoolService? poolsClient;
+  final TagService? tagsClient;
   final bool? force;
 
   CancelableOperation<void>? _operation;

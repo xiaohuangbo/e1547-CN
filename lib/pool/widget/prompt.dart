@@ -1,8 +1,8 @@
 import 'package:e1547/client/client.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -62,7 +62,7 @@ class PoolSheet extends StatelessWidget {
               child: pool.description.isNotEmpty
                   ? DText(pool.description)
                   : const Text(
-                      'no description',
+                      '没有描述',
                       style: TextStyle(fontStyle: FontStyle.italic),
                     ),
             ),
@@ -126,7 +126,7 @@ class PoolDialog extends StatelessWidget {
                       child: pool.description.isNotEmpty
                           ? DText(pool.description)
                           : const Text(
-                              'no description',
+                              '没有描述',
                               style: TextStyle(fontStyle: FontStyle.italic),
                             ),
                     ),
@@ -164,7 +164,7 @@ class PoolActions extends StatelessWidget {
         children: [
           ActionButton(
             icon: const Icon(Icons.share),
-            label: const Text('share'),
+            label: const Text('分享'),
             onTap: () async =>
                 Share.text(context, context.read<Client>().withHost(pool.link)),
           ),

@@ -1,5 +1,5 @@
 import 'package:e1547/app/app.dart';
-import 'package:e1547/shared/shared.dart';
+import 'package:e1547/interface/interface.dart';
 import 'package:flutter/foundation.dart';
 import 'package:notified_preferences/notified_preferences.dart';
 
@@ -20,6 +20,15 @@ class Settings extends NotifiedSettings {
     values: AppTheme.values,
   );
 
+  late final ValueNotifier<bool> writeHistory = createSetting(
+    key: 'writeHistory',
+    initialValue: true,
+  );
+  late final ValueNotifier<bool> trimHistory = createSetting(
+    key: 'trimHistory',
+    initialValue: false,
+  );
+
   late final ValueNotifier<int> tileSize = createSetting(
     key: 'tileSize',
     initialValue: 200,
@@ -28,6 +37,11 @@ class Settings extends NotifiedSettings {
     key: 'quilt',
     initialValue: GridQuilt.square,
     values: GridQuilt.values,
+  );
+
+  late final ValueNotifier<bool> autoRotate = createSetting(
+    key: 'autoRotate',
+    initialValue: false,
   );
 
   late final ValueNotifier<bool> filterUnseenFollows = createSetting(
