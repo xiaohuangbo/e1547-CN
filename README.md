@@ -59,7 +59,7 @@ APK 文件和共存版可以在 [releases](https://github.com/xiaohuangbo/e1547-
 ### ~~在 iOS 上安装~~
 
 TODO:
-- [] 编写并编译汉化过的.ipa版本
+- [ ] 编写并编译汉化过的.ipa版本
 
 ## 编译
 
