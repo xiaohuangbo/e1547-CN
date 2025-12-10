@@ -1,0 +1,9 @@
+### Added
+- favorites and hot screens in drawer
+
+### Changed
+- post detail design
+- favorite button to be floating
+
+### Fixed
+- API client bindings

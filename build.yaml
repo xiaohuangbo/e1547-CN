@@ -1,0 +1,20 @@
+targets:
+  $default:
+    builders:
+      freezed:
+        options:
+          map: false
+          when: false
+      json_serializable:
+        options:
+          field_rename: snake
+      drift_dev:
+        enabled: false
+        options: &options
+          use_data_class_name_for_companions: true
+      drift_dev:analyzer:
+        enabled: true
+        options: *options
+      drift_dev:modular:
+        enabled: true
+        options: *options

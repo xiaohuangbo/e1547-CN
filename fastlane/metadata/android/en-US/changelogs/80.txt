@@ -1,0 +1,7 @@
+### Added
+- mark as read option for follow tiles
+- opening posts from notifications
+
+### Fixed
+- wiki dialogs
+- bookmarks appearing in timeline

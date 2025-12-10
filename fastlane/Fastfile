@@ -1,0 +1,130 @@
+require 'fileutils'
+require 'yaml'
+
+add_extra_platforms(
+  platforms: [:windows]
+)
+
+default_platform(:android)
+
+def fetch_current_version
+    YAML.safe_load(File.read('../pubspec.yaml'))['version']
+end
+
+def fetch_versions
+  path = "../CHANGELOG.md"
+  content = File.read(path)
+  regex = /## \[(.+\+\d+)\]/
+  content.scan(regex).map(&:first)
+end
+
+platform :android do
+  desc "Ensures flutter is installed"
+  lane :bootstrap do
+    flutter_bootstrap(
+      flutter_channel: 'stable',
+      android_licenses: {
+        'android-sdk-license' => '24333f8a63b6825ea9c5514f83c2829b004d1fee',
+      },
+    )
+  end
+
+  desc "Build apk file"
+  lane :build do
+    flutter_build(build: 'apk')
+  end
+
+  desc "Build aab file"
+  lane :build_aab do
+    flutter_build(build: 'appbundle')
+  end
+
+  desc "Writes playstore changelogs from CHANGELOG.md"
+  lane :changelog do
+    sh("dart pub global activate cider")
+    versions = fetch_versions
+    versions.each do |version|
+      if version == 'Unreleased'
+        next
+      end
+      build_number = version.split('+').last
+      full_description = sh("cider describe #{version}")
+      description_lines = full_description.split("\n")
+      # removes header and link, primitively. update this later?
+      description_lines.shift
+      description_lines.pop(2)
+      description = description_lines.join("\n")
+      changelogs = "./metadata/android/en-US/changelogs"
+      FileUtils.mkdir_p(changelogs)
+      File.open("#{changelogs}/#{build_number}.txt", 'w') do |file|
+        file.write(description)
+      end
+    end
+  end
+
+  desc "Uploads appbundle to playstore"
+  lane :upload do
+    build_number = fetch_current_version.split("+")[1].to_i
+    upload_to_play_store(
+      aab: "build/app/outputs/bundle/release/app-release.aab",
+      version_code: build_number,
+      skip_upload_apk: true,
+    )
+  end
+
+  desc "Build appbundle and upload to playstore"
+  lane :deploy do
+    build_aab
+    changelog
+    upload
+  end
+end
+
+platform :ios do
+  desc "Ensures flutter is installed"
+  lane :bootstrap do
+    flutter_bootstrap(flutter_channel: 'stable')
+  end
+
+  desc "Build ios archive"
+  lane :build do
+    flutter_build(
+        build_args: ['--no-codesign'],
+        build: 'ios',
+    )
+  end
+
+  desc "Package ios archive into ipa"
+  lane :package_release do
+    Dir.chdir("build/ios/iphoneos") do
+      sh("mkdir Payload")
+      sh("mv Runner.app Payload/Runner.app")
+      sh("zip -9 -r Runner.ipa Payload")
+    end
+  end
+end
+
+platform :windows do
+  desc "Ensures InnoSetup is installed"
+  lane :bootstrap do
+    sh(
+      "winget install --id JRSoftware.InnoSetup --silent --accept-package-agreements --accept-source-agreements --no-upgrade",
+      error_callback: proc { |result, return_code|
+        # APPINSTALLER_CLI_ERROR_PACKAGE_ALREADY_INSTALLED
+        if return_code == -1978335135
+          true
+        else
+          false
+        end
+      }
+    )
+  end
+
+  desc "Builds an exe installer with fastforge and InnoSetup"
+    lane :build do
+      sh("flutter pub global activate fastforge")
+      Dir.chdir("../") do
+        sh("fastforge package --platform=windows --targets=exe --skip-clean")
+      end
+    end
+end

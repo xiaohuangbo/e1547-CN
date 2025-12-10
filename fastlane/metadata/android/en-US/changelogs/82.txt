@@ -1,0 +1,3 @@
+### Fixed
+- bookmarks unintentionally being refreshed
+- downloads crashing on some android devices
