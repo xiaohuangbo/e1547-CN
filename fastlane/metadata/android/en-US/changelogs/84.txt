@@ -1,2 +1,2 @@
-### Fixed
-- login for new users with no blacklist
+### 修复
+- 修复了没有黑名单的新用户登录问题

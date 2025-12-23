@@ -15,18 +15,18 @@ List<PopupMenuItem<VoidCallback>> postMenuPostActions(
     PopupMenuTile(
       value: () async =>
           Share.text(context, context.read<Client>().withHost(post.link)),
-      title: 'Share',
+      title: '分享',
       icon: Icons.share,
     ),
     if (post.file != null)
       PopupMenuTile(
         value: () => postDownloadingNotification(context, {post}),
-        title: 'Download',
+        title: '下载',
         icon: Icons.file_download,
       ),
     PopupMenuTile(
       value: () async => launch(context.read<Client>().withHost(post.link)),
-      title: 'Browse',
+      title: '浏览',
       icon: Icons.open_in_browser,
     ),
   ];
@@ -39,7 +39,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
   return [
     if (context.read<PostEditingController?>() != null)
       PopupMenuTile(
-        title: 'Edit',
+        title: '编辑',
         icon: Icons.edit,
         value: () => guardWithLogin(
           context: context,
@@ -48,7 +48,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
         ),
       ),
     PopupMenuTile(
-      title: 'Comment',
+      title: '评论',
       icon: Icons.comment,
       value: () => guardWithLogin(
         context: context,
@@ -65,7 +65,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
       ),
     ),
     PopupMenuTile(
-      title: 'Report',
+      title: '举报',
       icon: Icons.report,
       value: () => guardWithLogin(
         context: context,
@@ -76,7 +76,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
       ),
     ),
     PopupMenuTile(
-      title: 'Flag',
+      title: '标记',
       icon: Icons.flag,
       value: () => guardWithLogin(
         context: context,

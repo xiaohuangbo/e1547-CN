@@ -1,17 +1,17 @@
-e1547 provides a polished and comfortable browsing experience for your favorite image board, e621 (as well as e926).
+e1547 为您最喜欢的图片网站 e621（以及 e926）提供了精致舒适的浏览体验。
 
-<b> Features </b>
+<b> 功能 </b>
 
-- Browse and search posts and pools of posts
-- Favorite, comment on, up and downvote, and edit posts
-- View the newest, hottest and your favorite posts
-- Save Images to your device
-- Follow tags, like artists or characters
-- Display post info, launch searches from tags
-- Access tag wikis by long-pressing
-- Extensive local blacklist support, synced with the site
-- History of all pages you visited
-- Play videos, with double tap skip function
-- Supports DText, the e6 markdown language
-- Experimental forum support
-- Multiple themes and personalization options
+- 浏览和搜索帖子和图集
+- 收藏、评论、顶踩和编辑帖子
+- 查看最新、最热门和您收藏的帖子
+- 将图片保存到您的设备
+- 关注艺术家或角色等标签
+- 显示帖子信息，通过标签启动搜索
+- 长按访问标签维基
+- 广泛的本地黑名单支持，与网站同步
+- 您访问过的所有页面的历史记录
+- 播放视频，支持双击跳过功能
+- 支持 DText，e6 的 markdown 语言
+- 实验性的论坛支持
+- 多种主题和个性化选项

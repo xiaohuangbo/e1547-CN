@@ -22,27 +22,27 @@ class PostImageOverlay extends StatelessWidget {
     }
 
     if (post.isDeleted) {
-      return centerText('Post was deleted');
+      return centerText('帖子已被删除');
     }
     if (post.file == null) {
       return const IconMessage(
-        title: Text('Image is unavailable'),
+        title: Text('图片不可用'),
         icon: Icon(Icons.image_not_supported_outlined),
       );
     }
     if ((controller?.isDenied(post) ?? false) && !post.isFavorited) {
-      return centerText('Post is blacklisted');
+      return centerText('帖子已被加入黑名单');
     }
 
     if (post.type == PostType.unsupported) {
       return IconMessage(
-        title: Text('${post.ext} files are not supported'),
+        title: Text('不支持 ${post.ext} 文件'),
         icon: const Icon(Icons.image_not_supported_outlined),
         action: Padding(
           padding: const EdgeInsets.all(4),
           child: TextButton(
             onPressed: () async => launch(post.file!),
-            child: const Text('Open'),
+            child: const Text('打开'),
           ),
         ),
       );

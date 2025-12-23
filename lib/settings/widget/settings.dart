@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/app/data/link.dart' as link;
 import 'package:e1547/client/client.dart';
@@ -12,38 +11,9 @@ import 'package:e1547/settings/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 Future<String> prepareGithubIssue() async {
-  final PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  String body = '';
-
-  if (Platform.isAndroid) {
-    final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-    body += '### Device Info\n';
-    body += 'OS: Android ${androidInfo.version.release}\n';
-    body += 'SDK: ${androidInfo.version.sdkInt}\n';
-    body += 'Model: ${androidInfo.model}\n';
-    body += 'Brand: ${androidInfo.brand}\n';
-    body += 'Device: ${androidInfo.device}\n';
-    body += 'Product: ${androidInfo.product}\n';
-    body += 'Hardware: ${androidInfo.hardware}\n';
-    body += '\n';
-  } else if (Platform.isIOS) {
-    final IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-    body += '### Device Info\n';
-    body += 'OS: ${iosInfo.systemName} ${iosInfo.systemVersion}\n';
-    body += 'Model: ${iosInfo.model}\n';
-    body += 'Name: ${iosInfo.name}\n';
-    body += '\n';
-  }
-
-  body += '### App Info\n';
-  body += 'Version: ${packageInfo.version}\n';
-  body += 'Build number: ${packageInfo.buildNumber}\n';
-
-  return 'https://github.com/xiaohuangbo/e1547-CN/issues/new?body=${Uri.encodeComponent(body)}';
+  return 'https://github.com/xiaohuangbo/e1547-CN/discussions';
 }
 
 class SettingsPage extends StatelessWidget {

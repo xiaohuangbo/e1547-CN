@@ -1,913 +1,912 @@
-# Changelog
-All notable changes to this project will be documented in this file.
+# 更新日志
+本项目的所有显著变化都将记录在此文件中。
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
-adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)，并且本项目遵循 [Semantic Versioning](https://semver.org/spec/v2.0.0.html)。
 
 ## [20.2.0+98] - 2025-06-07
-### Added
-- support for tag group searches
-- blacklist comments support
+### 新增
+- 支持标签组搜索
+- 支持黑名单评论
 
-### Fixed
-- iOS background process crash
-- downloads on some android devices
-- some posts not displaying
-- clearing image cache
+### 修复
+- iOS 后台进程崩溃
+- 部分 Android 设备上的下载问题
+- 部分帖子无法显示
+- 清除图片缓存
 
 ## [20.1.1+97] - 2025-05-19
-### Fixed
-- Downloading and showing images in the photo gallery on Android
+### 修复
+- 在 Android 上下载和在相册中显示图片
 
 ## [20.1.0+96] - 2025-05-14
-### Added
-- Forum post reading
-- better blacklist performance
+### 新增
+- 阅读论坛帖子
+- 更好的黑名单性能
 
-### Fixed
-- Loading posts
+### 修复
+- 加载帖子
 
 ## [20.0.0+95] - 2025-02-16
-### Added
-- bluesky source icon
-- report reason explanations
-- contributor tag category
-- api key quick link on login screen
+### 新增
+- bluesky 来源图标
+- 举报原因说明
+- 贡献者标签类别
+- 登录屏幕上的 API 密钥快捷链接
 
-### Fixed
-- database connection issues
+### 修复
+- 数据库连接问题
 
-### Removed
-- non-e621 clients
+### 移除
+- 非 e621 客户端
 
 ## [19.1.0+94] - 2024-06-05
-### Added
-- X (formerly twitter) source icon
+### 新增
+- X (前 Twitter) 来源图标
 
-### Changed
-- appbar filter icon
+### 变更
+- 应用栏筛选图标
 
-### Fixed
-- light theme appbars
-- post updated\_at error
-- dtext newlines
+### 修复
+- 浅色主题应用栏
+- 帖子 updated\_at 错误
+- dtext 换行
 
 ## [19.0.1+93] - 2024-04-26
-### Fixed
-- black screens on closing search
-- certain dtext errors
+### 修复
+- 关闭搜索时出现黑屏
+- 某些 dtext 错误
 
 ## [19.0.0+92] - 2024-04-23
-### Added
-- video resolution setting
-- incognito keyboard
+### 新增
+- 视频分辨率设置
+- 隐身键盘
 
-### Changed
-- follow refresh ui
-- improved history search speed
+### 变更
+- 关注刷新界面
+- 提高历史搜索速度
 
-### Fixed
-- dtext header issues
-- secure display
-- downloads on certain hosts
+### 修复
+- dtext 标题问题
+- 安全显示
+- 某些主机的下载问题
 
 ## [18.1.0+91] - 2024-02-25
-### Added
-- Donation list in about
-- Secure display setting
+### 新增
+- “关于”中的捐赠列表
+- 安全显示设置
 
-### Changed
-- Show unseen follows now persists
-- Artist names UI
+### 变更
+- “显示未读关注”现在会持久化
+- 艺术家名称界面
 
-### Fixed
-- Android downloads
-- Post info setting being hidden
-- Green app border
-- Text editor not closing
+### 修复
+- Android 下载
+- 帖子信息设置被隐藏
+- 绿色应用边框
+- 文本编辑器未关闭
 
 ## [18.0.0+90] - 2024-02-06
-### Added
-- multiple logins (identities)
+### 新增
+- 多重登录 (身份)
 
-### Changed
-- settings layout
-- log messages format
+### 变更
+- 设置布局
+- 日志消息格式
 
-### Fixed
-- cache size bloat
+### 修复
+- 缓存大小膨胀
 
 ## [17.0.0+89] - 2023-09-15
-### Added
-- extra about info
-- desktop search ui
-- ui search filters
-- desktop mouse zoom
-- new follow edit screen
-- more desktop ui
+### 新增
+- 额外的“关于”信息
+- 桌面搜索界面
+- 界面搜索筛选器
+- 桌面鼠标缩放
+- 新的关注编辑屏幕
+- 更多桌面界面
 
-### Changed
-- faster dtext parsing
-- wiki button ui
-- new video player engine
+### 变更
+- 更快的 dtext 解析
+- wiki 按钮界面
+- 新的视频播放器引擎
 
-### Fixed
-- editing comments
+### 修复
+- 编辑评论
 
 ## [16.2.8+88] - 2023-08-22
-### Fixed
-- empty search history
-- post editing inputs
+### 修复
+- 空的搜索历史
+- 帖子编辑输入
 
 ## [16.2.7+87] - 2023-08-21
-### Fixed
-- adding history entries
-- sorting tags
+### 修复
+- 添加历史条目
+- 排序标签
 
 ## [16.2.6+86] - 2023-08-21
-### Fixed
-- adding follows
-- adding history
+### 修复
+- 添加关注
+- 添加历史
 
 ## [16.2.5+85] - 2023-08-20
-### Fixed
-- android download lag
-- infinite loading
+### 修复
+- android 下载延迟
+- 无限加载
 
 ## [16.2.4+84] - 2023-08-09
-### Fixed
-- login for new users with no blacklist
+### 修复
+- 没有黑名单的新用户登录
 
 ## [16.2.3+83] - 2023-07-30
-### Fixed
-- downloads on android (again, for the final time)
-- bookmarks being erroneously refreshed
-- lag when selecting date for history search
+### 修复
+- android 下载 (再次，也是最后一次)
+- 书签被错误刷新
+- 选择历史搜索日期时出现延迟
 
 ## [16.2.2+82] - 2023-06-30
-### Fixed
-- bookmarks unintentionally being refreshed
-- downloads crashing on some android devices
+### 修复
+- 书签无意中被刷新
+- 在某些 android 设备上下载崩溃
 
 ## [16.2.1+81] - 2023-06-10
-### Fixed
-- bookmarks showing incorrect data
-- notifications failing to send
+### 修复
+- 书签显示不正确的数据
+- 通知发送失败
 
 ## [16.2.0+80] - 2023-06-06
-### Added
-- mark as read option for follow tiles
-- opening posts from notifications
+### 新增
+- 关注图块的“标记为已读”选项
+- 从通知打开帖子
 
-### Fixed
-- wiki dialogs
-- bookmarks appearing in timeline
+### 修复
+- wiki 对话框
+- 书签出现在时间线上
 
 ## [16.1.0+79] - 2023-05-28
-### Added
-- Grouping notifications
-- Notifications in foreground
+### 新增
+- 分组通知
+- 前台通知
 
-### Changed
-- Split notifications per tag
-- Split Follows into Subscriptions and Bookmarks
+### 变更
+- 每个标签分割通知
+- 将关注分为订阅和书签
 
-### Fixed
-- Pool order switch
+### 修复
+- 图集顺序切换
 
 ## [16.0.0+78] - 2023-05-07
-### Added
-- notifications for follows
-- log files
-- more log entries
-- log entry multi-select
-- better server status catching
+### 新增
+- 关注通知
+- 日志文件
+- 更多日志条目
+- 日志条目多选
+- 更好的服务器状态捕获
 
-### Changed
-- split timeline and follows
-- hide blacklisted pool thumbnails
+### 变更
+- 分割时间线和关注
+- 隐藏黑名单图集缩略图
 
-### Fixed
-- editing follows
-- app layout when opening virtual keyboards
+### 修复
+- 编辑关注
+- 打开虚拟键盘时的应用布局
 
 ## [15.4.2+77] - 2023-03-23
-### Fixed
-- performance
-- settings ui jumping
+### 修复
+- 性能
+- 设置界面跳动
 
 ## [15.4.1+76] - 2023-03-22
-### Fixed
-- duplicate download folders
-- history sharing
-- favorites displaying unavailable posts
+### 修复
+- 重复的下载文件夹
+- 历史分享
+- 收藏夹显示不可用的帖子
 
 ## [15.4.0+75] - 2023-03-16
-### Added
-- blocking users
+### 新增
+- 屏蔽用户
 
-### Fixed
-- tapping tag suggestions
+### 修复
+- 点击标签建议
 
 ## [15.3.1+74] - 2023-03-03
-### Fixed
-- wiki sheet actions overflowing
-- removing unseen filter when marking all as read
-- autocomplete breaking tags when using negatives
-- autocomplete tapping on certain devices
+### 修复
+- wiki 工作表操作溢出
+- 标记所有为已读时移除未读筛选器
+- 使用否定时自动完成破坏标签
+- 在某些设备上点击自动完成
 
 ## [15.3.0+73] - 2023-02-24
-### Changed
-- about screen design
-- order of follows in folders and timeline
+### 变更
+- “关于”屏幕设计
+- 文件夹和时间线中关注的顺序
 
-### Fixed
-- cloudflare check when logged out
-- adding posts to wrong host history
+### 修复
+- 未登录时的 cloudflare 检查
+- 将帖子添加到错误的主机历史
 
 ## [15.2.0+72] - 2023-02-16
-### Added
-- sheet handles
-- windows installer build files
-- new custom host screen
-- pageview buttons for desktops
+### 新增
+- 工作表句柄
+- windows 安装程序构建文件
+- 新的自定义主机屏幕
+- 桌面的页面视图按钮
 
-### Fixed
-- search race condition
-- pool history
-- link ending parsing
-- refreshing favorites
-- follow timeline with multitag searches
-- blacklist sync
-- replying to comments with quotes
-- history adding blacklisted posts
-- layout in flag post screen
+### 修复
+- 搜索竞争条件
+- 图集历史
+- 链接结尾解析
+- 刷新收藏夹
+- 多标签搜索的关注时间线
+- 黑名单同步
+- 回复带引号的评论
+- 历史添加黑名单帖子
+- 标记帖子屏幕中的布局
 
 ## [15.1.0+71] - 2022-12-28
-### Added
-- cloudflare cookie resolving
-- favorite counts on user page
+### 新增
+- cloudflare cookie 解析
+- 用户页面上的收藏夹计数
 
-### Changed
-- user page layouts for wide screens
-- appbar design
+### 变更
+- 宽屏的用户页面布局
+- 应用栏设计
 
-### Fixed
-- favorites for users without login
-- comment upvoting
-- loading parent/child posts
+### 修复
+- 未登录用户的收藏夹
+- 评论点赞
+- 加载父/子帖子
 
 ## [15.0.1+70] - 2022-12-11
-### Changed
-- pool reader mode now enabled by default
+### 变更
+- 图集阅读器模式现在默认启用
 
-### Fixed
-- error displays for when the site is down
-- retrying loading items
-- favorite and upvote setting
+### 修复
+- 网站关闭时的错误显示
+- 重试加载项目
+- 收藏和点赞设置
 
 ## [15.0.0+69] - 2022-11-28
-### Added
-- multi-select for follows
-- pool thumbnails
-- cancelling requests
+### 新增
+- 关注的多选
+- 图集缩略图
+- 取消请求
 
-### Changed
-- dtext spoiler design
-- dtext parsing
-- pool tile design
-- topic tile design
+### 变更
+- dtext 剧透设计
+- dtext 解析
+- 图集图块设计
+- 主题图块设计
 
-### Fixed
-- saving logins
-- parsing comments and replies with warnings
+### 修复
+- 保存登录
+- 解析带警告的评论和回复
 
-### Removed
-- follows migration
+### 移除
+- 关注迁移
 
 ## [14.0.1+68] - 2022-11-08
-### Fixed
-- host switch in settings
+### 修复
+- 设置中的主机切换
 
 ## [14.0.0+67] - 2022-11-07
-### Added
-- android download location
-- fast follow updating algorithm
+### 新增
+- android 下载位置
+- 快速关注更新算法
 
-### Changed
-- follows are now host dependant
+### 变更
+- 关注现在依赖于主机
 
-### Fixed
-- history entries on wrong host
-- no history entry on host switch
-- history link sharing
-- downloads on certain android devices
+### 修复
+- 错误主机上的历史条目
+- 主机切换时无历史条目
+- 历史链接分享
+- 某些 android 设备上的下载
 
 ## [13.0.1+66] - 2022-10-23
-### Fixed
-- pool parsing
-- auto-vote on favoriting
-- comment upvoting
+### 修复
+- 图集解析
+- 收藏时自动投票
+- 评论点赞
 
 ## [13.0.0+65] - 2022-10-09
-### Added
-- follow timeline screen
+### 新增
+- 关注时间线屏幕
 
-### Fixed
-- performance issues with favoriting
-- video mute button
+### 修复
+- 收藏时的性能问题
+- 视频静音按钮
 
 ## [12.2.0+64] - 2022-09-06
-### Added
-- pool reader mode
+### 新增
+- 图集阅读器模式
 
-### Fixed
-- history mass-deleting
+### 修复
+- 历史批量删除
 
 ## [12.1.1+63] - 2022-09-06
-### Fixed
-- deleting history entries
+### 修复
+- 删除历史条目
 
 ## [12.1.0+62] - 2022-09-05
-### Added
-- better tablet layouts
-- infinite history
-- more history entry types
-- pool search suggestions
-- better link parsing
+### 新增
+- 更好的平板电脑布局
+- 无限历史
+- 更多历史条目类型
+- 图集搜索建议
+- 更好的链接解析
 
-### Changed
-- history filter drawer
-- login screen design
-- search button is no longer behind autocomplete
+### 变更
+- 历史筛选器抽屉
+- 登录屏幕设计
+- 搜索按钮不再位于自动完成之后
 
-### Fixed
-- history performance
-- large image grid performance
-- mass-favoriting
-- pool search switches
-- blacklist sync on login
-- detail gallery swiping requesting new pages
-- duplicate posts
-- log file exports
-- editing posts
-- blacklisting avatars
+### 修复
+- 历史性能
+- 大图网格性能
+- 批量收藏
+- 图集搜索切换
+- 登录时黑名单同步
+- 详情库滑动请求新页面
+- 重复帖子
+- 日志文件导出
+- 编辑帖子
+- 黑名单头像
 
-### Removed
-- "tiles adapt their size" grid option
-- tap comment to reply
+### 移除
+- “图块自适应大小”网格选项
+- 点击评论回复
 
 ## [12.0.0+61] - 2022-07-31
-### Added
-- infinite history
-- more history entry types
-- pool search suggestions
-- better link parsing
+### 新增
+- 无限历史
+- 更多历史条目类型
+- 图集搜索建议
+- 更好的链接解析
 
-### Changed
-- search button is no longer behind autocomplete
+### 变更
+- 搜索按钮不再位于自动完成之后
 
-### Fixed
-- detail gallery swiping requesting new pages
-- duplicate posts
-- log file exports
-- editing posts
-- blacklisting avatars
+### 修复
+- 详情库滑动请求新页面
+- 重复帖子
+- 日志文件导出
+- 编辑帖子
+- 黑名单头像
 
-### Removed
-- "tiles adapt their size" grid option
-- tap comment to reply
+### 移除
+- “图块自适应大小”网格选项
+- 点击评论回复
 
 ## [11.0.0+60] - 2022-06-21
-### Added
-- deep link support
-- app lockscreen
-- logging for errors
-- website link in about
-- more tablet layouts
+### 新增
+- 深度链接支持
+- 应用锁屏
+- 错误日志记录
+- “关于”中的网站链接
+- 更多平板电脑布局
 
-### Changed
-- dtext parsing
-- snackbars to material banners
+### 变更
+- dtext 解析
+- snackbars 到 material banners
 
-### Removed
-- combined follow screen
+### 移除
+- 合并的关注屏幕
 
 ## [10.1.3+59] - 2022-04-15
-### Changed
-- history limit to 3'000
+### 变更
+- 历史限制为 3,000
 
 ## [10.1.2+58] - 2022-04-15
-### Changed
-- history screen is no longer a root view
+### 变更
+- 历史屏幕不再是根视图
 
-### Fixed
-- lag when deleting history entries
-- deleting history entries over limit
+### 修复
+- 删除历史条目时的延迟
+- 删除超出限制的历史条目
 
 ## [10.1.1+57] - 2022-04-06
-### Added
-- history link in drawer
+### 新增
+- 抽屉中的历史链接
 
-### Changed
-- dtext parsing
+### 变更
+- dtext 解析
 
-### Fixed
-- unable to read follows while refreshing
+### 修复
+- 刷新时无法读取关注
 
-### Removed
-- fullscreen UI setting
+### 移除
+- 全屏界面设置
 
 ## [10.1.0+56] - 2022-03-19
-### Added
-- filter for history
-- history limit of 5'000 entries or older than 30 days
-- better tablet layouts
+### 新增
+- 历史筛选器
+- 历史限制为 5,000 条或超过 30 天
+- 更好的平板电脑布局
 
-### Changed
-- follow and history tile sizes
+### 变更
+- 关注和历史图块大小
 
 ## [10.0.1+55] - 2022-03-14
-### Added
-- history for posts, pools and tags
-- http request caching
-- double tap appbar to scroll to top
+### 新增
+- 帖子、图集和标签的历史
+- http 请求缓存
+- 双击应用栏滚动到顶部
 
-### Changed
-- switched version number format to more closely resemble semantic versioning (1.9.10 -> 9.10.0)
-- hiding post children if all are deleted
+### 变更
+- 将版本号格式切换为更接近语义化版本 (1.9.10 -> 9.10.0)
+- 如果所有子项都已删除，则隐藏帖子子项
 
-### Fixed
-- downloaded posts not showing in gallery (android)
-- blacklist syncrhonisation
-- comment parsing
-- follow tiles not updating during refresh
+### 修复
+- 下载的帖子未显示在图库中 (android)
+- 黑名单同步
+- 评论解析
+- 刷新期间关注图块未更新
 
-### Removed
-- scroll to top button
+### 移除
+- 滚动到顶部按钮
 
 ## [1.9.10+53] - 2021-12-15
-### Fixed
-- support for android 12
-- videos not muting immediately
-- post reports always failing
+### 修复
+- 支持 android 12
+- 视频未立即静音
+- 帖子举报总是失败
 
 ## [1.9.9+52] - 2021-11-25
-### Fixed
-- gallery desynchronisation issue
+### 修复
+- 图库不同步问题
 
 ## [1.9.7+50] - 2021-11-24
-### Changed
-- logged in user only actions are now always visible
+### 变更
+- 仅限登录用户的操作现在始终可见
 
-### Fixed
-- detail view swiping requesting pages
+### 修复
+- 详情视图滑动请求页面
 
 ## [1.9.6+49] - 2021-11-23
-### Added
-- user profiles
-- voting on comments
-- reporting comments
-- scroll to top button
+### 新增
+- 用户个人资料
+- 评论投票
+- 举报评论
+- 滚动到顶部按钮
 
-### Changed
-- target sdk to 30
+### 变更
+- 目标 sdk 为 30
 
-### Fixed
-- post duplication
-- video ui
-- forum usernames
+### 修复
+- 帖子重复
+- 视频界面
+- 论坛用户名
 
-### Removed
-- double tapping appbar to scroll to top
+### 移除
+- 双击应用栏滚动到顶部
 
 ## [1.9.5+48] - 2021-11-16
-### Added
-- context (right side) drawer buttons in appbars
-- jump to last page button for topics
+### 新增
+- 应用栏中的上下文 (右侧) 抽屉按钮
+- 主题的“跳转到最后一页”按钮
 
-### Changed
-- appbar design
-- grid stagger settings name
+### 变更
+- 应用栏设计
+- 网格交错设置名称
 
-### Fixed
-- logging in
-- dtext links
+### 修复
+- 登录
+- dtext 链接
 
 ## [1.9.4+47] - 2021-11-14
-### Added
-- reporting posts
-- flagging posts
+### 新增
+- 举报帖子
+- 标记帖子
 
-### Changed
-- blue color theme
-- default home screen search
-- default video mute
+### 变更
+- 蓝色主题
+- 默认主屏幕搜索
+- 默认视频静音
 
-### Fixed
-- editing post tags
+### 修复
+- 编辑帖子标签
 
 ## [1.9.3+46] - 2021-11-07
-### Fixed
-- android apk being invalid
-- sending comments
-- mass-favoriting
+### 修复
+- android apk 无效
+- 发送评论
+- 批量收藏
 
 ## [1.9.2+45] - 2021-11-01
-### Fixed
-- blacklisting follows
-- download indicators
-- downloads failing
+### 修复
+- 黑名单关注
+- 下载指示器
+- 下载失败
 
 ## [1.9.1+44] - 2021-10-30
-### Added
-- video mute button
-- mute video settings
+### 新增
+- 视频静音按钮
+- 静音视频设置
 
-### Changed
-- video skip animation
+### 变更
+- 视频跳过动画
 
-### Fixed
-- login update
-- blacklist editor
+### 修复
+- 登录更新
+- 黑名单编辑器
 
 ## [1.9.0+43] - 2021-10-27
-### Added
-- blacklist sync with server (please backup your blacklist)
-- advanced settings menu
-- auto-upvote when favoriting
-- post tile info bar
-- hiding system ui in fullscreen
-- experimental forum access
-- right side drawer actions for pool order
-- right side drawer actions for comment order
-- loading screens for dtext links
+### 新增
+- 与服务器同步黑名单 (请备份您的黑名单)
+- 高级设置菜单
+- 收藏时自动点赞
+- 帖子图块信息栏
+- 全屏隐藏系统界面
+- 实验性论坛访问
+- 图集顺序的右侧抽屉操作
+- 评论顺序的右侧抽屉操作
+- dtext 链接的加载屏幕
 
-### Changed
-- settings options order
-- app icon
-- app theme colors
-- dtext link parsing
+### 变更
+- 设置选项顺序
+- 应用图标
+- 应用主题颜色
+- dtext 链接解析
 
-### Fixed
-- swiping on videos
-- posts not refreshing on login/logout
-- post tile size not updating
-- hero animations in landscape
-- updating user avatar
+### 修复
+- 视频滑动
+- 登录/注销后帖子未刷新
+- 帖子图块大小未更新
+- 横向模式下的英雄动画
+- 更新用户头像
 
 ## [1.8.1+42] - 2021-07-07
-### Added
-- loading indicator for new pages
-- double tapping videos to skip
+### 新增
+- 新页面的加载指示器
+- 双击视频跳过
 
-### Changed
-- follow appbar action location to drawer
-- system ui visibility in fullscreen to visible
+### 变更
+- 关注应用栏操作位置到抽屉
+- 全屏系统界面可见性为可见
 
-### Fixed
-- post editing issues
+### 修复
+- 帖子编辑问题
 
 ## [1.8.0+41] - 2021-06-19
-### Added
-- following screen
+### 新增
+- 关注屏幕
 
-### Changed
-- pool ordering
-- progress indicators
-- landscape mode
-- performance
+### 变更
+- 图集排序
+- 进度指示器
+- 横向模式
+- 性能
 
-### Fixed
-- iOS video playing
-- editing posts
+### 修复
+- iOS 视频播放
+- 编辑帖子
 
 ## [1.7.4+40] - 2021-05-27
-### Added
-- video support on iOS
-- image downloads for iOS
-- blacklisting with \~
+### 新增
+- iOS 上的视频支持
+- iOS 的图片下载
+- 使用 \~ 进行黑名单
 
-### Changed
-- dtext parsing
-- error message design
-- light theme design
+### 变更
+- dtext 解析
+- 错误消息设计
+- 浅色主题设计
 
-### Fixed
-- image zoom reset
-- wiki dialog tag subtraction
+### 修复
+- 图片缩放重置
+- wiki 对话框标签减法
 
 ## [1.7.3+39] - 2021-04-15
-### Added
-- blacklist drawer
-- multi-tag following
-- adding tags to the current search
-- more post tile grid options
+### 新增
+- 黑名单抽屉
+- 多标签关注
+- 将标签添加到当前搜索
+- 更多帖子图块网格选项
 
-### Changed
-- wiki dialog design
-- video player UI design
-- dtext parsing
-- themes
+### 变更
+- wiki 对话框设计
+- 视频播放器界面设计
+- dtext 解析
+- 主题
 
 ## [1.7.2+38] - 2020-11-16
-### Added
-- better tag search
+### 新增
+- 更好的标签搜索
 
-### Fixed
-- performance issues
-- webm issues
-- favorite / blacklist issues
+### 修复
+- 性能问题
+- webm 问题
+- 收藏/黑名单问题
 
 ## [1.7.1+37] - 2020-11-16
-### Added
-- post tile size configuration
-- post tile staggering
-- multiselecting post tiles with longpress
+### 新增
+- 帖子图块大小配置
+- 帖子图块交错
+- 长按多选帖子图块
 
-### Changed
-- tag input design
-- comments to be sorted oldest first
+### 变更
+- 标签输入设计
+- 评论按最旧排序
 
-### Fixed
-- tag input issues
+### 修复
+- 标签输入问题
 
 ## [1.7.0+36] - 2020-10-23
-### Added
-- video support
-- ui animations
-- user avatar in drawer
-- opening webms
+### 新增
+- 视频支持
+- 界面动画
+- 抽屉中的用户头像
+- 打开 webms
 
-### Changed
-- detail view design
+### 变更
+- 详情视图设计
 
 ## [1.6.2+35] - 2020-09-26
-### Added
-- user avatar in drawer
-- opening webms
+### 新增
+- 抽屉中的用户头像
+- 打开 webms
 
-### Changed
-- detail view design
+### 变更
+- 详情视图设计
 
 ## [1.6.1+34] - 2020-09-15
-### Added
-- image preloading
+### 新增
+- 图片预加载
 
-### Changed
-- appbar design to floating
+### 变更
+- 应用栏设计为浮动
 
-### Fixed
-- lag when swiping
-- keyboard closing when choosing autocomplete
+### 修复
+- 滑动时的延迟
+- 选择自动完成时键盘关闭
 
 ## [1.6.0+33] - 2020-08-10
-### Added
-- writing comments
-- editing comments
-- replying to comments
-- swichting host without page resets
+### 新增
+- 发表评论
+- 编辑评论
+- 回复评论
+- 无需重置页面即可切换主机
 
-### Fixed
-- blacklist ignoring rating
-- pool duplicate pages
+### 修复
+- 黑名单忽略评分
+- 图集重复页面
 
 ## [1.5.2+32] - 2020-07-26
-### Changed
-- following screen design
+### 变更
+- 关注屏幕设计
 
 ## [1.5.1+31] - 2020-07-21
-### Fixed
-- post editing
+### 修复
+- 帖子编辑
 
 ## [1.5.0+30] - 2020-07-21
-### Added
-- editing posts
-- infinite fullscreen swiping
-- dtext spoilers
+### 新增
+- 编辑帖子
+- 无限全屏滑动
+- dtext 剧透
 
-### Changed
-- package name
-- blacklist page design
+### 变更
+- 包名
+- 黑名单页面设计
 
-### Fixed
-- tag autocomplete
+### 修复
+- 标签自动完成
 
 ## [1.4.3+29] - 2020-07-11
-### Added
-- warning about host switching
-- replacing underscores with spaces in tags
+### 新增
+- 关于主机切换的警告
+- 在标签中用空格替换下划线
 
-### Fixed
-- multiple artists bug
-- alignment of large images
+### 修复
+- 多个艺术家错误
+- 大图片的对齐
 
 ## [1.4.2+27] - 2020-06-23
-### Changed
-- changelog to display all new versions
+### 变更
+- 更新日志显示所有新版本
 
-### Fixed
-- update notification
+### 修复
+- 更新通知
 
 ## [1.4.1+26] - 2020-06-23
-### Fixed
-- system ui color changing
+### 修复
+- 系统界面颜色更改
 
 ## [1.4.0+25] - 2020-06-23
-### Added
-- themes
-- showing blacklisted images
+### 新增
+- 主题
+- 显示黑名单图片
 
-### Fixed
-- blacklist issues
+### 修复
+- 黑名单问题
 
 ## [1.3.5+24] - 2020-06-09
-### Added
-- iOS support
-- colors for tags
-- centering small images in detail view
-- swiping between images in fullscreen
-- search tab in drawer
+### 新增
+- iOS 支持
+- 标签颜色
+- 在详情视图中居中小图片
+- 在全屏中滑动图片
+- 抽屉中的搜索选项卡
 
 ## [1.3.4+23] - 2020-05-17
-### Added
-- better landscape design
+### 新增
+- 更好的横向设计
 
-### Fixed
-- blacklist removing favorites
-- nested nested dtext parsing
+### 修复
+- 黑名单移除收藏夹
+- 嵌套的 dtext 解析
 
 ## [1.3.3+22] - 2020-05-02
-### Fixed
-- parsing updated\_at json
+### 修复
+- 解析 updated\_at json
 
 ## [1.3.2+21] - 2020-05-01
-### Fixed
-- downloads on android 10
-- nested dtext parsing
+### 修复
+- android 10 上的下载
+- 嵌套的 dtext 解析
 
 ## [1.3.1+20] - 2020-04-24
-### Added
-- wiki dialog in search appbar
-- following pools
+### 新增
+- 搜索应用栏中的 wiki 对话框
+- 关注图集
 
 ## [1.3.0+19] - 2020-04-23
-### Added
-- followed tags page
-- following tags in wiki dialog
-- multiline editor for blacklist
+### 新增
+- 已关注标签页面
+- 在 wiki 对话框中关注标签
+- 黑名单的多行编辑器
 
 ## [1.2.8+18] - 2020-04-22
-### Changed
-- dtext parsing
+### 变更
+- dtext 解析
 
 ## [1.2.7+17] - 2020-04-21
-### Added
-- blocking tags in wiki dialog
-- dtext parsing
+### 新增
+- 在 wiki 对话框中屏蔽标签
+- dtext 解析
 
-### Fixed
-- wiki dialog overflow
+### 修复
+- wiki 对话框溢出
 
 ## [1.2.6+16] - 2020-04-20
-### Added
-- tag autocomplete for search
-- hiding blacklisted post detail images
+### 新增
+- 搜索的标签自动完成
+- 隐藏黑名单帖子的详细图片
 
-### Fixed
-- logging in
+### 修复
+- 登录
 
 ## [1.2.5+15] - 2020-04-19
-### Added
-- local blacklist
-- comment age and edited status
+### 新增
+- 本地黑名单
+- 评论年龄和编辑状态
 
-### Changed
-- refreshing is now pull to refresh
+### 变更
+- 下拉刷新
 
 ## [1.2.4+14] - 2020-04-17
-### Added
-- voting on posts
-- viewing post comments
+### 新增
+- 帖子投票
+- 查看帖子评论
 
-### Fixed
-- displaying quotes
+### 修复
+- 显示引用
 
 ## [1.2.3+13] - 2020-04-16
-### Added
-- opening deleted post children
+### 新增
+- 打开已删除的帖子子项
 
-### Fixed
-- pool pages loading
-- displaying onsite links
+### 修复
+- 图集页面加载
+- 显示站内链接
 
 ## [1.2.2+12] - 2020-04-14
-### Added
-- sharing post links
-- sharing pool links
-- long press tags to view wiki
-- viewing deleted posts
-- more dtext support
-- addvanced pool information
+### 新增
+- 分享帖子链接
+- 分享图集链接
+- 长按标签查看 wiki
+- 查看已删除的帖子
+- 更多 dtext 支持
+- 高级图集信息
 
-### Fixed
-- settings refreshing the correct page
-- downloading posts
-- dtext parsing links
-- opening posts from a different post causing infinite load
-- post duplicates in pools
+### 修复
+- 设置刷新正确的页面
+- 下载帖子
+- dtext 解析链接
+- 从其他帖子打开帖子导致无限加载
+- 图集中的重复帖子
 
 ## [1.2.1+11] - 2020-04-13
-### Added
-- post parent links
-- post children links
-- clickable links in post descriptions
+### 新增
+- 帖子父链接
+- 帖子子链接
+- 帖子描述中的可点击链接
 
-### Fixed
-- pool page lag
-- post blackscreens
-- favorite button while logged out
-- settings changes refreshing the app
+### 修复
+- 图集页面延迟
+- 帖子黑屏
+- 未登录时的收藏按钮
+- 设置更改刷新应用
 
 ## [1.2.0+10] - 2020-04-13
-### Added
-- post descriptions
-- more post information
-- clicking on tags to launch search
-- pool links on posts
-- changelogs in about screen
-- update hint in drawer
-- pool descriptions in pool screen
-- login button in settings
+### 新增
+- 帖子描述
+- 更多帖子信息
+- 点击标签启动搜索
+- 帖子上的图集链接
+- “关于”屏幕中的更新日志
+- 抽屉中的更新提示
+- 图集屏幕中的图集描述
+- 设置中的登录按钮
 
-### Fixed
-- repeating posts
+### 修复
+- 重复的帖子
 
 ## [1.1.5+9] - 2020-04-11
-### Added
-- more dtext support for pool descriptions
-- version check on about screen
+### 新增
+- 对图集描述的更多 dtext 支持
+- “关于”屏幕上的版本检查
 
-### Changed
-- settings design
-- app reloading after settings change
+### 变更
+- 设置设计
+- 设置更改后应用重新加载
 
-### Fixed
-- network interupts causing infinite loading
+### 修复
+- 网络中断导致无限加载
 
 ## [1.1.4+8] - 2020-04-11
-### Added
-- support for newer API keys
+### 新增
+- 支持较新的 API 密钥
 
 ## [1.1.3+7] - 2020-04-11
-### Added
-- pool descriptions
-- links in pool descriptions
+### 新增
+- 图集描述
+- 图集描述中的链接
 
-### Changed
-- app theme to be darker
-- empty post pages now indicate emptyness
+### 变更
+- 应用主题更暗
+- 空帖子页面现在会指示为空
 
-### Fixed
-- clicking multiple artists
+### 修复
+- 点击多个艺术家
 
 ## [1.1.2+6] - 2020-04-10
-### Fixed
-- Fixed hiding webms
+### 修复
+- 修复了隐藏 webms 的问题
 
 ## [1.1.1+5] - 2020-04-10
-### Added
-- logout button in drawer
-- setting to hide webms
-- support for landscape
+### 新增
+- 抽屉中的注销按钮
+- 隐藏 webms 的设置
+- 支持横向模式
 
-### Changed
-- login screen design
-- about screen design
-- favorites screen to prompt login
+### 变更
+- 登录屏幕设计
+- “关于”屏幕设计
+- 收藏夹屏幕提示登录
 
-### Fixed
-- pool order
+### 修复
+- 图集顺序
 
 ## [1.1.0+4] - 2020-04-10
-### Added
-- pool search
-- clicking on artist names to launch a search
+### 新增
+- 图集搜索
+- 点击艺术家姓名以启动搜索
 
 ## [1.0.1+2] - 2020-03-16
-### Changed
-- pagination to infinite scroll
+### 变更
+- 分页到无限滚动
 
 ## [1.0.0+1] - 2020-03-08
-### Added
-- favorites and hot screens in drawer
+### 新增
+- 抽屉中的收藏夹和热门屏幕
 
-### Changed
-- post detail design
-- favorite button to be floating
+### 变更
+- 帖子详情设计
+- 收藏按钮浮动
 
-### Fixed
-- API client bindings
+### 修复
+- API 客户端绑定
 
 [20.2.0+98]: https://github.com/clragon/e1547/compare/20.1.1+97...20.2.0+98
 [20.1.1+97]: https://github.com/clragon/e1547/compare/20.1.0+96...20.1.1+97
