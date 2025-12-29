@@ -22,9 +22,9 @@ class _PoolLoadingPageState extends State<PoolLoadingPage> {
       future: pool,
       builder: (context, value) =>
           PoolPage(pool: value, orderByOldest: widget.orderByOldest),
-      title: Text('池 #${widget.id}'),
-      onError: const Text('加载池失败'),
-      onEmpty: const Text('未找到池'),
+      title: Text('图集 #${widget.id}'),
+      onError: const Text('加载图集失败'),
+      onEmpty: const Text('未找到图集'),
     );
   }
 }

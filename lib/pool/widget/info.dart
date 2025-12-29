@@ -39,7 +39,7 @@ class PoolInfo extends StatelessWidget {
                   messenger.showSnackBar(
                     SnackBar(
                       duration: const Duration(seconds: 1),
-                      content: Text('已复制池 ID #${pool.id}'),
+                      content: Text('已复制图集 ID #${pool.id}'),
                     ),
                   );
                 },

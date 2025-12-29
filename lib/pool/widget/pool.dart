@@ -92,7 +92,7 @@ class PoolOrderSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile(
       secondary: const Icon(Icons.sort),
-      title: const Text('池顺序'),
+      title: const Text('图集顺序'),
       subtitle: Text(oldestFirst ? '最旧的在前' : '最新的在前'),
       value: oldestFirst,
       onChanged: onChange,
@@ -114,7 +114,7 @@ class PoolReaderSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return SwitchListTile(
       secondary: const Icon(Icons.auto_stories),
-      title: const Text('池阅读器模式'),
+      title: const Text('图集阅读器模式'),
       subtitle: Text(readerMode ? '大图' : '普通网格'),
       value: readerMode,
       onChanged: onChange,

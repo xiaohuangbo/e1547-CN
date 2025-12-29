@@ -15,7 +15,7 @@ class PoolDisplay extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Text('池', style: TextStyle(fontSize: 16)),
+            child: Text('图集', style: TextStyle(fontSize: 16)),
           ),
           ...post.pools!.map(
             (id) => ListTile(

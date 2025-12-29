@@ -116,7 +116,7 @@ class PoolNameFilter extends StatelessWidget {
             direction: VerticalDirection.up,
             submit: (value) => state.onSubmit?.call(value),
             controller: controller,
-            labelText: '池标题',
+            labelText: '图集标题',
             decoration: theme.decoration,
             focusNode: theme.focusNode,
             onSelected: (value) {

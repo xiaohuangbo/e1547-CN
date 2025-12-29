@@ -32,7 +32,7 @@ class _PoolsPageState extends State<PoolsPage> with RouterDrawerEntryWidget {
               ),
           child: RefreshableDataPage.builder(
             appBar: const DefaultAppBar(
-              title: Text('池'),
+              title: Text('图集'),
               actions: [ContextDrawerButton()],
             ),
             floatingActionButton: PoolsPageFloatingActionButton(
@@ -40,7 +40,7 @@ class _PoolsPageState extends State<PoolsPage> with RouterDrawerEntryWidget {
             ),
             drawer: const RouterDrawer(),
             endDrawer: ContextDrawer(
-              title: const Text('池'),
+              title: const Text('图集'),
               children: [
                 DrawerDenySwitch(controller: controller.thumbnails),
                 DrawerTagCounter(controller: controller.thumbnails),
@@ -82,8 +82,8 @@ class _PoolsPageState extends State<PoolsPage> with RouterDrawerEntryWidget {
                       ),
                     ),
                   ),
-                  onEmpty: const Text('没有池'),
-                  onError: const Text('加载池失败'),
+                  onEmpty: const Text('没有图集'),
+                  onError: const Text('加载图集失败'),
                 ),
               ),
             ),

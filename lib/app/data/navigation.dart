@@ -71,7 +71,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/pools',
-    name: '池',
+    name: '图集',
     icon: const Icon(Icons.collections),
     builder: (context) => const PoolsPage(),
     unique: true,
