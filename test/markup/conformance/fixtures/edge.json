@@ -1,0 +1,548 @@
+[
+  {
+    "expected": {
+      "children": [],
+      "type": "document"
+    },
+    "input": "",
+    "label": "empty input"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "   ",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "   ",
+    "label": "only whitespace"
+  },
+  {
+    "expected": {
+      "children": [],
+      "type": "document"
+    },
+    "input": "\n\n\n",
+    "label": "only newlines"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "x",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "x",
+    "label": "single character"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "unmatched",
+                  "type": "text"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b]unmatched",
+    "label": "unmatched open bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "no open[/b]",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "no open[/b]",
+    "label": "unmatched close bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "content": "[b]not bold[/b]",
+          "type": "code_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[code][b]not bold[/b][/code]",
+    "label": "tag-like text in code"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "wordpost#123notalink",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "wordpost#123notalink",
+    "label": "post hash without space is text"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "post #0",
+                  "type": "text"
+                }
+              ],
+              "href": "/posts/0",
+              "id": "0",
+              "idType": "post",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "post #0",
+    "label": "post hash zero"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "post #999999999",
+                  "type": "text"
+                }
+              ],
+              "href": "/posts/999999999",
+              "id": "999999999",
+              "idType": "post",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "post #999999999",
+    "label": "post hash huge id"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "https://example.com/?q=foo&r=bar",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com/?q=foo&r=bar",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "https://example.com/?q=foo&r=bar",
+    "label": "url with query string"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "https://example.com/page#section",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com/page#section",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "https://example.com/page#section",
+    "label": "url with fragment"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "héllo wörld 日本語",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "héllo wörld 日本語",
+    "label": "unicode text in paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "happy day 🎉",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "happy day 🎉",
+    "label": "emoji in paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "content": "nested",
+                              "type": "text"
+                            }
+                          ],
+                          "type": "underline"
+                        }
+                      ],
+                      "type": "strikeout"
+                    }
+                  ],
+                  "type": "italic"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b][i][s][u]nested[/u][/s][/i][/b]",
+    "label": "deeply nested inline four levels"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "\\\\ is a literal backslash",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\\\\ is a literal backslash",
+    "label": "double escaped backslash"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "[[page|]]",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[[page|]]",
+    "label": "wiki link with pipe but no title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "{{}}",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "{{}}",
+    "label": "post search with empty body"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+    "label": "long single paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "content": "inner",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "quote"
+            }
+          ],
+          "title": "outer",
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section=outer]\n[quote]inner[/quote]\n[/section]",
+    "label": "nested quote inside section"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "content": "hidden",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "paragraph"
+                }
+              ],
+              "type": "spoiler_block"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote][spoiler]hidden[/spoiler][/quote]",
+    "label": "nested spoiler inside quote"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "one",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "two",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* one\n* two\n",
+    "label": "mixed list markers same depth"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "body",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "expanded": true,
+          "title": "Ember pre-rust (2024)\n - by jejejunum",
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section,expanded=Ember pre-rust (2024)\n - by jejejunum]\nbody\n[/section]",
+    "label": "section expanded with multi-line title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "body",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "title": "Title line one\nline two",
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section=Title line one\nline two]\nbody\n[/section]",
+    "label": "section with multi-line title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "[quote=name",
+              "type": "text"
+            },
+            {
+              "type": "line_break"
+            },
+            {
+              "content": "rest]",
+              "type": "text"
+            },
+            {
+              "type": "line_break"
+            },
+            {
+              "content": "body",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote=name\nrest]\nbody",
+    "label": "quote opener with newline cite is plain text"
+  }
+]

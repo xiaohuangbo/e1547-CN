@@ -21,14 +21,14 @@ class ReportFormDropdown<T> extends StatelessWidget {
       child: DropdownButtonFormField<T>(
         isExpanded: true,
         decoration: const InputDecoration(
-          labelText: 'Type',
+          labelText: '类型',
           border: OutlineInputBorder(),
         ),
-        value: type,
+        initialValue: type,
         onChanged: isLoading ? null : onChanged,
         validator: (value) {
           if (value == null) {
-            return 'Type cannot be empty';
+            return '类型不能为空';
           }
           return null;
         },

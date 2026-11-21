@@ -1,42 +1,33 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
 class DrawerTagCounter extends StatelessWidget {
-  const DrawerTagCounter({super.key, required this.controller});
+  const DrawerTagCounter({super.key, required this.posts, this.error});
 
-  final PostController controller;
+  final List<Post>? posts;
+  final Object? error;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) =>
-          DrawerTagCounterBody(posts: controller.items, controller: controller),
-    );
+    return DrawerTagCounterBody(posts: posts, error: error);
   }
 }
 
 class DrawerMultiTagCounter extends StatelessWidget {
-  const DrawerMultiTagCounter({super.key, required this.controllers});
+  const DrawerMultiTagCounter({super.key, this.filter});
 
-  final List<PostController> controllers;
+  final PostFilter? filter;
 
   @override
   Widget build(BuildContext context) {
+    final resolved = filter ?? context.watch<PostFilter>();
     return AnimatedBuilder(
-      animation: Listenable.merge(controllers),
-      builder: (context, child) {
-        List<Post>? posts;
-        for (PostController controller in controllers) {
-          if (controller.items != null) {
-            posts ??= [];
-            posts.addAll(controller.items!);
-          }
-        }
-        return DrawerTagCounterBody(posts: posts);
-      },
+      animation: resolved,
+      builder: (context, child) => DrawerTagCounterBody(
+        posts: resolved.tracked.where(resolved.filter).toList(),
+      ),
     );
   }
 }
@@ -46,12 +37,12 @@ class DrawerTagCounterBody extends StatelessWidget {
     super.key,
     required this.posts,
     this.limit = 15,
-    this.controller,
+    this.error,
   });
 
   final int limit;
   final List<Post>? posts;
-  final PostController? controller;
+  final Object? error;
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +86,7 @@ class DrawerTagCounterBody extends StatelessWidget {
                     builder: (context) => CrossFade(
                       showChild: children!.isNotEmpty,
                       secondChild: Text(
-                        '没有标签',
+                        'no tags',
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
                           color: dimTextColor(context),
@@ -112,13 +103,13 @@ class DrawerTagCounterBody extends StatelessWidget {
                       ),
                     ),
                     secondChild: CrossFade(
-                      showChild: controller?.error != null,
+                      showChild: error != null,
                       secondChild: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
                             padding: EdgeInsets.all(8),
-                            child: SizedCircularProgressIndicator(size: 24),
+                            child: HexagonalLoadingIndicator(size: 24),
                           ),
                         ],
                       ),

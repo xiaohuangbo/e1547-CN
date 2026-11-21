@@ -1,5 +1,5 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -11,10 +11,10 @@ class LogSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SelectionAppBar<LogString>(
+    return SelectionAppBar<LogEntry>(
       child: child,
       titleBuilder: (context, data) => data.selections.length == 1
-          ? Text(data.selections.first.body, maxLines: 1)
+          ? Text(data.selections.first.message, maxLines: 1)
           : Text('${data.selections.length} 条日志'),
       actionBuilder: (context, data) => [
         IconButton(
@@ -23,7 +23,7 @@ class LogSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
           onPressed: () {
             Clipboard.setData(
               ClipboardData(
-                text: data.selections.map((e) => e.toString()).join('\n'),
+                text: data.selections.map(formatLogEntry).join('\n'),
               ),
             );
             ScaffoldMessenger.of(context).showSnackBar(

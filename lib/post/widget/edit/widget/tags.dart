@@ -93,11 +93,11 @@ class _TagsEditDisplayState extends State<TagsEditDisplay> {
         }
       });
     } on Exception catch (e, stackTrace) {
-      _logger.severe('Tag preview error: $e', e, stackTrace);
+      _logger.warn('Tag preview failed', null, e, stackTrace);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading tag preview: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('加载标签预览出错：$e')));
       }
     }
   }
@@ -111,9 +111,7 @@ class _TagsEditDisplayState extends State<TagsEditDisplay> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text('Tags', style: TextStyle(fontSize: 16)),
-              ),
+              const Expanded(child: Text('标签', style: TextStyle(fontSize: 16))),
               IconButton(
                 onPressed: widget.enabled == false
                     ? null
@@ -126,7 +124,7 @@ class _TagsEditDisplayState extends State<TagsEditDisplay> {
                         }
                       },
                 icon: Icon(_isPreviewMode ? Icons.edit : Icons.visibility),
-                tooltip: _isPreviewMode ? 'Edit' : 'Preview',
+                tooltip: _isPreviewMode ? '编辑' : '预览',
               ),
             ],
           ),
@@ -158,7 +156,7 @@ class _TagsEditDisplayState extends State<TagsEditDisplay> {
               controller: widget.controller,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                hintText: 'space separated tags',
+                hintText: '以空格分隔的标签',
               ),
               readOnly: widget.enabled == false,
               autofocus: false,
@@ -254,7 +252,9 @@ class TagPreviewCard extends StatelessWidget {
     return ColoredCard(
       color: tag.category == null
           ? Colors.grey
-          : TagCategory.byId(tag.category!).color,
+          : TagCategory.byId(
+              tag.category!,
+            ).colorFor(Theme.of(context).brightness),
       onTap: () => showTagSearchPrompt(context: context, tag: tag.name),
       onLongPress: () => showTagSearchPrompt(context: context, tag: tag.name),
       onSecondaryTap: () =>

@@ -1,36 +1,33 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
 class TagCard extends StatelessWidget {
-  const TagCard({super.key, required this.tag, this.category, this.onRemove});
+  const TagCard({super.key, required this.tag, this.category, this.icon});
 
   final String tag;
   final String? category;
-  final VoidCallback? onRemove;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
     return ColoredCard(
       color:
-          (category != null ? TagCategory.byName(category!)?.color : null) ??
+          (category != null
+              ? TagCategory.byName(
+                  category!,
+                )?.colorFor(Theme.of(context).brightness)
+              : null) ??
           Colors.grey,
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => PostsSearchPage(query: {'tags': tag}),
+          builder: (context) => PostsPage(params: PostParams(tags: tag)),
         ),
       ),
       onLongPress: () => showTagSearchPrompt(context: context, tag: tag),
       onSecondaryTap: () => showTagSearchPrompt(context: context, tag: tag),
-      leading: onRemove != null
-          ? IconButton(
-              constraints: const BoxConstraints(),
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.clear, size: 16),
-              onPressed: onRemove,
-            )
-          : null,
+      icon: icon,
       child: Text(tagToTitle(tag), overflow: TextOverflow.ellipsis),
     );
   }
@@ -54,7 +51,11 @@ class TagCounterCard extends StatelessWidget {
       onTap: () => showTagSearchPrompt(context: context, tag: tag),
       onLongPress: () => showTagSearchPrompt(context: context, tag: tag),
       onSecondaryTap: () => showTagSearchPrompt(context: context, tag: tag),
-      color: (category != null ? TagCategory.byName(category!)?.color : null),
+      color: (category != null
+          ? TagCategory.byName(
+              category!,
+            )?.colorFor(Theme.of(context).brightness)
+          : null),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

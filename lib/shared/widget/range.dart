@@ -20,23 +20,23 @@ enum NumberComparison {
 ///  - `>value` - A number greater than the given value.
 ///  - `>=value` - A number greater than or equal to the given value.
 ///  - `value..endValue` - A range of numbers between the given values.
+///  - `..endValue` - A number up to and including the given value.
+///  - `value..` - A number from the given value upwards.
+///
+/// Comparison operators may also be written in reverse, as `=<` and `=>`.
 class NumberRange {
   const NumberRange(this.value, {this.endValue, this.comparison})
-    : assert(
-        endValue == null || endValue >= value,
-        'End value cannot be less than start value.',
-      ),
-      assert(
-        comparison == null || endValue == null,
-        'Cannot specify both comparison and end value.',
-      );
+    : assert(endValue == null || endValue >= value, '结束值不能小于起始值。'),
+      assert(comparison == null || endValue == null, '不能同时指定比较符和结束值。');
 
   final int value;
   final NumberComparison? comparison;
   final int? endValue;
 
   static RegExp pattern = RegExp(
-    r'^(?<operator>[><]=?)?\s*(?<value>\d+)(?:\.\.(?<endValue>\d+))?$',
+    r'^(?:(?<operator>[><]=?|=[><])\s*(?<single>-?\d+)'
+    r'|(?<start>-?\d+)?\.\.(?<end>-?\d+)?'
+    r'|(?<exact>-?\d+))$',
   );
 
   @override
@@ -61,7 +61,7 @@ class NumberRange {
   /// Returns true if the given number satisfies the range.
   bool has(num num) {
     if (endValue != null) {
-      return num > value && num < endValue!;
+      return num >= value && num <= endValue!;
     }
 
     switch (comparison) {
@@ -90,25 +90,19 @@ class NumberRange {
   /// Creates a NumberRange from a string.
   static NumberRange parse(String input) {
     final match = pattern.firstMatch(input);
+    if (match == null) {
+      throw FormatException('无效的范围格式', input);
+    }
 
-    if (match != null) {
-      final operator = match.namedGroup('operator');
-      final value = int.parse(match.namedGroup('value')!);
+    final exact = match.namedGroup('exact');
+    if (exact != null) return NumberRange(int.parse(exact));
 
-      final endValueStr = match.namedGroup('endValue');
-      if (endValueStr != null) {
-        final endValue = int.parse(endValueStr);
-        if (endValue < value) {
-          throw FormatException(
-            'End value cannot be less than start value',
-            input,
-          );
-        }
-        return NumberRange(value, endValue: endValue);
-      }
-
+    final operator = match.namedGroup('operator');
+    if (operator != null) {
+      final value = int.parse(match.namedGroup('single')!);
       switch (operator) {
         case '<=':
+        case '=<':
           return NumberRange(
             value,
             comparison: NumberComparison.lessThanOrEqual,
@@ -116,18 +110,40 @@ class NumberRange {
         case '<':
           return NumberRange(value, comparison: NumberComparison.lessThan);
         case '>=':
+        case '=>':
           return NumberRange(
             value,
             comparison: NumberComparison.greaterThanOrEqual,
           );
         case '>':
           return NumberRange(value, comparison: NumberComparison.greaterThan);
-        default:
-          return NumberRange(value);
       }
-    } else {
-      throw FormatException('Invalid NumberRange format', input);
     }
+
+    final start = match.namedGroup('start');
+    final end = match.namedGroup('end');
+    if (start != null && end != null) {
+      final value = int.parse(start);
+      final endValue = int.parse(end);
+      if (endValue < value) {
+        throw FormatException('结束值不能小于起始值', input);
+      }
+      return NumberRange(value, endValue: endValue);
+    }
+    if (start != null) {
+      return NumberRange(
+        int.parse(start),
+        comparison: NumberComparison.greaterThanOrEqual,
+      );
+    }
+    if (end != null) {
+      return NumberRange(
+        int.parse(end),
+        comparison: NumberComparison.lessThanOrEqual,
+      );
+    }
+
+    throw FormatException('无效的范围格式', input);
   }
 
   /// Creates a NumberRange from a string, or returns null if the string is invalid.
@@ -259,7 +275,7 @@ class _RangeDialogState extends State<RangeDialog> {
       widget.onSubmit(range);
       Navigator.of(context).maybePop();
     } on FormatException {
-      setState(() => errorMessage = 'Invalid format');
+      setState(() => errorMessage = '格式无效');
     }
   }
 
@@ -357,7 +373,7 @@ class _RangeDialogState extends State<RangeDialog> {
     controller.text = updatedRange.toString();
   }
 
-  Widget _buildComparisonIcon(IconData icon) {
+  Widget _buildComparisonIcon(FaIconData icon) {
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
       child: Center(child: FaIcon(icon)),
@@ -470,10 +486,10 @@ class _RangeDialogState extends State<RangeDialog> {
       actions: [
         TextButton(
           onPressed: Navigator.of(context).maybePop,
-          child: const Text('CANCEL'),
+          child: const Text('取消'),
         ),
         TextButton(
-          child: const Text('OK'),
+          child: const Text('确定'),
           onPressed: () => submit(controller.text),
         ),
       ],

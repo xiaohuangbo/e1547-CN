@@ -1,0 +1,11 @@
+### Added
+- Onboarding flow
+- Task cancel and clear
+- Displaying cropped avatars
+
+### Changed
+- Faster parallel task downloads
+
+### Fixed
+- Cloudflare challenge resolution
+- Post detail performance

@@ -1,7 +1,8 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:like_button/like_button.dart';
 
@@ -12,56 +13,57 @@ class LikeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Client client = context.watch<Client>();
-    PostController controller = context.watch<PostController>();
-    ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-    bool canVote = client.hasLogin;
+    final client = context.watch<Client>();
+    final messenger = ScaffoldMessenger.of(context);
+
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            VoteDisplay(
-              status: post.vote.status,
-              score: post.vote.score,
-              onUpvote: canVote
-                  ? (isLiked) async {
-                      controller
-                          .vote(post: post, upvote: true, replace: !isLiked)
-                          .then((value) {
-                            if (!value) {
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  duration: const Duration(seconds: 1),
-                                  content: Text(
-                                    '点赞帖子 #${post.id} 失败',
-                                  ),
-                                ),
-                              );
-                            }
-                          });
-                      return !isLiked;
-                    }
-                  : null,
-              onDownvote: canVote
-                  ? (isLiked) async {
-                      controller
-                          .vote(post: post, upvote: false, replace: !isLiked)
-                          .then((value) {
-                            if (!value) {
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  duration: const Duration(seconds: 1),
-                                  content: Text(
-                                    '点踩帖子 #${post.id} 失败',
-                                  ),
-                                ),
-                              );
-                            }
-                          });
-                      return !isLiked;
-                    }
-                  : null,
+            MutationBuilder(
+              mutation: client.posts.useVote(id: post.id),
+              builder: (context, state, mutate) {
+                final bool enabled = client.hasLogin && !state.isLoading;
+                return VoteDisplay(
+                  vote: post.vote,
+                  score: post.score,
+                  onUpvote: enabled
+                      ? (isLiked) async {
+                          if ((await mutate((
+                            upvote: true,
+                            replace: !isLiked,
+                          ))).isError) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                duration: const Duration(seconds: 1),
+                                content: Text('点赞帖子 #${post.id} 失败'),
+                              ),
+                            );
+                            return isLiked;
+                          }
+                          return !isLiked;
+                        }
+                      : null,
+                  onDownvote: enabled
+                      ? (isLiked) async {
+                          if ((await mutate((
+                            upvote: false,
+                            replace: !isLiked,
+                          ))).isError) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                duration: const Duration(seconds: 1),
+                                content: Text('点踩帖子 #${post.id} 失败'),
+                              ),
+                            );
+                            return isLiked;
+                          }
+                          return !isLiked;
+                        }
+                      : null,
+                );
+              },
             ),
             Row(
               children: [
@@ -92,62 +94,54 @@ class FavoriteButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkResponse(
-      onTap: () {},
-      child: LikeButton(
-        isLiked: post.isFavorited,
-        circleColor: const CircleColor(start: Colors.pink, end: Colors.red),
-        bubblesColor: const BubblesColor(
-          dotPrimaryColor: Colors.pink,
-          dotSecondaryColor: Colors.red,
-        ),
-        likeBuilder: (isLiked) => Icon(
-          Icons.favorite,
-          color: isLiked ? Colors.pinkAccent : IconTheme.of(context).color,
-        ),
-        onTap: (isLiked) async {
-          PostController controller = context.read<PostController>();
-          ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
-          if (isLiked) {
-            controller.unfav(post).then((value) {
-              if (!value) {
+    final client = context.watch<Client>();
+    final settings = context.read<Settings>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    final addMutation = client.posts.useAddFavorite();
+    final removeMutation = client.posts.useRemoveFavorite();
+    return MutationBuilder(
+      mutation: post.isFavorited ? removeMutation : addMutation,
+      builder: (context, state, mutate) {
+        return InkResponse(
+          onTap: state.isLoading ? null : () {},
+          child: LikeButton(
+            isLiked: post.isFavorited,
+            circleColor: const CircleColor(start: Colors.pink, end: Colors.red),
+            bubblesColor: const BubblesColor(
+              dotPrimaryColor: Colors.pink,
+              dotSecondaryColor: Colors.red,
+            ),
+            likeBuilder: (isLiked) => Icon(
+              Icons.favorite,
+              color: isLiked ? Colors.pinkAccent : IconTheme.of(context).color,
+            ),
+            onTap: (isLiked) async {
+              if ((await mutate(post.id)).isError) {
                 messenger.showSnackBar(
                   SnackBar(
                     duration: const Duration(seconds: 1),
                     content: Text(
-                      '从收藏夹中移除帖子 #${post.id} 失败',
+                      isLiked
+                          ? '从收藏中移除帖子 #${post.id} 失败'
+                          : '添加帖子 #${post.id} 到收藏失败',
                     ),
                   ),
                 );
+                return isLiked;
               }
-            });
-            return false;
-          } else {
-            bool upvote = context.read<Settings>().upvoteFavs.value;
-            controller.fav(post).then((value) {
-              if (value) {
-                if (upvote) {
-                  controller.vote(
-                    post: controller.postById(post.id)!,
-                    upvote: true,
-                    replace: true,
-                  );
-                }
-              } else {
-                messenger.showSnackBar(
-                  SnackBar(
-                    duration: const Duration(seconds: 1),
-                    content: Text(
-                      '将帖子 #${post.id} 添加到收藏夹失败',
-                    ),
-                  ),
-                );
+              if (!isLiked && settings.upvoteFavs.value) {
+                // upvote is best-effort once the favorite succeeded
+                await client.posts.useVote(id: post.id).mutate((
+                  upvote: true,
+                  replace: true,
+                ));
               }
-            });
-            return true;
-          }
-        },
-      ),
+              return !isLiked;
+            },
+          ),
+        );
+      },
     );
   }
 }

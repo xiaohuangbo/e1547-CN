@@ -39,7 +39,7 @@ class RatingEditDisplay extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Rating', style: TextStyle(fontSize: 16)),
+          const Text('分级', style: TextStyle(fontSize: 16)),
           const SizedBox(height: 8),
           DropdownButtonFormField<Rating>(
             initialValue: rating,
@@ -75,7 +75,7 @@ Future<Rating?> showRatingDialog({
   return showDialog<Rating>(
     context: context,
     builder: (context) => SimpleDialog(
-      title: const Text('Rating'),
+      title: const Text('分级'),
       children: Rating.values
           .map(
             (rating) => ListTile(

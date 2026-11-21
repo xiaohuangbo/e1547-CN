@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
@@ -51,17 +52,19 @@ extension Updating on Follow {
     return updated;
   }
 
-  Follow withLatest(Post? post, {bool foreground = false}) {
+  Follow withLatest(Post? post, {String? thumbnail, bool foreground = false}) {
     Follow updated = this;
     if (foreground && updated.unseen != 0) {
       updated = updated.copyWith(unseen: 0);
     }
     if (post != null) {
+      final resolved =
+          thumbnail ?? post.sample ?? post.preview ?? updated.thumbnail;
       if (updated.latest == null || updated.latest! < post.id) {
-        updated = updated.copyWith(latest: post.id, thumbnail: post.sample);
+        updated = updated.copyWith(latest: post.id, thumbnail: resolved);
       } else {
-        if (updated.thumbnail != post.sample) {
-          updated = updated.copyWith(thumbnail: post.sample);
+        if (updated.thumbnail != resolved) {
+          updated = updated.copyWith(thumbnail: resolved);
         }
       }
     }
@@ -74,6 +77,10 @@ extension Updating on Follow {
     if (posts.isNotEmpty) {
       posts.sort((a, b) => b.id.compareTo(a.id));
       Post? newest = posts.first;
+      final thumbnail = posts
+          .map((e) => e.sample ?? e.preview)
+          .nonNulls
+          .firstOrNull;
       if (updated.latest != null) {
         posts = posts.takeWhile((e) => e.id > updated.latest!).toList();
         int length = posts.length;
@@ -83,7 +90,7 @@ extension Updating on Follow {
       } else {
         updated = updated.copyWith(unseen: 0);
       }
-      updated = updated.withLatest(newest);
+      updated = updated.withLatest(newest, thumbnail: thumbnail);
     }
 
     return updated.withTimestamp();

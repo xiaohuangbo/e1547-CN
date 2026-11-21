@@ -1,9 +1,10 @@
 import 'dart:math';
 
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
@@ -36,8 +37,12 @@ class PostReportImage extends StatelessWidget {
               isLoading: isLoading,
               child: PostImageOverlay(
                 post: post,
-                builder: (context) => Hero(
+                builder: (context) => ContentHero(
                   tag: post.link,
+                  content: FittedContent(
+                    fit: BoxFit.cover,
+                    aspectRatio: post.width / post.height,
+                  ),
                   child: PostImageWidget(
                     post: post,
                     size: PostImageSize.sample,
@@ -124,6 +129,9 @@ class _PostReportScreenState extends State<PostReportScreen> {
             title: Text('帖子 #${widget.post.id}'),
             leading: const CloseButton(),
           ),
+          floatingActionButtonLocation: Handedness.of(
+            context,
+          ).floatingActionButtonLocation,
           floatingActionButton: Builder(
             builder: (context) => FloatingActionButton(
               onPressed: isLoading ? null : () => _sendReport(context),

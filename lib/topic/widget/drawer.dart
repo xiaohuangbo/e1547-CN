@@ -1,28 +1,31 @@
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:flutter/material.dart';
 
-class TopicTagEditingTile extends StatelessWidget {
-  const TopicTagEditingTile({super.key, required this.controller});
-
-  final TopicController controller;
+class TopicListDrawer extends StatelessWidget {
+  const TopicListDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) => SwitchListTile(
-        secondary: const Icon(Icons.inventory_outlined),
-        title: const Text('隐藏标签编辑'),
-        subtitle: Text(
-          controller.hideTagEditing
-              ? '隐藏标签别名和含义'
-              : '显示标签别名和含义',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+    final controller = context.watch<TopicFilter>();
+    return ContextDrawer(
+      title: const Text('话题'),
+      children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.sell),
+          title: const Text('隐藏标签编辑'),
+          subtitle: Text(
+            controller.value.hideTagEditing ? 'hidden' : 'visible',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          value: controller.value.hideTagEditing,
+          onChanged: (value) {
+            controller.value = (hideTagEditing: value);
+            Scaffold.of(context).closeEndDrawer();
+          },
         ),
-        value: controller.hideTagEditing,
-        onChanged: (value) => controller.hideTagEditing = value,
-      ),
+      ],
     );
   }
 }

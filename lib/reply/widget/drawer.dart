@@ -7,27 +7,28 @@ class ReplyListDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ReplyController>(
-      builder: (context, controller, child) => ContextDrawer(
-        title: const Text('Replies'),
-        children: [
-          AnimatedBuilder(
-            animation: controller,
-            builder: (context, child) => SwitchListTile(
-              secondary: const Icon(Icons.sort),
-              title: const Text('Reply order'),
-              subtitle: Text(
-                controller.orderByOldest ? 'oldest first' : 'newest first',
+    final controller = context.watch<ReplyParamsController>();
+    return ContextDrawer(
+      title: const Text('回复'),
+      children: [
+        SwitchListTile(
+          secondary: const Icon(Icons.sort),
+          title: const Text('回复排序'),
+          subtitle: Text(switch (controller.value.order) {
+            ReplyOrder.oldest => 'oldest first',
+            ReplyOrder.newest => 'newest first',
+          }),
+          value: controller.value.order == ReplyOrder.oldest,
+          onChanged: (value) {
+            controller.update(
+              (p) => p.copyWith(
+                order: value ? ReplyOrder.oldest : ReplyOrder.newest,
               ),
-              value: controller.orderByOldest,
-              onChanged: (value) {
-                controller.orderByOldest = value;
-                Navigator.of(context).maybePop();
-              },
-            ),
-          ),
-        ],
-      ),
+            );
+            Scaffold.of(context).closeEndDrawer();
+          },
+        ),
+      ],
     );
   }
 }

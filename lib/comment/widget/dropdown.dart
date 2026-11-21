@@ -4,47 +4,56 @@ import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class CommentListDropdown extends StatelessWidget {
-  const CommentListDropdown({super.key, this.postId});
-
-  final int? postId;
+  const CommentListDropdown({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CommentController>(
-      builder: (context, controller, child) => PopupMenuButton<VoidCallback>(
-        icon: const Icon(Icons.more_vert),
-        onSelected: (value) => value(),
-        itemBuilder: (context) => [
-          PopupMenuTile(
-            title: 'Refresh',
-            icon: Icons.refresh,
-            value: () => controller.refresh(force: true),
-          ),
-          PopupMenuTile(
-            icon: Icons.sort,
-            title: controller.orderByOldest ? 'Newest first' : 'Oldest first',
-            value: () => controller.orderByOldest = !controller.orderByOldest,
-          ),
-          if (postId case final postId?)
-            PopupMenuTile(
-              title: 'Comment',
-              icon: Icons.comment,
-              value: () => guardWithLogin(
-                context: context,
-                callback: () async {
-                  bool success = await writeComment(
-                    context: context,
-                    postId: postId,
-                  );
-                  if (success) {
-                    controller.refresh(force: true);
-                  }
-                },
-                error: 'You must be logged in to comment!',
-              ),
+    final client = context.watch<Client>();
+    final controller = context.watch<CommentParamsController>();
+    final query = client.comments.usePage(query: controller.value.toQuery());
+    final postId = controller.value.postId;
+
+    return PopupMenuButton<VoidCallback>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (value) => value(),
+      itemBuilder: (context) => [
+        PopupMenuTile(
+          title: '刷新',
+          icon: Icons.refresh,
+          value: () => query.invalidate(),
+        ),
+        PopupMenuTile(
+          icon: Icons.sort,
+          title: controller.value.order == CommentOrder.oldest
+              ? 'Newest first'
+              : 'Oldest first',
+          value: () => controller.update(
+            (p) => p.copyWith(
+              order: p.order == CommentOrder.oldest
+                  ? CommentOrder.newest
+                  : CommentOrder.oldest,
             ),
-        ],
-      ),
+          ),
+        ),
+        if (postId != null)
+          PopupMenuTile(
+            title: '评论',
+            icon: Icons.comment,
+            value: () => guardWithLogin(
+              context: context,
+              callback: () async {
+                bool success = await writeComment(
+                  context: context,
+                  postId: postId,
+                );
+                if (success) {
+                  query.invalidate();
+                }
+              },
+              error: '您必须登录才能发表评论！',
+            ),
+          ),
+      ],
     );
   }
 }

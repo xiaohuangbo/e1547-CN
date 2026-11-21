@@ -1,4 +1,4 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class ReportLoadingOverlay extends StatelessWidget {
@@ -21,7 +21,7 @@ class ReportLoadingOverlay extends StatelessWidget {
             showChild: isLoading,
             child: const DecoratedBox(
               decoration: BoxDecoration(color: Colors.black54),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: HexagonalLoadingIndicator()),
             ),
           ),
         ),

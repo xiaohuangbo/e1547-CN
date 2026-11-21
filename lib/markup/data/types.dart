@@ -1,282 +1,582 @@
-import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
-/// Used to identify text segments with unique keys.
-///
-/// TextSpans cannot contain state as they are not widgets.
-/// WidgetSpans can contain state, but they may be disposed early.
-/// To identify spoilers and sections, we therefore use this class.
 @immutable
-class DTextId {
-  const DTextId({required this.start, required this.end});
+sealed class DTextNode {
+  const DTextNode();
 
-  final int start;
-  final int end;
+  String get type;
 
-  @override
-  String toString() => 'DTextId(start: $start, end: $end)';
-
-  @override
-  bool operator ==(Object other) =>
-      other is DTextId && start == other.start && end == other.end;
-
-  @override
-  int get hashCode => Object.hash(start, end);
-
-  /// Whether this id spans accross the other id.
-  bool contains(DTextId other) => start <= other.start && end >= other.end;
-
-  /// Whether this id's span is contained by the other id.
-  bool isContainedBy(DTextId other) => other.contains(this);
+  Map<String, Object?> toJson();
 }
 
 @immutable
-sealed class DTextElement {
-  const DTextElement();
+sealed class DTextBlock extends DTextNode {
+  const DTextBlock();
 }
 
-class DTextElements extends DTextElement {
-  const DTextElements(this.elements);
+@immutable
+sealed class DTextInline extends DTextNode {
+  const DTextInline();
+}
 
-  final List<DTextElement> elements;
+@immutable
+sealed class DTextTableChild extends DTextNode {
+  const DTextTableChild();
+}
+
+final class DTextDocument extends DTextNode {
+  const DTextDocument(this.children);
+
+  final List<DTextBlock> children;
 
   @override
-  String toString() => 'Elements($elements)';
+  String get type => 'document';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
 }
 
-class DTextContent extends DTextElement {
-  const DTextContent(this.content);
+final class DTextHeader extends DTextBlock {
+  const DTextHeader({required this.level, required this.children});
+
+  final int level;
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'header';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'level': level,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextParagraph extends DTextBlock {
+  const DTextParagraph(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'paragraph';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextQuote extends DTextBlock {
+  const DTextQuote({required this.children, this.color});
+
+  final List<DTextBlock> children;
+  final String? color;
+
+  @override
+  String get type => 'quote';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+    if (color != null) 'color': color,
+  };
+}
+
+final class DTextSpoilerBlock extends DTextBlock {
+  const DTextSpoilerBlock(this.children);
+
+  final List<DTextBlock> children;
+
+  @override
+  String get type => 'spoiler_block';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextSection extends DTextBlock {
+  const DTextSection({required this.children, this.title, this.expanded});
+
+  final List<DTextBlock> children;
+  final String? title;
+  final bool? expanded;
+
+  @override
+  String get type => 'section';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+    if (title != null) 'title': title,
+    if (expanded != null) 'expanded': expanded,
+  };
+}
+
+final class DTextCodeBlock extends DTextBlock {
+  const DTextCodeBlock(this.content);
 
   final String content;
 
   @override
-  String toString() => 'Text(${content.replaceAll('\r\n', r'\n')})';
-
-  DTextContent operator +(DTextContent other) =>
-      DTextContent(content + other.content);
-}
-
-sealed class DTextBlock extends DTextElement {
-  const DTextBlock(this.children);
-
-  final DTextElement children;
-}
-
-class DTextBold extends DTextBlock {
-  const DTextBold(super.children);
+  String get type => 'code_block';
 
   @override
-  String toString() => 'Bold($children)';
+  Map<String, Object?> toJson() => {'type': type, 'content': content};
 }
 
-class DTextItalic extends DTextBlock {
-  const DTextItalic(super.children);
+final class DTextRawBlockText extends DTextBlock {
+  const DTextRawBlockText(this.content);
+
+  final String content;
 
   @override
-  String toString() => 'Italic($children)';
-}
-
-class DTextOverline extends DTextBlock {
-  const DTextOverline(super.children);
+  String get type => 'raw_block_text';
 
   @override
-  String toString() => 'Overline($children)';
+  Map<String, Object?> toJson() => {'type': type, 'content': content};
 }
 
-class DTextUnderline extends DTextBlock {
-  const DTextUnderline(super.children);
+final class DTextLiteralHtml extends DTextBlock {
+  const DTextLiteralHtml({required this.prefix, required this.children});
+
+  final String prefix;
+  final List<DTextInline> children;
 
   @override
-  String toString() => 'Underline($children)';
-}
-
-class DTextStrikethrough extends DTextBlock {
-  const DTextStrikethrough(super.children);
+  String get type => 'literal_html';
 
   @override
-  String toString() => 'Strikethrough($children)';
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'prefix': prefix,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
 }
 
-class DTextSuperscript extends DTextBlock {
-  const DTextSuperscript(super.children);
+final class DTextTable extends DTextBlock {
+  const DTextTable(this.children);
+
+  final List<DTextTableChild> children;
 
   @override
-  String toString() => 'Superscript($children)';
-}
-
-class DTextSubscript extends DTextBlock {
-  const DTextSubscript(super.children);
+  String get type => 'table';
 
   @override
-  String toString() => 'Subscript($children)';
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
 }
 
-class DTextSpoiler extends DTextBlock {
-  const DTextSpoiler(this.id, super.children);
+final class DTextLTable extends DTextBlock {
+  const DTextLTable({required this.children, this.source});
 
-  final DTextId id;
+  final List<DTextTableChild> children;
+  final String? source;
 
   @override
-  String toString() => 'Spoiler($children)';
-}
-
-class DTextQuote extends DTextBlock {
-  const DTextQuote(super.children);
+  String get type => 'ltable';
 
   @override
-  String toString() => 'Quote($children)';
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+    if (source != null) 'source': source,
+  };
 }
 
-class DTextCode extends DTextBlock {
-  const DTextCode(super.children);
+final class DTextList extends DTextBlock {
+  const DTextList(this.items);
+
+  final List<DTextListItem> items;
 
   @override
-  String toString() => 'Code($children)';
-}
-
-class DTextSection extends DTextBlock {
-  const DTextSection(this.id, this.title, this.expanded, super.children);
-
-  final DTextId? id;
-  final String? title;
-  final bool expanded;
+  String get type => 'list';
 
   @override
-  String toString() => 'Section($title, $expanded, $children)';
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'items': items.map((e) => e.toJson()).toList(),
+  };
 }
 
-class DTextColor extends DTextBlock {
-  const DTextColor(this.color, super.children);
+@immutable
+final class DTextListItem extends DTextNode {
+  const DTextListItem({required this.depth, required this.children});
 
-  final String color;
+  final int depth;
+  final List<DTextInline> children;
 
   @override
-  String toString() => 'Color($color, $children)';
+  String get type => 'list_item';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'depth': depth,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
 }
 
-class DTextInlineCode extends DTextElement {
+final class DTextTableHead extends DTextTableChild {
+  const DTextTableHead(this.rows);
+
+  final List<DTextTableChild> rows;
+
+  @override
+  String get type => 'table_head';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'rows': rows.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextTableBody extends DTextTableChild {
+  const DTextTableBody(this.rows);
+
+  final List<DTextTableChild> rows;
+
+  @override
+  String get type => 'table_body';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'rows': rows.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextTableRow extends DTextTableChild {
+  const DTextTableRow(this.cells);
+
+  final List<DTextTableCell> cells;
+
+  @override
+  String get type => 'table_row';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'cells': cells.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextTableLiteral extends DTextTableChild {
+  const DTextTableLiteral(this.content);
+
+  final String content;
+
+  @override
+  String get type => 'table_literal';
+
+  @override
+  Map<String, Object?> toJson() => {'type': type, 'content': content};
+}
+
+enum DTextTableCellType {
+  th,
+  td;
+
+  String get jsonValue => name;
+}
+
+@immutable
+final class DTextTableCell extends DTextNode {
+  const DTextTableCell({required this.cellType, required this.children});
+
+  final DTextTableCellType cellType;
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'table_cell';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'cellType': cellType.jsonValue,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextText extends DTextInline {
+  const DTextText(this.content);
+
+  final String content;
+
+  @override
+  String get type => 'text';
+
+  @override
+  Map<String, Object?> toJson() => {'type': type, 'content': content};
+}
+
+final class DTextBold extends DTextInline {
+  const DTextBold(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'bold';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextItalic extends DTextInline {
+  const DTextItalic(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'italic';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextStrikeout extends DTextInline {
+  const DTextStrikeout(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'strikeout';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextUnderline extends DTextInline {
+  const DTextUnderline(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'underline';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextSuperscript extends DTextInline {
+  const DTextSuperscript(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'superscript';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextSubscript extends DTextInline {
+  const DTextSubscript(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'subscript';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextInlineSpoiler extends DTextInline {
+  const DTextInlineSpoiler(this.children);
+
+  final List<DTextInline> children;
+
+  @override
+  String get type => 'inline_spoiler';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
+}
+
+final class DTextInlineCode extends DTextInline {
   const DTextInlineCode(this.content);
 
   final String content;
 
   @override
-  String toString() => 'InlineCode($content)';
-}
-
-enum LinkWord {
-  post,
-  forum,
-  topic,
-  comment,
-  user,
-  blip,
-  pool,
-  set,
-  takedown,
-  record,
-  ticket,
-  thumb;
-
-  String toLink(int id) {
-    switch (this) {
-      case thumb:
-      case post:
-        return '/posts/$id';
-      case pool:
-        return '/pools/$id';
-      case user:
-        return '/users/$id';
-      case forum:
-        return '/forum_posts/$id';
-      case topic:
-        return '/forum_topics/$id';
-      case comment:
-        return '/comments/$id';
-      case set:
-        return '/post_sets/$id';
-      case record:
-        return '/user_feedbacks/$id';
-      case blip:
-        return '/blips/$id';
-      case ticket:
-        return '/tickets/$id';
-      case takedown:
-        return '/takedowns/$id';
-    }
-  }
-}
-
-class DTextHeader extends DTextBlock {
-  const DTextHeader(this.level, super.children);
-
-  final int level;
+  String get type => 'inline_code';
 
   @override
-  String toString() => 'Header($level, $children)';
+  Map<String, Object?> toJson() => {'type': type, 'content': content};
 }
 
-class DTextBullet extends DTextBlock {
-  const DTextBullet(this.indent, super.children);
+final class DTextColor extends DTextInline {
+  const DTextColor({required this.color, required this.children});
 
-  final int indent;
+  final String color;
+  final List<DTextInline> children;
 
   @override
-  String toString() => 'Bullet($indent, $children)';
+  String get type => 'color';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'color': color,
+    'children': children.map((e) => e.toJson()).toList(),
+  };
 }
 
-class DTextList extends DTextElement {
-  const DTextList(this.items);
+final class DTextInternalAnchor extends DTextInline {
+  const DTextInternalAnchor(this.name);
 
-  final List<DTextBullet> items;
+  final String name;
 
   @override
-  String toString() => 'List($items)';
+  String get type => 'internal_anchor';
+
+  @override
+  Map<String, Object?> toJson() => {'type': type, 'name': name};
 }
 
-class DTextLinkWord extends DTextElement {
-  const DTextLinkWord(this.type, this.id);
-
-  final LinkWord type;
-  final int id;
+final class DTextLineBreak extends DTextInline {
+  const DTextLineBreak();
 
   @override
-  String toString() => 'LinkWord($type, $id)';
+  String get type => 'line_break';
+
+  @override
+  Map<String, Object?> toJson() => {'type': type};
 }
 
-class DTextLink extends DTextElement {
-  const DTextLink(this.name, this.link);
+enum DTextFragmentWrapper {
+  sub,
+  sup;
 
-  final DTextElement? name;
-  final String link;
-
-  @override
-  String toString() => 'Link($name, $link)';
+  String get jsonValue => name;
 }
 
-class DTextLocalLink extends DTextElement {
-  const DTextLocalLink(this.name, this.link);
+final class DTextFragment extends DTextInline {
+  const DTextFragment({required this.children, this.wrapper});
 
-  final DTextElement name;
-  final String link;
+  final List<DTextInline> children;
+  final DTextFragmentWrapper? wrapper;
 
   @override
-  String toString() => 'LocalLink($name, $link)';
+  String get type => 'fragment';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'children': children.map((e) => e.toJson()).toList(),
+    if (wrapper != null) 'wrapper': wrapper!.jsonValue,
+  };
 }
 
-class DTextTagLink extends DTextElement {
-  const DTextTagLink(this.name, this.tag);
+enum DTextLinkType {
+  url('url'),
+  inline('inline'),
+  wiki('wiki'),
+  postSearch('post_search'),
+  idLink('id_link');
 
-  final String? name;
-  final String tag;
+  const DTextLinkType(this.jsonValue);
 
-  @override
-  String toString() => 'TagLink($name, $tag)';
+  final String jsonValue;
 }
 
-class DTextTagSearchLink extends DTextElement {
-  const DTextTagSearchLink(this.tags);
+enum DTextIdType {
+  post('post'),
+  thumb('thumb'),
+  postChanges('post_changes'),
+  flag('flag'),
+  note('note'),
+  forumPost('forum_post'),
+  topic('topic'),
+  comment('comment'),
+  pool('pool'),
+  user('user'),
+  artist('artist'),
+  ban('ban'),
+  bur('bur'),
+  alias('alias'),
+  implication('implication'),
+  modAction('mod_action'),
+  record('record'),
+  wiki('wiki'),
+  set('set'),
+  blip('blip'),
+  takedown('takedown'),
+  ticket('ticket');
 
-  final String tags;
+  const DTextIdType(this.jsonValue);
+
+  final String jsonValue;
+}
+
+final class DTextLink extends DTextInline {
+  const DTextLink({
+    required this.linkType,
+    required this.href,
+    this.title,
+    this.children,
+    this.idType,
+    this.id,
+    this.anchor,
+    this.tags,
+  });
+
+  final DTextLinkType linkType;
+  final String href;
+  final String? title;
+  final List<DTextInline>? children;
+  final DTextIdType? idType;
+  final String? id;
+  final String? anchor;
+  final String? tags;
 
   @override
-  String toString() => 'TagSearchLink($tags)';
+  String get type => 'link';
+
+  @override
+  Map<String, Object?> toJson() => {
+    'type': type,
+    'linkType': linkType.jsonValue,
+    'href': href,
+    if (title != null) 'title': title,
+    if (children != null) 'children': children!.map((e) => e.toJson()).toList(),
+    if (idType != null) 'idType': idType!.jsonValue,
+    if (id != null) 'id': id,
+    if (anchor != null) 'anchor': anchor,
+    if (tags != null) 'tags': tags,
+  };
 }

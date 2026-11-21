@@ -19,22 +19,39 @@ on:
         description: "Release title"
         type: string
         required: false
+      dry_run:
+        description: "Build and validate without publishing"
+        type: boolean
+        default: false
+      skip_playstore:
+        description: "Skip the Play Store upload"
+        type: boolean
+        default: false
+      skip_github_release:
+        description: "Skip the GitHub release"
+        type: boolean
+        default: false
+      skip_forum:
+        description: "Skip the forum post"
+        type: boolean
+        default: false
 
 env:
   VERSION_BUMP: ${{ github.event.inputs.version }}
   RELEASE_TITLE: ${{ github.event.inputs.release_title }}
+  DRY_RUN: ${{ github.event.inputs.dry_run }}
 
 jobs:
   android-build:
     runs-on: ubuntu-latest
     steps:
       - name: setup actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
-          distribution: "adopt"
+          distribution: "temurin"
           java-version: "17"
 
       - name: parse flutter version
@@ -48,13 +65,6 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: cache flutter dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: ${{ runner.os }}-flutter-
-
       - name: get flutter dependencies
         run: flutter pub get
 
@@ -62,7 +72,7 @@ jobs:
         if: ${{ github.event.inputs.version != 'none' }}
         run: |
           dart pub global activate cider
-          cider bump ${{ env.VERSION_BUMP }} --bump-build
+          dart pub global run cider bump ${{ env.VERSION_BUMP }} --bump-build
 
       - name: configure release keys
         env:
@@ -81,17 +91,31 @@ jobs:
 
       - name: package release
         run: |
-          mv build/app/outputs/flutter-apk/app-release.apk app-release.apk
+          mv build/app/outputs/apk/release/app-universal-release.apk app-universal-release.apk
+          mv build/app/outputs/apk/release/app-arm64-v8a-release.apk app-arm64-v8a-release.apk
+          mv build/app/outputs/apk/release/app-armeabi-v7a-release.apk app-armeabi-v7a-release.apk
           mv build/app/outputs/bundle/release/app-release.aab app-release.aab
 
-      - name: upload APK to artifacts
-        uses: actions/upload-artifact@v4
+      - name: upload Universal APK to artifacts
+        uses: actions/upload-artifact@v7
         with:
-          name: release-apk
-          path: app-release.apk
+          name: release-apk-universal
+          path: app-universal-release.apk
+
+      - name: upload ARM64 APK to artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-apk-arm64
+          path: app-arm64-v8a-release.apk
+
+      - name: upload ARMv7 APK to artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-apk-armv7
+          path: app-armeabi-v7a-release.apk
 
       - name: upload AAB to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-aab
           path: app-release.aab
@@ -100,7 +124,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: setup actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: parse flutter version
         run: |
@@ -113,13 +137,6 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: cache flutter dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: ${{ runner.os }}-flutter-
-
       - name: get flutter dependencies
         run: flutter pub get
 
@@ -127,7 +144,7 @@ jobs:
         if: ${{ github.event.inputs.version != 'none' }}
         run: |
           dart pub global activate cider
-          cider bump ${{ env.VERSION_BUMP }} --bump-build
+          dart pub global run cider bump ${{ env.VERSION_BUMP }} --bump-build
 
       - name: build IPA
         run: flutter build ios --no-codesign
@@ -141,23 +158,148 @@ jobs:
           mv Runner.zip ../../../Runner.ipa
 
       - name: upload IPA to artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-ios
           path: Runner.ipa
 
-  release:
-    needs: [android-build, ios-build]
-    if: ${{ github.ref == 'refs/heads/master' && github.event.inputs.version != 'none' }}
-    runs-on: ubuntu-latest
+  windows-build:
+    runs-on: windows-latest
     steps:
       - name: setup actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      - name: parse flutter version
+        shell: bash
+        run: |
+          export FLUTTER_VERSION=$(./.github/workflows/get_flutter_version.sh)
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> $GITHUB_ENV
+
+      - name: setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: get flutter dependencies
+        run: flutter pub get
+
+      - name: bump version
+        if: ${{ github.event.inputs.version != 'none' }}
+        shell: bash
+        run: |
+          dart pub global activate cider
+          dart pub global run cider bump ${{ env.VERSION_BUMP }} --bump-build
 
       - name: setup ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.1"
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: install InnoSetup
+        run: bundle exec fastlane windows bootstrap
+
+      - name: build EXE
+        run: bundle exec fastlane windows build
+
+      - name: package release
+        shell: bash
+        run: mv "$(find dist -name '*.exe' | head -1)" e1547-setup.exe
+
+      - name: upload EXE to artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-exe
+          path: e1547-setup.exe
+
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup actions
+        uses: actions/checkout@v7
+
+      - name: install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libmpv-dev mpv
+
+      - name: parse flutter version
+        run: |
+          export FLUTTER_VERSION=$(./.github/workflows/get_flutter_version.sh)
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> $GITHUB_ENV
+
+      - name: setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: get flutter dependencies
+        run: flutter pub get
+
+      - name: bump version
+        if: ${{ github.event.inputs.version != 'none' }}
+        run: |
+          dart pub global activate cider
+          dart pub global run cider bump ${{ env.VERSION_BUMP }} --bump-build
+
+      - name: setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: build bundle
+        run: bundle exec fastlane linux build
+
+      - name: build DEB
+        env:
+          DESTDIR: dist/linux/root
+        run: |
+          bundle exec fastlane linux install
+          bundle exec fastlane linux pkgdeb
+
+      - name: package release
+        run: |
+          mv dist/linux/*.deb e1547.deb
+          cp -r build/linux/x64/release/bundle e1547
+          tar czf e1547.tar.gz e1547
+
+      - name: upload DEB to artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-deb
+          path: e1547.deb
+
+      - name: upload tarball to artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-tar
+          path: e1547.tar.gz
+
+  release:
+    needs: [android-build, ios-build, windows-build, linux-build]
+    if: ${{ github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: mint publisher token
+        id: publisher
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.PUBLISHER_PRIVATE_KEY }}
+
+      - name: setup actions
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.publisher.outputs.token }}
+
+      - name: setup ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
           bundler-cache: true
 
       - name: parse flutter version
@@ -175,6 +317,7 @@ jobs:
         run: dart pub global activate cider
 
       - name: bump and release version
+        if: ${{ github.event.inputs.version != 'none' }}
         run: |
           cider bump ${{ env.VERSION_BUMP }} --bump-build
           cider release
@@ -191,36 +334,73 @@ jobs:
       - name: write playstore changelogs
         run: bundle exec fastlane android changelog
 
+      - name: verify changelog body is non-empty
+        run: |
+          file="./fastlane/metadata/android/en-US/changelogs/${{ env.BUILD_NUMBER }}.txt"
+          if [ ! -s "$file" ] || ! grep -q '[^[:space:]]' "$file"; then
+            echo "::error::$file is empty"
+            exit 1
+          fi
+
       - name: commit version increase
-        uses: EndBug/add-and-commit@v9
+        if: ${{ github.event.inputs.version != 'none' && github.event.inputs.dry_run != 'true' }}
+        uses: EndBug/add-and-commit@v11
         with:
           message: increased version
           default_author: github_actions
+          github_token: ${{ steps.publisher.outputs.token }}
           add: |
             pubspec.yaml
             CHANGELOG.md
             fastlane
 
-      - name: download APK from artifacts
-        uses: actions/download-artifact@v4
+      - name: download Universal APK from artifacts
+        uses: actions/download-artifact@v8
         with:
-          name: release-apk
+          name: release-apk-universal
+
+      - name: download ARM64 APK from artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-apk-arm64
+
+      - name: download ARMv7 APK from artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-apk-armv7
 
       - name: download AAB from artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-aab
 
       - name: download IPA from artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: release-ios
+
+      - name: download EXE from artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-exe
+
+      - name: download DEB from artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-deb
+
+      - name: download tarball from artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: release-tar
 
       - name: arrange asset files
         run: |
           mkdir -p build/app/outputs/bundle/release
           mv app-release.aab build/app/outputs/bundle/release/
-          mv app-release.apk e1547.apk
+          mv app-universal-release.apk e1547-universal.apk
+          mv app-arm64-v8a-release.apk e1547-arm64.apk
+          mv app-armeabi-v7a-release.apk e1547-armv7.apk
           mv Runner.ipa e1547.ipa
 
       - name: configure playstore keys
@@ -231,16 +411,134 @@ jobs:
           echo "$KEYSTORE" > android/keys/playstore.json
 
       - name: publish to Play Store
-        run: bundle exec fastlane android upload
+        if: ${{ github.event.inputs.skip_playstore != 'true' }}
+        run: bundle exec fastlane android upload validate_only:${{ github.event.inputs.dry_run }}
 
       - name: create release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.skip_github_release != 'true' }}
+        uses: softprops/action-gh-release@v3
         with:
+          token: ${{ steps.publisher.outputs.token }}
           tag_name: ${{ env.VERSION }}
           name: ${{ env.RELEASE_TITLE }}
           body_path: ./fastlane/metadata/android/en-US/changelogs/${{ env.BUILD_NUMBER }}.txt
           files: |
-            e1547.apk
+            e1547-universal.apk
+            e1547-arm64.apk
+            e1547-armv7.apk
             e1547.ipa
+            e1547-setup.exe
+            e1547.deb
+            e1547.tar.gz
+
+  forum-publish:
+    needs: [release]
+    if: ${{ github.ref == 'refs/heads/master' && github.event.inputs.skip_forum != 'true' && github.event.inputs.dry_run != 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      DMARK_VERSION: '2.0.0'
+    steps:
+      - name: setup actions
+        uses: actions/checkout@v7
+        with:
+          ref: master
+
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: setup dart
+        uses: dart-lang/setup-dart@v1
+
+      - name: setup cider
+        run: dart pub global activate cider
+
+      - name: extract release metadata
+        id: meta
+        run: |
+          VERSION=$(cider version)
+          BUILD_NUMBER=${VERSION#*+}
+          TOPIC_ID=$(grep -oP "forumTopicId:\s*\K\d+" lib/app/data/initialize.dart)
+          GITHUB_SLUG=$(grep -oP "github:\s*'\K[^']+" lib/app/data/initialize.dart)
+          DISCORD_INVITE=$(grep -oP "discord:\s*'\K[^']+" lib/app/data/initialize.dart)
+          DEVELOPER=$(grep -oP "developer:\s*'\K[^']+" lib/app/data/initialize.dart)
+          PACKAGE_NAME=$(grep -oP 'applicationId\s*=\s*"\K[^"]+' android/app/build.gradle.kts)
+          {
+            echo "version=$VERSION"
+            echo "build_number=$BUILD_NUMBER"
+            echo "topic_id=$TOPIC_ID"
+            echo "github_slug=$GITHUB_SLUG"
+            echo "discord_invite=$DISCORD_INVITE"
+            echo "developer=$DEVELOPER"
+            echo "package_name=$PACKAGE_NAME"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: extract version changelog markdown
+        run: |
+          cider describe --only-body "${{ steps.meta.outputs.version }}" \
+            > version_changelog.md
+
+      - name: verify changelog body is non-empty
+        run: |
+          if [ ! -s version_changelog.md ] || ! grep -q '[^[:space:]]' version_changelog.md; then
+            echo "::error::version_changelog.md is empty"
+            exit 1
+          fi
+
+      - name: download dmark
+        run: |
+          curl -fsSL \
+            "https://libs.cdn.clynamic.net/dmark/${DMARK_VERSION}/dmark.md.js" \
+            -o dmark.mjs
+
+      - name: convert markdown to dtext
+        run: |
+          cat > convert.mjs <<'EOF'
+          import { convertMarkdownToDText } from './dmark.mjs';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const md = readFileSync('version_changelog.md', 'utf8');
+          const { output } = convertMarkdownToDText(md);
+          writeFileSync('version_changelog.dtext', `${output}\n`);
+          EOF
+          node convert.mjs
+
+      - name: assemble forum post body
+        run: |
+          VERSION='${{ steps.meta.outputs.version }}'
+          PACKAGE_NAME='${{ steps.meta.outputs.package_name }}'
+          GITHUB_SLUG='${{ steps.meta.outputs.github_slug }}'
+          DISCORD_INVITE='${{ steps.meta.outputs.discord_invite }}'
+          {
+            echo "h1. Version $VERSION"
+            echo ""
+            echo "[section,expanded=Changes]"
+            cat version_changelog.dtext
+            echo "[/section]"
+            echo ""
+            echo "[section,expanded=Download]"
+            echo "You can download the app in the [b]\"Playstore\":https://play.google.com/store/apps/details?id=$PACKAGE_NAME [/b]"
+            echo "or get your own copy from the [b]\"Github releases\":https://github.com/$GITHUB_SLUG/releases [/b]."
+            echo "[/section]"
+            echo ""
+            echo "[section,expanded=Community]"
+            echo "If you have feature suggestions or bugs, join us on the \"discord server\":https://discord.gg/$DISCORD_INVITE "
+            echo "[/section]"
+            echo ""
+            echo "Regards."
+          } > body.dtext
+
+      - name: post to e621 forum
+        env:
+          E621_FORUM_USER: ${{ secrets.E621_FORUM_USER }}
+          E621_FORUM_API_KEY: ${{ secrets.E621_FORUM_API_KEY }}
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg body "$(cat body.dtext)" \
+            --argjson topic_id ${{ steps.meta.outputs.topic_id }} \
+            '{forum_post: {topic_id: $topic_id, body: $body}}')
+          curl -fsS -X POST 'https://e621.net/forum_posts.json' \
+            -u "$E621_FORUM_USER:$E621_FORUM_API_KEY" \
+            -H "User-Agent: e1547/${{ steps.meta.outputs.version }} (${{ steps.meta.outputs.developer }})" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD"

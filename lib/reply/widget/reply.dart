@@ -1,14 +1,18 @@
+import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/reply/reply.dart';
+import 'package:e1547/shared/shared.dart';
+import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ReplyTile extends StatelessWidget {
-  const ReplyTile({super.key, required this.reply});
+  const ReplyTile({super.key, required this.reply, this.hasActions = true});
 
   final Reply reply;
+  final bool hasActions;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +27,18 @@ class ReplyTile extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 8, top: 4),
-                    child: Icon(Icons.person),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8, top: 4),
+                    child: UserSummaryAvatar(
+                      userId: reply.creatorId,
+                      radius: 12,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              UserLoadingPage(reply.creatorId),
+                        ),
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: Column(
@@ -42,7 +55,32 @@ class ReplyTile extends StatelessWidget {
                 ],
               ),
             ),
+            flightShuttleBuilder:
+                (
+                  flightContext,
+                  animation,
+                  flightDirection,
+                  fromHeroContext,
+                  toHeroContext,
+                ) => Material(
+                  type: MaterialType.transparency,
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: switch (flightDirection) {
+                      HeroFlightDirection.push => fromHeroContext.widget,
+                      HeroFlightDirection.pop => toHeroContext.widget,
+                    },
+                  ),
+                ),
           ),
+          if (hasActions)
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [ReplyMenu(reply: reply)],
+              ),
+            ),
           ReplyWarning(reply: reply),
           const SizedBox(height: 8),
           const Divider(),
@@ -84,8 +122,7 @@ class ReplyHeader extends StatelessWidget {
             ),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>
-                    UserLoadingPage(reply.creatorId.toString()),
+                builder: (context) => UserLoadingPage(reply.creatorId),
               ),
             ),
           ),
@@ -106,12 +143,74 @@ class ReplyVisibilityIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!reply.hidden) return const SizedBox();
     return Tooltip(
-      message: 'This reply is hidden',
+      message: '此回复已隐藏',
       child: Icon(
         Icons.visibility_off,
         size: smallIconSize(context),
         color: Theme.of(context).colorScheme.error,
       ),
+    );
+  }
+}
+
+class ReplyMenu extends StatelessWidget {
+  const ReplyMenu({super.key, required this.reply});
+
+  final Reply reply;
+
+  @override
+  Widget build(BuildContext context) {
+    final client = context.watch<Client>();
+    return PopupMenuButton<VoidCallback>(
+      icon: const Dimmed(child: Icon(Icons.more_vert)),
+      onSelected: (value) => value(),
+      itemBuilder: (context) => [
+        if (client.identity.username == reply.creator)
+          PopupMenuTile(
+            title: '编辑',
+            icon: Icons.edit,
+            value: () => guardWithLogin(
+              context: context,
+              callback: () => editReply(context: context, reply: reply),
+              error: '您必须登录才能编辑回复！',
+            ),
+          ),
+        PopupMenuTile(
+          title: '回复',
+          icon: Icons.reply,
+          value: () => guardWithLogin(
+            context: context,
+            callback: () => quoteReply(context: context, reply: reply),
+            error: '您必须登录才能回复！',
+          ),
+        ),
+        PopupMenuTile(
+          title: '复制 ID',
+          icon: Icons.tag,
+          value: () async {
+            Clipboard.setData(ClipboardData(text: reply.id.toString()));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 1),
+                content: Text('已复制回复 ID #${reply.id}'),
+              ),
+            );
+          },
+        ),
+        PopupMenuTile(
+          title: '举报',
+          icon: Icons.report,
+          value: () => guardWithLogin(
+            context: context,
+            callback: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ReplyReportScreen(reply: reply),
+              ),
+            ),
+            error: '您必须登录才能举报回复！',
+          ),
+        ),
+      ],
     );
   }
 }

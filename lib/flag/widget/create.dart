@@ -1,10 +1,9 @@
-import 'dart:math';
-
 import 'package:e1547/client/client.dart';
 import 'package:e1547/flag/flag.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
@@ -84,6 +83,9 @@ class _PostFlagScreenState extends State<PostFlagScreen> {
             title: Text('帖子 #${widget.post.id}'),
             leading: const CloseButton(),
           ),
+          floatingActionButtonLocation: Handedness.of(
+            context,
+          ).floatingActionButtonLocation,
           floatingActionButton: Builder(
             builder: (context) => FloatingActionButton(
               onPressed: isLoading ? null : () => _sendFlag(context),

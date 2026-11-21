@@ -1,64 +1,84 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:recase/recase.dart';
 
-class LogRecordDrawer extends StatelessWidget {
-  const LogRecordDrawer({
+class LogsDrawer extends StatelessWidget {
+  const LogsDrawer({
     super.key,
     required this.levels,
     required this.onChanged,
+    this.recording,
+    this.verbose = false,
+    this.onVerbose,
   });
 
-  final List<int> levels;
-  final ValueSetter<List<int>> onChanged;
+  final Set<LogLevel> levels;
+  final ValueSetter<Set<LogLevel>> onChanged;
+
+  final LogLevel? recording;
+  final bool verbose;
+  final ValueSetter<bool>? onVerbose;
+
+  void _toggle(LogLevel level, bool enabled) {
+    final Set<LogLevel> next = Set.of(levels);
+    if (enabled) {
+      next.add(level);
+    } else {
+      next.remove(level);
+    }
+    onChanged(next);
+  }
 
   @override
   Widget build(BuildContext context) {
-    const List<Level> filters = [
-      Level.FINE,
-      Level.INFO,
-      Level.WARNING,
-      Level.SEVERE,
-      Level.SHOUT,
-    ];
-
-    Map<Level, Widget> icons = {
-      Level.FINE: const Icon(Icons.monitor_heart_outlined),
-      Level.INFO: const Icon(Icons.info_outline),
-      Level.WARNING: const Icon(Icons.warning_amber),
-      Level.SEVERE: const Icon(Icons.report_outlined),
-      Level.SHOUT: const Icon(Icons.crisis_alert),
-    };
-
+    final LogLevel? recording = this.recording;
+    final ValueSetter<bool>? onVerbose = this.onVerbose;
     return ContextDrawer(
       title: const Text('日志'),
       children: [
         const Padding(
           padding: EdgeInsets.only(left: 12),
-          child: ListTileHeader(title: '级别'),
+          child: SectionHeader(
+            indent: SectionHeader.listTileIndent,
+            title: '级别',
+          ),
         ),
-        for (final filter in filters)
-          Padding(
-            padding: const EdgeInsets.only(left: 16),
-            child: CheckboxListTile(
-              secondary: icons[filter],
-              title: Text(filter.name.pascalCase),
-              value: levels.contains(filter.value),
-              onChanged: (value) {
-                if (value == null) {
-                  return;
-                }
-                List<int> levels = List.of(this.levels);
-                if (value) {
-                  levels.add(filter.value);
-                } else {
-                  levels.remove(filter.value);
-                }
-                onChanged(levels);
-              },
+        for (final LogLevel level in LogLevel.values)
+          if (recording == null || level.isAtLeast(recording))
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: CheckboxListTile(
+                secondary: Icon(level.icon),
+                title: Text(level.name.pascalCase),
+                value: levels.contains(level),
+                onChanged: (value) {
+                  if (value == null) return;
+                  _toggle(level, value);
+                },
+              ),
+            ),
+        if (recording != null && onVerbose != null) ...[
+          const Padding(
+            padding: EdgeInsets.only(left: 12),
+            child: SectionHeader(
+              indent: SectionHeader.listTileIndent,
+              title: '记录中',
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: SwitchListTile(
+              secondary: const Icon(Icons.data_object),
+              title: const Text('详细'),
+              subtitle: Text(
+                verbose ? '记录所有级别' : '${recording.name.pascalCase} and above',
+              ),
+              value: verbose,
+              onChanged: onVerbose,
+            ),
+          ),
+        ],
       ],
     );
   }

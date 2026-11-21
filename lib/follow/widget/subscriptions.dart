@@ -1,8 +1,9 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -15,82 +16,96 @@ class FollowsSubscriptionsPage extends StatelessWidget {
       child: ValueListenableBuilder(
         valueListenable: context.watch<Settings>().filterUnseenFollows,
         builder: (context, filterUnseenFollows, child) =>
-            SubChangeNotifierProvider<Client, FollowController>(
-              create: (context, value) => FollowController(
-                client: value,
-                types: [FollowType.update, FollowType.notify],
-                filterUnseen: filterUnseenFollows,
-              ),
-              keys: (context) => [filterUnseenFollows],
-              child: child,
-            ),
-        child: Consumer<FollowController>(
-          builder: (context, controller, _) => SubEffect(
-            effect: () {
-              // remove this when the paged grid view is implemented
-              controller.getNextPage();
-              final client = context.read<Client>();
-              client.follows.sync();
-              return null;
-            },
-            keys: [controller],
-            child: SelectionLayout<Follow>(
-              items: controller.items,
-              child: PromptActions(
-                child: RefreshableDataPage.builder(
-                  controller: controller,
-                  builder: (context, child) => TileLayout(child: child),
-                  child: (context) => ListenableBuilder(
-                    listenable: controller,
-                    builder: (context, _) =>
-                        PagedAlignedGridView<int, Follow>.count(
-                          primary: true,
-                          padding: defaultActionListPadding,
-                          state: controller.state,
-                          fetchNextPage: controller.getNextPage,
-                          addAutomaticKeepAlives: false,
-                          builderDelegate: defaultPagedChildBuilderDelegate(
-                            onRetry: controller.getNextPage,
-                            itemBuilder: (context, item, index) =>
-                                FollowTile(follow: item),
-                            onEmpty: const Text('没有订阅'),
-                            onError: const Text('加载订阅失败'),
-                          ),
-                          crossAxisCount: TileLayout.of(context).crossAxisCount,
-                        ),
-                  ),
-                  appBar: const FollowSelectionAppBar(
-                    child: DefaultAppBar(
-                      title: Text('订阅'),
-                      actions: [ContextDrawerButton()],
-                    ),
-                  ),
-                  drawer: const RouterDrawer(),
-                  endDrawer: const ContextDrawer(
-                    title: Text('订阅'),
-                    children: [
-                      FollowEditingTile(),
-                      Divider(),
-                      FollowFilterReadTile(),
-                      FollowMarkReadTile(),
-                      Divider(),
-                      FollowForceSyncTile(),
-                    ],
-                  ),
-                  floatingActionButton: AddTagFloatingActionButton(
-                    title: '添加到订阅',
-                    onSubmit: (value) async {
-                      value = value.trim();
-                      if (value.isEmpty) return;
-                      await context.read<Client>().follows.create(
-                        tags: value,
-                        type: FollowType.update,
-                      );
-                    },
-                  ),
+            ChangeNotifierProvider<FollowParamsController>(
+              create: (_) => FollowParamsController(
+                FollowParams(
+                  types: const [FollowType.update, FollowType.notify],
+                  hasUnseen: filterUnseenFollows ? true : null,
                 ),
               ),
+              key: ValueKey(filterUnseenFollows),
+              child: child,
             ),
+        child: SubEffect(
+          effect: () {
+            final client = context.read<Client>();
+            client.followServer.sync();
+            return null;
+          },
+          keys: const [],
+          child: FollowPageQueryBuilder(
+            builder: (context, state, query) {
+              final paramsController = context.read<FollowParamsController>();
+              if (paramsController.value.hasUnseen == true &&
+                  state is InfiniteQuerySuccess &&
+                  (state.data?.pages.expand((p) => p).isEmpty ?? true)) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  paramsController.update((p) => p.copyWith(hasUnseen: null));
+                });
+              }
+              return SelectionLayout<Follow>(
+                items: state.data?.pages.expand((p) => p).toList(),
+                child: PromptActions(
+                  child: AdaptiveScaffold(
+                    appBar: const FollowSelectionAppBar(
+                      child: DefaultAppBar(
+                        title: Text('订阅'),
+                        actions: [ContextDrawerButton()],
+                      ),
+                    ),
+                    drawer: const RouterDrawer(),
+                    endDrawer: const ContextDrawer(
+                      title: Text('订阅'),
+                      children: [
+                        FollowEditingTile(),
+                        Divider(),
+                        FollowFilterReadTile(),
+                        FollowMarkReadTile(),
+                        Divider(),
+                        FollowForceSyncTile(),
+                      ],
+                    ),
+                    floatingActionButton: AddTagFab(
+                      title: '添加到订阅',
+                      onSubmit: (value) async {
+                        value = value.trim();
+                        if (value.isEmpty) return;
+                        await context.read<Client>().follows.create(
+                          tags: value,
+                          type: FollowType.update,
+                        );
+                      },
+                    ),
+                    body: TileLayout(
+                      child: Builder(
+                        builder: (context) => PullToRefresh(
+                          onRefresh: query.invalidate,
+                          child: PagedAlignedGridView<int, Follow>.count(
+                            primary: true,
+                            padding: defaultActionListPadding,
+                            state: state.paging,
+                            fetchNextPage: query.getNextPage,
+                            addAutomaticKeepAlives: false,
+                            builderDelegate: defaultPagedChildBuilderDelegate(
+                              onRetry: query.getNextPage,
+                              itemBuilder: (context, item, index) =>
+                                  FollowTile(follow: item),
+                              onEmpty: const Text('没有订阅'),
+                              onError: const Text(
+                                'Failed to load subscriptions',
+                              ),
+                            ),
+                            crossAxisCount: TileLayout.of(
+                              context,
+                            ).crossAxisCount,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

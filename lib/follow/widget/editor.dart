@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class FollowEditor extends StatefulWidget {
@@ -16,7 +16,7 @@ class _FollowEditorState extends State<FollowEditor> {
   final String subscribe = FollowType.update.name;
   final String bookmark = FollowType.bookmark.name;
 
-  late Client client = context.read<Client>();
+  late final client = context.read<Client>();
   late Future<List<Follow>> all = client.follows.all();
   late Future<Map<String, String>> follows = all.then(
     (all) => {
@@ -74,24 +74,20 @@ class _FollowEditorState extends State<FollowEditor> {
 
   @override
   Widget build(BuildContext context) {
-    Widget title = const Text('Edit follows');
+    Widget title = const Text('编辑关注');
     return FutureLoadingPage<Map<String, String>>(
       title: title,
       future: follows,
       builder: (context, value) => MultiTextEditor(
         title: title,
         content: [
-          TextEditorContent(key: notify, title: 'Notify', value: value[notify]),
+          TextEditorContent(key: notify, title: '通知', value: value[notify]),
           TextEditorContent(
             key: subscribe,
-            title: 'Subscribe',
+            title: '订阅',
             value: value[subscribe],
           ),
-          TextEditorContent(
-            key: bookmark,
-            title: 'Bookmark',
-            value: value[bookmark],
-          ),
+          TextEditorContent(key: bookmark, title: '书签', value: value[bookmark]),
         ],
         onSubmitted: (value) async {
           Map<String, List<String>> contents = Map.fromEntries(

@@ -1,33 +1,32 @@
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/identity/identity.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/shared/shared.dart';
 
 class FollowClient {
-  FollowClient({required GeneratedDatabase database, required this.identity})
-    : repository = FollowRepository(database: database);
+  FollowClient({
+    required GeneratedDatabase database,
+    required this.identity,
+    required this.dio,
+  }) : repository = FollowRepository(database: database);
 
   final Identity identity;
+  final Dio dio;
 
   final FollowRepository repository;
 
-  Future<Follow> get({
-    required int id,
-    bool? force,
-    CancelToken? cancelToken,
-  }) => repository.get(id);
+  Future<Follow> get({required int id, CancelToken? cancelToken}) =>
+      repository.get(id);
 
-  Future<Follow?> getByTags({
-    required String tags,
-    bool? force,
-    CancelToken? cancelToken,
-  }) => repository.getByTags(tags, identity.id);
+  Future<Follow?> getByTags({required String tags, CancelToken? cancelToken}) =>
+      repository.getByTags(tags, identity.id);
 
   Future<List<Follow>> page({
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
   }) {
     final search = FollowsQuery.from(query);
@@ -42,11 +41,7 @@ class FollowClient {
     );
   }
 
-  Future<List<Follow>> all({
-    QueryMap? query,
-    bool? force,
-    CancelToken? cancelToken,
-  }) {
+  Future<List<Follow>> all({QueryMap? query, CancelToken? cancelToken}) {
     final search = FollowsQuery.from(query);
     return repository.all(
       identity: identity.id,
@@ -62,50 +57,65 @@ class FollowClient {
     required FollowType type,
     String? title,
     String? alias,
-  }) => repository.add(
-    FollowRequest(tags: tags, type: type, title: title, alias: alias),
-    identity.id,
-  );
+  }) async {
+    await repository.add(
+      FollowRequest(tags: tags, type: type, title: title, alias: alias),
+      identity.id,
+    );
+    _invalidateAll();
+  }
 
   Future<void> update({
     required int id,
     String? tags,
     String? title,
     FollowType? type,
-  }) => repository.transaction(() async {
-    await ((repository.update(
-      repository.followsTable,
-    ))..where((tbl) => tbl.id.equals(id))).write(
-      FollowCompanion(
-        title: title != null
-            ? Value(title.nullWhenEmpty)
-            : const Value.absent(),
-        type: type != null ? Value(type) : const Value.absent(),
-      ),
-    );
-    if (tags?.nullWhenEmpty != null) {
+  }) async {
+    await repository.transaction(() async {
       await ((repository.update(
         repository.followsTable,
       ))..where((tbl) => tbl.id.equals(id))).write(
         FollowCompanion(
-          tags: Value(tags!),
-          updated: const Value(null),
-          unseen: const Value(null),
-          thumbnail: const Value(null),
-          latest: const Value(null),
+          title: title != null
+              ? Value(title.nullWhenEmpty)
+              : const Value.absent(),
+          type: type != null ? Value(type) : const Value.absent(),
         ),
       );
-    }
-  });
+      if (tags?.nullWhenEmpty != null) {
+        await ((repository.update(
+          repository.followsTable,
+        ))..where((tbl) => tbl.id.equals(id))).write(
+          FollowCompanion(
+            tags: Value(tags!),
+            updated: const Value(null),
+            unseen: const Value(null),
+            thumbnail: const Value(null),
+            latest: const Value(null),
+          ),
+        );
+      }
+    });
+    _invalidateAll();
+  }
 
   Future<void> markSeen(int id) => markAllSeen([id]);
 
-  Future<void> markAllSeen(List<int>? ids) =>
-      repository.markAllSeen(ids: ids, identity: identity.id);
+  Future<void> markAllSeen(List<int>? ids) async {
+    await repository.markAllSeen(ids: ids, identity: identity.id);
+    _invalidateAll();
+  }
 
-  Future<void> delete(int id) => repository.remove(id);
+  Future<void> delete(int id) async {
+    await repository.remove(id);
+    _invalidateAll();
+  }
 
   Future<int> count() => repository.length(identity: identity.id);
+
+  void _invalidateAll() {
+    dio.queryCache?.invalidateKey(queryKey);
+  }
 }
 
 extension type FollowsQuery._(QueryMap self) implements QueryMap {

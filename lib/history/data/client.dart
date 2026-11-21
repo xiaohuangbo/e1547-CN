@@ -1,30 +1,27 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:e1547/history/history.dart';
 import 'package:e1547/shared/shared.dart';
 
 class HistoryClient {
-  HistoryClient({required this.server});
+  HistoryClient({required this.server, required this.dio});
 
   final HistoryServer server;
+  final Dio dio;
 
-  Future<History> get({
-    required int id,
-    bool? force,
-    CancelToken? cancelToken,
-  }) => server.get(id: id, force: force, cancelToken: cancelToken);
+  Future<History> get({required int id, CancelToken? cancelToken}) =>
+      server.get(id: id, cancelToken: cancelToken);
 
   Future<List<History>> page({
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
   }) => server.page(
     page: page,
     limit: limit,
     query: query,
-    force: force,
     cancelToken: cancelToken,
   );
 

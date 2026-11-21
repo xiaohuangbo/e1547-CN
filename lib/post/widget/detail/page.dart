@@ -1,43 +1,70 @@
 import 'dart:math';
 
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostDetail extends StatelessWidget {
-  const PostDetail({super.key, required this.post, this.onTapImage});
+  const PostDetail({
+    super.key,
+    required this.post,
+    this.summary,
+    this.onTapImage,
+  });
 
   final Post post;
+  final PostSummary? summary;
   final VoidCallback? onTapImage;
 
-  Widget image(BuildContext context, BoxConstraints constraints) => Padding(
+  Widget image(BuildContext context, Size size) => Padding(
     padding: const EdgeInsets.only(bottom: 10),
     child: ConstrainedBox(
       constraints: BoxConstraints(
-        minHeight: (constraints.maxHeight / 2),
-        maxHeight: constraints.maxWidth > constraints.maxHeight
-            ? max(400, constraints.maxHeight * 0.8)
+        minHeight: (size.height / 2),
+        maxHeight: size.width > size.height
+            ? max(400, size.height * 0.8)
             : double.infinity,
       ),
       child: AnimatedSize(
         duration: defaultAnimationDuration,
-        child: PostDetailImageDisplay(
-          post: post,
-          onTap: () {
-            PostVideoRoute.of(context).keepPlaying();
-            if (!(context.read<PostEditingController>().editing) &&
-                onTapImage != null) {
-              onTapImage!();
-            } else {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PostFullscreen(post: post),
+        child: switch (summary) {
+          final PostSummary summary => Skeleton.keep(
+            child: Center(
+              child: ContentHero(
+                tag: PostLinking.getPostLink(summary.id),
+                content: FittedContent(
+                  fit: BoxFit.contain,
+                  aspectRatio: summary.width / summary.height,
                 ),
-              );
-            }
-          },
-        ),
+                child: PostImageWidget(
+                  post: summary,
+                  size: PostImageSize.sample,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          null => Skeleton.keep(
+            keep: post is! Ghost,
+            child: PostDetailImageDisplay(
+              post: post,
+              onTap: () {
+                PostVideoRoute.of(context).keepPlaying();
+                if (onTapImage != null) {
+                  onTapImage!();
+                } else {
+                  Navigator.of(context).push(
+                    DismissRoute<void>(
+                      builder: (context) => PostFullscreen(post: post),
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+        },
       ),
     ),
   );
@@ -57,11 +84,7 @@ class PostDetail extends StatelessWidget {
 
   Widget middleBody(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: Column(
-      children: [
-        PostEditorChild(shown: false, child: CommentDisplay(post: post)),
-      ],
-    ),
+    child: Column(children: [CommentDisplay(post: post)]),
   );
 
   Widget lowerBody(BuildContext context) => Padding(
@@ -69,11 +92,11 @@ class PostDetail extends StatelessWidget {
     child: Column(
       children: [
         RelationshipDisplay(post: post),
-        PostEditorChild(shown: false, child: PoolDisplay(post: post)),
-        PostEditorChild(shown: false, child: DenylistTagDisplay(post: post)),
+        PoolDisplay(post: post),
+        ArtistRecommendations(post: post),
+        DenylistTagDisplay(post: post),
         TagDisplay(post: post),
-        PostEditorChild(shown: false, child: FileDisplay(post: post)),
-        PostEditorChild(shown: true, child: RatingDisplay(post: post)),
+        FileDisplay(post: post),
         SourceDisplay(post: post),
       ],
     ),
@@ -85,76 +108,109 @@ class PostDetail extends StatelessWidget {
       post: post,
       child: PostHistoryConnector(
         post: post,
-        child: PostEditor(
-          post: post,
+        child: ScrollToDismiss(
           child: Scaffold(
+            backgroundColor: Colors.transparent,
             extendBodyBehindAppBar: true,
             appBar: PostDetailAppBar(post: post),
-            floatingActionButton: context.read<Client>().hasLogin
-                ? PostDetailFloatingActionButton(post: post)
+            floatingActionButtonLocation: Handedness.of(
+              context,
+            ).floatingActionButtonLocation,
+            floatingActionButton:
+                context.read<Client>().hasLogin && !isSkeleton(context)
+                ? DismissFade(child: PostDetailFab(post: post))
                 : null,
             body: MediaQuery.removeViewInsets(
               context: context,
               removeTop: true,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth < 1000) {
-                    return ListView(
-                      primary: true,
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).padding.top,
-                        bottom: kBottomNavigationBarHeight + 24,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  DismissFade(
+                    child: Skeleton.keep(
+                      child: ColoredBox(
+                        color: Theme.of(context).scaffoldBackgroundColor,
                       ),
-                      children: [
-                        image(context, constraints),
-                        upperBody(context),
-                        middleBody(context),
-                        lowerBody(context),
-                      ],
-                    );
-                  } else {
-                    double sideBarWidth;
-                    if (constraints.maxWidth > 1400) {
-                      sideBarWidth = 404;
-                    } else {
-                      sideBarWidth = 304;
-                    }
-                    return CustomScrollView(
-                      primary: true,
-                      slivers: [
-                        SliverCrossAxisGroup(
+                    ),
+                  ),
+                  Builder(
+                    builder: (context) {
+                      final size = MediaQuery.sizeOf(context);
+                      if (size.width < 1000) {
+                        return ListView(
+                          primary: true,
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).padding.top,
+                            bottom: kBottomNavigationBarHeight + 24,
+                          ),
+                          children: [
+                            SkeletonIgnore(child: image(context, size)),
+                            SkeletonIgnore(
+                              child: DismissFade(child: upperBody(context)),
+                            ),
+                            SkeletonIgnore(
+                              child: DismissFade(child: middleBody(context)),
+                            ),
+                            SkeletonIgnore(
+                              child: DismissFade(child: lowerBody(context)),
+                            ),
+                          ],
+                        );
+                      } else {
+                        double sideBarWidth;
+                        if (size.width > 1400) {
+                          sideBarWidth = 404;
+                        } else {
+                          sideBarWidth = 304;
+                        }
+                        return CustomScrollView(
+                          primary: true,
                           slivers: [
-                            SliverMainAxisGroup(
-                              slivers: [
-                                SliverToBoxAdapter(
-                                  child: Column(
-                                    children: [
-                                      image(context, constraints),
-                                      upperBody(context),
+                            SliverSkeletonIgnore(
+                              sliver: SliverCrossAxisGroup(
+                                slivers: [
+                                  SliverMainAxisGroup(
+                                    slivers: [
+                                      SliverToBoxAdapter(
+                                        child: Column(
+                                          children: [
+                                            image(context, size),
+                                            DismissFade(
+                                              child: upperBody(context),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      DismissSliverFade(
+                                        sliver: SliverPostCommentSection(
+                                          postId: post.id,
+                                        ),
+                                      ),
                                     ],
                                   ),
-                                ),
-                                SliverPostCommentSection(post: post),
-                              ],
-                            ),
-                            SliverConstrainedCrossAxis(
-                              maxExtent: sideBarWidth,
-                              sliver: SliverToBoxAdapter(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(height: 56),
-                                    lowerBody(context),
-                                  ],
-                                ),
+                                  SliverConstrainedCrossAxis(
+                                    maxExtent: sideBarWidth,
+                                    sliver: SliverToBoxAdapter(
+                                      child: DismissFade(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const SizedBox(height: 56),
+                                            lowerBody(context),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ),
-                      ],
-                    );
-                  }
-                },
+                        );
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
           ),

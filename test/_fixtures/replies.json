@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1224,
+    "created_at": "2026-08-12T18:27:01.955-04:00",
+    "updated_at": "2026-08-12T18:27:01.955-04:00",
+    "body": "Recorded text with \"a link\":/posts/1000.",
+    "creator_id": 1154,
+    "updater_id": 1154,
+    "topic_id": 1140,
+    "is_hidden": false,
+    "warning_type": null,
+    "warning_user_id": null,
+    "creator_name": "user_19",
+    "updater_name": "user_19"
+  },
+  {
+    "id": 1231,
+    "created_at": "2026-08-12T17:33:51.294-04:00",
+    "updated_at": "2026-08-12T17:33:51.294-04:00",
+    "body": "Recorded text with \"a link\":/posts/1000.",
+    "creator_id": 1238,
+    "updater_id": 1238,
+    "topic_id": 1140,
+    "is_hidden": false,
+    "warning_type": null,
+    "warning_user_id": null,
+    "creator_name": "user_24",
+    "updater_name": "user_24"
+  },
+  {
+    "id": 1245,
+    "created_at": "2026-08-12T16:47:43.527-04:00",
+    "updated_at": "2026-08-12T16:47:43.527-04:00",
+    "body": "Recorded text with \"a link\":/posts/1000.",
+    "creator_id": 1154,
+    "updater_id": 1154,
+    "topic_id": 1140,
+    "is_hidden": false,
+    "warning_type": null,
+    "warning_user_id": null,
+    "creator_name": "user_19",
+    "updater_name": "user_19"
+  }
+]

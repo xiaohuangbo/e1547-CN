@@ -1,0 +1,8 @@
+### Added
+- Swipe to close image
+- Preferred hand setting
+
+### Fixed
+- Video player crashes
+- Database export on iOS
+- Blacklist not applying

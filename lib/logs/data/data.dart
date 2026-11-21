@@ -1,5 +1,13 @@
+export 'dedupe.dart';
+export 'entry.dart';
+export 'errors.dart';
 export 'file.dart';
+export 'format.dart';
 export 'interceptor.dart';
+export 'level.dart';
+export 'logger.dart';
 export 'printer.dart';
-export 'record.dart';
+export 'redact.dart';
 export 'routes.dart';
+export 'source.dart';
+export 'stack.dart';

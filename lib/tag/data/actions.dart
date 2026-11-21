@@ -30,51 +30,30 @@ enum TagCategory {
   contributor,
   invalid;
 
-  String get title {
-    switch (this) {
-      case general:
-        return '常规';
-      case species:
-        return '物种';
-      case character:
-        return '角色';
-      case copyright:
-        return '版权';
-      case meta:
-        return '元数据';
-      case lore:
-        return '传说';
-      case artist:
-        return '艺术家';
-      case contributor:
-        return '贡献者';
-      case invalid:
-        return '无效';
-    }
-  }
-
-  Color? get color {
-    switch (this) {
-      case general:
-        return Colors.indigo[300];
-      case species:
-        return Colors.teal[300];
-      case character:
-        return Colors.lightGreen[300];
-      case copyright:
-        return Colors.yellow[300];
-      case meta:
-        return Colors.deepOrange[300];
-      case lore:
-        return Colors.pink[300];
-      case artist:
-        return Colors.deepPurple[300];
-      case contributor:
-        return Colors.blueGrey[300];
-      case invalid:
-        return Colors.grey[300];
-    }
-  }
+  Color colorFor(Brightness brightness) => Color(switch (brightness) {
+    Brightness.dark => switch (this) {
+      general => 0xFF9CC9F0,
+      species => 0xFFFF8A3D,
+      character => 0xFF66CC6E,
+      copyright => 0xFFE366F0,
+      meta => 0xFFF5F5F5,
+      lore => 0xFF2E9E4F,
+      artist => 0xFFFFCA28,
+      contributor => 0xFFA8A8A8,
+      invalid => 0xFFFF4D6A,
+    },
+    Brightness.light => switch (this) {
+      general => 0xFF4A9BE0,
+      species => 0xFFFF7A1A,
+      character => 0xFF2DB84A,
+      copyright => 0xFFD63ADF,
+      meta => 0xFF4A4A4A,
+      lore => 0xFF1F8A46,
+      artist => 0xFFF7B500,
+      contributor => 0xFFA3A3A3,
+      invalid => 0xFFF0384F,
+    },
+  });
 
   int get id {
     switch (this) {
@@ -109,10 +88,10 @@ enum TagCategory {
 
 List<String> filterArtists(List<String> artists) {
   List<String> excluded = [
-    'epilepsy_warning', // 癫痫警告
-    'conditional_dnp', // 有条件的请勿发布
-    'sound_warning', // 声音警告
-    'avoid_posting', // 避免发布
+    'epilepsy_warning',
+    'conditional_dnp',
+    'sound_warning',
+    'avoid_posting',
   ];
 
   return List.from(artists)..removeWhere((artist) => excluded.contains(artist));

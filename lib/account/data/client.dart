@@ -20,7 +20,7 @@ class AccountClient {
   final ValueNotifier<Traits> traits;
   final PostClient postsService;
 
-  Future<void> available() => dio.get('');
+  Future<void> available() => dio.head('/status.json');
 
   Future<void> push({required Traits traits, CancelToken? cancelToken}) async {
     Traits previous = this.traits.value;
@@ -46,23 +46,14 @@ class AccountClient {
     }
   }
 
-  Future<void> pull({bool? force, CancelToken? cancelToken}) =>
-      get(force: force, cancelToken: cancelToken);
+  Future<void> pull({CancelToken? cancelToken}) =>
+      get(cancelToken: cancelToken);
 
-  Future<Account?> get({bool? force, CancelToken? cancelToken}) async {
+  Future<Account?> get({CancelToken? cancelToken}) async {
     if (identity.username == null) return null;
 
     Account result = await dio
-        .get(
-          '/users/${identity.username}.json',
-          options: ClientCacheConfig(
-            maxAge: const Duration(hours: 1),
-            policy: (force ?? false)
-                ? CachePolicy.refresh
-                : CachePolicy.request,
-          ).toOptions(),
-          cancelToken: cancelToken,
-        )
+        .get('/users/${identity.username}.json', cancelToken: cancelToken)
         .then((response) => E621Account.fromJson(response.data));
 
     Post? avatar;
@@ -71,9 +62,22 @@ class AccountClient {
       // TODO: this shouldnt be here
       avatar = await postsService.get(
         id: result.avatarId!,
-        force: force,
         cancelToken: cancelToken,
       );
+    }
+
+    String? avatarUrl = avatar?.file;
+    if (avatar != null && result.hasCroppedAvatar && !avatar.isDeleted) {
+      String? reference = avatar.file ?? avatar.sample ?? avatar.preview;
+      if (reference != null) {
+        avatarUrl =
+            croppedAvatarUrl(
+              reference: reference,
+              userId: result.id,
+              avatarId: avatar.id,
+            ) ??
+            avatarUrl;
+      }
     }
 
     traits.value = traits.value.copyWith(
@@ -81,7 +85,7 @@ class AccountClient {
       denylist: result.blacklistedTags?.split('\n').trim() ?? [],
       // TODO: also store "perPage"
       // TODO: this shouldn't be file but sample
-      avatar: avatar?.file,
+      avatar: avatarUrl,
     );
 
     return result;
@@ -94,6 +98,7 @@ extension E621Account on Account {
       id: pick('id').asIntOrThrow(),
       name: pick('name').asStringOrThrow(),
       avatarId: pick('avatar_id').asIntOrNull(),
+      hasCroppedAvatar: pick('has_cropped_avatar').asBoolOrFalse(),
       blacklistedTags: pick('blacklisted_tags').asStringOrNull(),
       perPage: pick('per_page').asIntOrNull(),
     ),

@@ -1,0 +1,51 @@
+part of 'user.dart';
+
+class UserGhost extends User with Ghost {
+  const UserGhost([this.index = 0]) : super._();
+
+  @override
+  final int index;
+
+  @override
+  int get id => -1 - index;
+
+  @override
+  String get name => words(1, 1);
+
+  @override
+  int? get avatarId => null;
+
+  @override
+  bool get hasCroppedAvatar => false;
+
+  @override
+  UserAbout? get about => UserAbout(bio: words(2, 20, 60), comission: null);
+
+  @override
+  UserStats? get stats => UserStats(
+    createdAt: DateTime(2000 + count(3, 20)),
+    levelString: words(4, 1),
+    favoriteCount: count(5, 5000),
+    postUpdateCount: count(6, 5000),
+    postUploadCount: count(7, 500),
+    forumPostCount: count(8, 500),
+    commentCount: count(9, 500),
+    poolUpdateCount: null,
+    artistUpdateCount: null,
+    wikiUpdateCount: null,
+    noteUpdateCount: null,
+    uploadKarma: null,
+    uploadSlots: null,
+    positiveFeedbackCount: null,
+    neutralFeedbackCount: null,
+    negativeFeedbackCount: null,
+  );
+
+  @override
+  $UserCopyWith<User> get copyWith =>
+      throw GhostsAreIntangibleError(this, '无法复制 ghost。');
+
+  @override
+  Map<String, dynamic> toJson() =>
+      throw GhostsAreIntangibleError(this, '无法将 ghost 转换为 json。');
+}

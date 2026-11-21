@@ -1,0 +1,41 @@
+name: Application Validation
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_call:
+
+concurrency:
+  group: validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup actions
+        uses: actions/checkout@v7
+
+      - name: parse flutter version
+        run: |
+          export FLUTTER_VERSION=$(./.github/workflows/get_flutter_version.sh)
+          echo "FLUTTER_VERSION=$FLUTTER_VERSION" >> $GITHUB_ENV
+
+      - name: setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: get flutter dependencies
+        run: flutter pub get
+
+      - name: verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: analyze sources
+        run: flutter analyze
+
+      - name: run tests
+        run: flutter test

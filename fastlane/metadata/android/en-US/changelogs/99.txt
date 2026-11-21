@@ -1,0 +1,19 @@
+### Added
+- Linux as a build target
+- Database import and export
+- E621 forum thread link on the About page
+- History clear button
+
+### Changed
+- Improved DText rendering speed
+- Simplified history display
+
+### Fixed
+- Editing post sources
+- User blocking
+- Follow and history thumbnails
+- Forum history links
+
+### Removed
+- "order:new" search shortcut
+- Funding options

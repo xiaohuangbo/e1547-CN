@@ -6,7 +6,7 @@ import 'package:e1547/identity/data/database.drift.dart' as i2;
 import 'package:drift/internal/modular.dart' as i3;
 import 'package:e1547/identity/data/identity.dart' as i4;
 import 'package:e1547/identity/data/database.dart' as i5;
-import 'package:e1547/interface/data/sql.dart' as i6;
+import 'package:e1547/shared/data/sql.dart' as i6;
 
 typedef $$IdentitiesTableTableCreateCompanionBuilder =
     i2.IdentityCompanion Function({
@@ -206,6 +206,17 @@ mixin $IdentityRepositoryMixin on i0.DatabaseAccessor<i1.GeneratedDatabase> {
   i2.$IdentitiesTableTable get identitiesTable => i3.ReadDatabaseContainer(
     attachedDatabase,
   ).resultSet<i2.$IdentitiesTableTable>('identities_table');
+  IdentityRepositoryManager get managers => IdentityRepositoryManager(this);
+}
+
+class IdentityRepositoryManager {
+  final $IdentityRepositoryMixin _db;
+  IdentityRepositoryManager(this._db);
+  i2.$$IdentitiesTableTableTableManager get identitiesTable =>
+      i2.$$IdentitiesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.identitiesTable,
+      );
 }
 
 class $IdentitiesTableTable extends i5.IdentitiesTable

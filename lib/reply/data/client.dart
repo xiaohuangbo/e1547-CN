@@ -7,30 +7,19 @@ class ReplyClient {
 
   final Dio dio;
 
-  Future<Reply> get({
-    required int id,
-    bool? force,
-    CancelToken? cancelToken,
-  }) async => dio
-      .get(
-        '/forum_posts/$id.json',
-        options: forceOptions(force),
-        cancelToken: cancelToken,
-      )
+  Future<Reply> get({required int id, CancelToken? cancelToken}) => dio
+      .get('/forum_posts/$id.json', cancelToken: cancelToken)
       .then((response) => E621Reply.fromJson(response.data));
 
   Future<List<Reply>> page({
-    required int id,
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
-  }) async => dio
+  }) => dio
       .get(
         '/forum_posts.json',
-        queryParameters: {'page': page, 'limit': limit, ...?query},
-        options: forceOptions(force),
+        queryParameters: {'page': page, 'limit': limit, ...?query}.toQuery(),
         cancelToken: cancelToken,
       )
       .then(unwrapRailsArray)
@@ -40,22 +29,17 @@ class ReplyClient {
             .toList(),
       );
 
-  Future<List<Reply>> byTopic({
-    required int id,
-    int? page,
-    int? limit,
-    bool? ascending,
-    bool? force,
-    CancelToken? cancelToken,
-  }) async => this.page(
-    id: id,
-    page: page,
-    limit: limit,
-    query: {
-      'search[topic_id]': id,
-      'search[order]': ascending ?? false ? 'id_asc' : 'id_desc',
-    }.toQuery(),
-    force: force,
-    cancelToken: cancelToken,
+  Future<void> create({required int topicId, required String content}) =>
+      dio.post(
+        '/forum_posts.json',
+        data: FormData.fromMap({
+          'forum_post[body]': content,
+          'forum_post[topic_id]': topicId,
+        }),
+      );
+
+  Future<void> update({required int id, required String content}) => dio.patch(
+    '/forum_posts/$id.json',
+    data: FormData.fromMap({'forum_post[body]': content}),
   );
 }

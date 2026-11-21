@@ -1,4 +1,5 @@
-import 'package:e1547/history/history.dart';
+import 'package:e1547/client/client.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/reply/reply.dart';
 import 'package:e1547/shared/shared.dart';
 import 'package:e1547/topic/topic.dart';
@@ -12,22 +13,28 @@ class TopicRepliesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ReplyProvider(
-      topicId: topic.id,
-      orderByOldest: orderByOldest,
-      child: Consumer<ReplyController>(
-        builder: (context, controller, child) => ControllerHistoryConnector(
-          controller: controller,
-          addToHistory: (context, client, controller) => client.histories.add(
-            TopicHistoryRequest.item(topic: topic, replies: controller.items!),
+    final client = context.watch<Client>();
+    return FilterControllerProvider(
+      create: (_) => ReplyFilter(client),
+      keys: (_) => [client],
+      child: ChangeNotifierProvider(
+        create: (_) => ReplyParamsController(
+          ReplyParams(
+            topicId: topic.id,
+            order: (orderByOldest ?? true)
+                ? ReplyOrder.oldest
+                : ReplyOrder.newest,
           ),
+        ),
+        builder: (context, _) => TopicHistoryConnector(
+          topic: topic,
           child: AdaptiveScaffold(
             appBar: DefaultAppBar(
               title: Text(topic.title),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.info_outline),
-                  tooltip: 'Info',
+                  tooltip: '信息',
                   onPressed: () =>
                       showTopicPrompt(context: context, topic: topic),
                 ),
@@ -36,6 +43,9 @@ class TopicRepliesPage extends StatelessWidget {
             ),
             drawer: const RouterDrawer(),
             endDrawer: const ReplyListDrawer(),
+            floatingActionButton: client.hasLogin && !topic.locked
+                ? ReplyCreateFab(topicId: topic.id)
+                : null,
             body: const ReplyList(),
           ),
         ),

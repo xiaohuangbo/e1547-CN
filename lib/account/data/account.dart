@@ -4,11 +4,12 @@ part 'account.freezed.dart';
 part 'account.g.dart';
 
 @freezed
-class Account with _$Account {
+abstract class Account with _$Account {
   const factory Account({
     required int id,
     required String name,
     required int? avatarId,
+    @Default(false) bool hasCroppedAvatar,
     required String? blacklistedTags,
     required int? perPage,
   }) = _Account;

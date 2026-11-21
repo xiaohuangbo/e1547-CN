@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 import 'package:rxdart/rxdart.dart';
@@ -67,7 +67,7 @@ class VideoButton extends StatelessWidget {
                       secondChild: const Center(
                         child: Padding(
                           padding: EdgeInsets.all(8),
-                          child: CircularProgressIndicator(),
+                          child: HexagonalLoadingIndicator(),
                         ),
                       ),
                       child: SubValue<StreamSubscription<bool>>(
@@ -165,10 +165,10 @@ class _VideoBarState extends State<VideoBar> {
 
   @override
   void dispose() {
-    super.dispose();
     for (final s in subscriptions) {
       s.cancel();
     }
+    super.dispose();
   }
 
   @override
@@ -242,6 +242,19 @@ class _VideoBarState extends State<VideoBar> {
   }
 }
 
+const Duration videoSeekStep = Duration(seconds: 10);
+
+Duration videoSeekTarget({
+  required Duration position,
+  required Duration duration,
+  required Duration offset,
+}) {
+  final target = position + offset;
+  if (target < Duration.zero) return Duration.zero;
+  if (duration > Duration.zero && target > duration) return duration;
+  return target;
+}
+
 class VideoGesture extends StatefulWidget {
   const VideoGesture({super.key, required this.forward, required this.player});
 
@@ -271,19 +284,13 @@ class _VideoGestureState extends State<VideoGesture>
       behavior: HitTestBehavior.translucent,
       onDoubleTap: () async {
         Duration current = widget.player.state.position;
-        bool boundOnZero = current == Duration.zero;
-        bool boundOnEnd = current == widget.player.state.duration;
-        if ((!widget.forward && boundOnZero) ||
-            (widget.forward && boundOnEnd)) {
-          return;
-        }
+        Duration target = videoSeekTarget(
+          position: current,
+          duration: widget.player.state.duration,
+          offset: widget.forward ? videoSeekStep : -videoSeekStep,
+        );
+        if (target == current) return;
 
-        Duration target = current;
-        if (widget.forward) {
-          target += const Duration(seconds: 10);
-        } else {
-          target -= const Duration(seconds: 10);
-        }
         setState(() {
           combo++;
         });
@@ -307,7 +314,7 @@ class _VideoGestureState extends State<VideoGesture>
                 color: Colors.white,
               ),
               title: Text(
-                '${10 * combo} seconds',
+                '${videoSeekStep.inSeconds * combo} seconds',
                 style: const TextStyle(color: Colors.white),
               ),
             ),
@@ -406,10 +413,10 @@ class PostVideoRoute extends StatefulWidget {
   State<PostVideoRoute> createState() => PostVideoRouteState();
 }
 
-class PostVideoRouteState extends State<PostVideoRoute>
-    with DefaultRouteAware<PostVideoRoute> {
-  late VideoPlayer? player;
-  late final bool _wasPlaying;
+class PostVideoRouteState extends State<PostVideoRoute> {
+  VideoPlayer? player;
+  VideoService? _videos;
+  bool _wasPlaying = false;
   bool _keepPlaying = false;
 
   void keepPlaying() => _keepPlaying = true;
@@ -419,31 +426,38 @@ class PostVideoRouteState extends State<PostVideoRoute>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _wasPlaying =
-          widget.post.getVideo(context, listen: false)?.state.playing ?? false;
+      _wasPlaying = player?.state.playing ?? false;
     });
-  }
-
-  @override
-  void didPushNext() {
-    super.didPushNext();
-    if (_keepPlaying) {
-      _keepPlaying = false;
-    } else {
-      player?.pause();
-    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    player = widget.post.getVideo(context);
+    VideoPlayer? next = widget.post.getVideo(context);
+    if (next == player) return;
+    if (player case VideoPlayer previous) {
+      if (!_keepPlaying) previous.pause();
+      _keepPlaying = false;
+      _videos?.release(previous);
+    }
+    player = next;
+    if (next != null) {
+      _videos = context.read<VideoService>();
+      _videos!.acquire(next);
+    }
   }
 
   @override
   void dispose() {
-    if (widget.stopOnDispose && !_wasPlaying) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => player?.pause());
+    // The lease outlives this state by a frame, so that pausing cannot land
+    // on a player that has already been recycled for another video.
+    if (player case VideoPlayer held) {
+      bool stop = widget.stopOnDispose && !_wasPlaying;
+      VideoService? videos = _videos;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        videos?.release(held);
+        if (stop || !held.isLeased) held.pause();
+      });
     }
     super.dispose();
   }
@@ -459,7 +473,7 @@ class PostVideoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    VideoPlayer player = post.getVideo(context)!;
+    VideoPlayer? player = post.getVideo(context);
 
     Widget placeholder() {
       return PostImageWidget(
@@ -470,6 +484,8 @@ class PostVideoWidget extends StatelessWidget {
         lowResCacheSize: context.watch<ImageCacheSize?>()?.size,
       );
     }
+
+    if (player == null) return placeholder();
 
     return SubStream<bool>(
       create: () => player.initialized,

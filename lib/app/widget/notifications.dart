@@ -4,11 +4,13 @@ import 'dart:convert';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
 class NotificationHandler extends StatefulWidget {
@@ -29,7 +31,7 @@ class _NotificationHandlerState extends State<NotificationHandler> {
   late Future<FlutterLocalNotificationsPlugin> notifications =
       initializeNotifications(onDidReceiveNotificationResponse: handle);
   List<Follow>? previousFollows;
-  Logger logger = Logger('Notifications');
+  Logger logger = Logger('NotificationRouter');
 
   @override
   void initState() {
@@ -79,11 +81,13 @@ class _NotificationHandlerState extends State<NotificationHandler> {
   Future<void> sendNotifications(List<Follow> follows, int identity) async {
     if (!PlatformCapabilities.hasNotifications) return;
     if (previousFollows != null) {
+      final BaseCacheManager cache = context.read<BaseCacheManager>();
       await updateFollowNotifications(
         identity: identity,
         previous: previousFollows!,
         updated: follows,
         notifications: await notifications,
+        cache: cache,
       );
     }
   }
@@ -96,7 +100,7 @@ class _NotificationHandlerState extends State<NotificationHandler> {
     try {
       notification = NotificationPayload.fromJson(json.decode(payload));
     } on FormatException catch (e, s) {
-      logger.severe('Failed to parse notification payload', e, s);
+      logger.error('解析通知内容失败', null, e, s);
       return;
     }
 
@@ -107,15 +111,15 @@ class _NotificationHandlerState extends State<NotificationHandler> {
           (_) => false,
         );
         if (notification.query != null) {
+          final String? tags = notification.query!['tags'];
+          final poolId = tags != null
+              ? poolRegex().firstMatch(tags)?.namedGroup('id')
+              : null;
           widget.navigatorKey.currentState!.push(
             MaterialPageRoute(
-              builder: (context) => PostsSearchPage(
-                query: notification!.query!,
-                orderPoolsByOldest: false,
-                readerMode: poolRegex().hasMatch(
-                  notification.query!['tags'] ?? '',
-                ),
-              ),
+              builder: (context) => poolId != null
+                  ? PoolLoadingPage(int.parse(poolId), orderByOldest: false)
+                  : PostsPage(params: PostParams(tags: tags)),
             ),
           );
         }
@@ -128,14 +132,16 @@ class _NotificationHandlerState extends State<NotificationHandler> {
         }
         break;
       default:
-        logger.warning('Unknown notification type: ${notification.type}');
+        logger.warn('Unknown notification type {type}', {
+          'type': notification.type,
+        });
         return;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Client client = context.watch<Client>();
+    final client = context.watch<Client>();
     return SubStream<List<Follow>>(
       create: () => client.follows
           .all(query: FollowsQuery(types: [FollowType.notify]))

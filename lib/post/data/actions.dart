@@ -1,13 +1,10 @@
-import 'dart:async';
 import 'package:e1547/app/app.dart';
-import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
-import 'package:e1547/tag/tag.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
-extension PostTagging on Post {
+extension PostTagging on PostSummary {
   bool hasTag(String tag) {
     if (tag.trim().isEmpty) return false;
 
@@ -31,80 +28,104 @@ extension PostTagging on Post {
           if (range == null) return false;
           return range.has(height);
         case 'filesize':
-          NumberRange? range = NumberRange.tryParse(value);
+          NumberRange? range = NumberRange.tryParse(_sizeToBytes(value));
           if (range == null) return false;
           return range.has(size);
         case 'score':
           NumberRange? range = NumberRange.tryParse(value);
           if (range == null) return false;
-          return range.has(vote.score);
+          return range.has(score);
         case 'favcount':
           NumberRange? range = NumberRange.tryParse(value);
           if (range == null) return false;
           return range.has(favCount);
         case 'fav':
           return isFavorited;
+        case 'status':
+          return switch (value) {
+            'deleted' => isDeleted,
+            _ => false,
+          };
         case 'uploader':
         case 'user':
+          if (value.startsWith('!')) {
+            return uploaderId == int.tryParse(value.substring(1));
+          }
+          return uploaderName?.toLowerCase() == value;
         case 'userid':
           NumberRange? range = NumberRange.tryParse(value);
           if (range == null) return false;
           return range.has(uploaderId);
         case 'username':
-          // This cannot be implemented, as it requires a user lookup
-          return false;
+          return uploaderName?.toLowerCase() == value;
         case 'pool':
           return pools?.contains(int.tryParse(value)) ?? false;
         case 'tagcount':
           NumberRange? range = NumberRange.tryParse(value);
           if (range == null) return false;
-          return range.has(
-            tags.values.fold<int>(
-              0,
-              (previousValue, element) => previousValue + element.length,
-            ),
-          );
+          return range.has(allTags.length);
       }
     }
 
-    return tags.values.any((category) => category.contains(tag.toLowerCase()));
+    if (tag.contains('*')) {
+      final RegExp pattern = RegExp(
+        '^${RegExp.escape(tag.toLowerCase()).replaceAll(r'\*', '.*')}\$',
+      );
+      return allTags.any(pattern.hasMatch);
+    }
+
+    return allTags.contains(tag.toLowerCase());
   }
 }
 
-extension PostDenying on Post {
+final RegExp _sizeUnit = RegExp(
+  r'(\d+(?:\.\d+)?)\s*(kb|mb|b)',
+  caseSensitive: false,
+);
+
+/// Rewrites the units in a filesize expression into plain byte counts.
+String _sizeToBytes(String value) => value.replaceAllMapped(_sizeUnit, (match) {
+  final double number = double.parse(match.group(1)!);
+  final int factor = switch (match.group(2)!.toLowerCase()) {
+    'kb' => 1024,
+    'mb' => 1048576,
+    _ => 1,
+  };
+  return (number * factor).truncate().toString();
+});
+
+final RegExp _tagPrefix = RegExp(r'^[~-]+');
+
+extension PostDenying on PostSummary {
   bool isDeniedBy(List<String> denylist) =>
       getDeniers(denylist).iterator.moveNext();
 
   Iterable<String> getDeniers(List<String> denylist) sync* {
     for (String line in denylist) {
-      line = line.trim();
-      if (line.isEmpty) continue;
+      line = line.trim().toLowerCase();
+      if (line.isEmpty || line.startsWith('#')) continue;
 
-      int hash = line.indexOf('#');
-      if (hash != -1) {
-        line = line.substring(0, hash).trim();
-        if (line.isEmpty) continue;
-      }
+      line = line.replaceFirst(RegExp(r' #.*$'), '').trim();
+      if (line.isEmpty) continue;
 
       bool pass = true;
       bool isOptional = false;
       bool hasOptional = false;
 
       for (String tag in line.split(' ')) {
-        if (tagToRaw(tag).isEmpty) continue;
+        if (tag.isEmpty) continue;
 
         bool optional = false;
         bool inverted = false;
 
-        if (tag[0] == '~') {
-          optional = true;
-          tag = tag.substring(1);
+        final String? prefix = _tagPrefix.stringMatch(tag);
+        if (prefix != null) {
+          optional = prefix.contains('~');
+          inverted = prefix.contains('-');
+          tag = tag.substring(prefix.length);
         }
 
-        if (tag[0] == '-') {
-          inverted = true;
-          tag = tag.substring(1);
-        }
+        if (tag.isEmpty) continue;
 
         bool matches = hasTag(tag);
 
@@ -138,7 +159,7 @@ extension PostDenying on Post {
 
 enum PostType { image, video, unsupported }
 
-extension PostTyping on Post {
+extension PostTyping on PostSummary {
   PostType get type {
     switch (ext) {
       case 'mp4':
@@ -156,20 +177,14 @@ extension PostTyping on Post {
 }
 
 extension PostVideoPlaying on Post {
-  VideoPlayer? getVideo(BuildContext context, {bool? listen}) {
+  VideoPlayer? getVideo(BuildContext context) {
     if (type == PostType.video && file != null) {
-      VideoService service;
-      if (listen ?? true) {
-        service = context.watch<VideoService>();
-      } else {
-        service = context.read<VideoService>();
-      }
-      Settings settings;
-      if (listen ?? true) {
-        settings = context.watch<Settings>();
-      } else {
-        settings = context.read<Settings>();
-      }
+      // An inactive subtree holds no player, so that a stack of post routes
+      // cannot pin one video each.
+      if (!TickerMode.valuesOf(context).enabled) return null;
+
+      VideoService service = context.watch<VideoService>();
+      Settings settings = context.watch<Settings>();
 
       VideoResolution target = settings.videoResolution.value;
       String closestUrl = file!;
@@ -203,80 +218,14 @@ extension PostLinking on Post {
   String get link => getPostLink(id);
 }
 
-mixin PostActionController<KeyType> on ClientDataController<KeyType, Post> {
-  Post? postById(int id) {
-    int index = rawItems?.indexWhere((e) => e.id == id) ?? -1;
-    if (index == -1) {
-      return null;
-    }
-    return rawItems![index];
-  }
-
-  void replacePost(Post post) =>
-      updateItem(rawItems?.indexWhere((e) => e.id == post.id) ?? -1, post);
-
-  Future<bool> fav(Post post) async {
-    assertOwnsItem(post);
-    replacePost(post.copyWith(isFavorited: true, favCount: post.favCount + 1));
-    try {
-      await client.posts.addFavorite(post.id);
-      evictCache();
-      return true;
-    } on ClientException {
-      replacePost(
-        post.copyWith(isFavorited: false, favCount: post.favCount - 1),
-      );
-      return false;
-    }
-  }
-
-  Future<bool> unfav(Post post) async {
-    assertOwnsItem(post);
-    replacePost(post.copyWith(isFavorited: false, favCount: post.favCount - 1));
-    try {
-      await client.posts.removeFavorite(post.id);
-      evictCache();
-      return true;
-    } on ClientException {
-      replacePost(
-        post.copyWith(isFavorited: true, favCount: post.favCount + 1),
-      );
-      return false;
-    }
-  }
-
-  Future<bool> vote({
-    required Post post,
-    required bool upvote,
-    required bool replace,
-  }) async {
-    assertOwnsItem(post);
-    post = post.copyWith(
-      vote: post.vote.withVote(
-        upvote ? VoteStatus.upvoted : VoteStatus.downvoted,
-        replace,
-      ),
+extension PostVoting on Post {
+  Post withVote({required bool upvote, required bool replace}) {
+    final result = applyVote(
+      score: score,
+      vote: vote,
+      upvote: upvote,
+      replace: replace,
     );
-    replacePost(post);
-    try {
-      await client.posts.vote(post.id, upvote, replace);
-      evictCache();
-      return true;
-    } on ClientException {
-      return false;
-    }
-  }
-
-  Future<void> resetPost(Post post) async {
-    assertOwnsItem(post);
-    replacePost(await client.posts.get(id: post.id, force: true));
-    evictCache();
-  }
-
-  // TODO: create a PostUpdate Object instead of a Map
-  Future<void> updatePost(Post post, Map<String, String?> body) async {
-    assertOwnsItem(post);
-    await client.posts.update(post.id, body);
-    await resetPost(post);
+    return copyWith(score: result.score, vote: result.vote);
   }
 }

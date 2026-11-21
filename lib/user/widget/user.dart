@@ -1,200 +1,183 @@
+import 'package:dio/dio.dart';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/history/history.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
-import 'package:e1547/tag/tag.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/traits/traits.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-enum UserPageSection { favorites, uploads, info }
-
 class UserPage extends StatelessWidget {
-  const UserPage({
-    super.key,
-    required this.user,
-    this.initialPage = UserPageSection.favorites,
-  });
+  const UserPage({super.key, required this.user, this.summary});
 
   final User user;
-  final UserPageSection initialPage;
+  final UserSummary? summary;
 
   @override
   Widget build(BuildContext context) {
-    return _UserPageProvider(
+    final Client client = context.watch<Client>();
+    final UserStats? stats = user.stats;
+    final PostParams uploads = PostParams(tags: 'user:${user.name}');
+    final PostParams favorites = PostParams(tags: 'fav:${user.name}');
+    void open(PostParams params) => Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => PostsPage(params: params)));
+    return UserHistoryConnector(
       user: user,
-      child: Consumer<_UserPageControllers>(
-        builder: (context, controllers, child) => LayoutBuilder(
-          builder: (context, constraints) {
-            Widget body;
-            PreferredSizeWidget? appbar;
-            Map<Widget, WidgetBuilder> tabs = {
-              const Tab(text: '收藏'): (context) =>
-                  ChangeNotifierProvider<PostController>.value(
-                    value: controllers.favoritePosts,
-                    builder: (context, child) => PostSliverDisplay(
-                      controller: controllers.favoritePosts,
-                    ),
-                  ),
-              const Tab(text: '上传'): (context) =>
-                  ChangeNotifierProvider<PostController>.value(
-                    value: controllers.uploadedPosts,
-                    builder: (context, child) => PostSliverDisplay(
-                      controller: controllers.uploadedPosts,
-                    ),
-                  ),
-            };
-
-            if (constraints.maxWidth < 1100) {
-              body = NestedScrollView(
+      child: FilterControllerProvider<PostFilter, Post>(
+        create: (_) => PostFilter(client),
+        keys: (_) => [client],
+        child: Scaffold(
+          drawer: const RouterDrawer(),
+          body: LimitedWidthLayout(
+            child: Builder(
+              builder: (context) => CustomScrollView(
                 controller: PrimaryScrollController.of(context),
-                headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                  SliverOverlapAbsorber(
-                    handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                      context,
-                    ),
-                    sliver: UserSliverAppBar(
-                      user: user,
-                      avatar: controllers.profilePost,
-                      tabs: tabs.keys.toList(),
-                    ),
+                slivers: [
+                  UserSliverAppBar(
+                    user: user,
+                    summary: summary,
+                    scrollController: PrimaryScrollController.of(context),
                   ),
-                ],
-                body: LimitedWidthLayout(
-                  child: TileLayout(
-                    child: Builder(
-                      builder: (context) => TabBarView(
-                        children: tabs.values
-                            .map(
-                              (e) => CustomScrollView(
-                                slivers: [
-                                  SliverOverlapInjector(
-                                    handle:
-                                        NestedScrollView.sliverOverlapAbsorberHandleFor(
-                                          context,
-                                        ),
+                  SliverPadding(
+                    padding: defaultListPadding.add(
+                      LimitedWidthLayout.of(context).padding,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: SkeletonIgnore(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            UserInfo(user: user),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  UserPostRow(
+                                    title: '上传',
+                                    count: stats?.postUploadCount,
+                                    params: uploads,
+                                    onAll: () => open(uploads),
                                   ),
-                                  e(context),
+                                  UserPostRow(
+                                    title: '收藏',
+                                    count: stats?.favoriteCount,
+                                    params: favorites,
+                                    onAll: () => open(favorites),
+                                    hidden: '${user.name} 的收藏不可见',
+                                  ),
                                 ],
                               ),
-                            )
-                            .toList(),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              );
-              tabs[const Tab(text: '关于')] = (context) => SliverPadding(
-                padding: defaultListPadding.add(
-                  LimitedWidthLayout.of(context).padding,
-                ),
-                sliver: SliverToBoxAdapter(
-                  child: UserInfo(
-                    user: user,
-                    compact: constraints.maxWidth < 600,
-                  ),
-                ),
-              );
-            } else {
-              body = Row(
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class UserPostRow extends StatelessWidget {
+  const UserPostRow({
+    super.key,
+    required this.title,
+    required this.count,
+    required this.params,
+    required this.onAll,
+    this.hidden,
+  });
+
+  final String title;
+  final int? count;
+  final PostParams params;
+  final VoidCallback onAll;
+  final String? hidden;
+
+  @override
+  Widget build(BuildContext context) {
+    if (count == 0) return const SizedBox.shrink();
+    if (isSkeleton(context)) {
+      return PostRowSection.loading(title: title, onAll: onAll);
+    }
+    final Client client = context.watch<Client>();
+    return PagedQueryBuilder(
+      query: client.posts.usePage(query: params.toQuery()),
+      getItem: (id) => client.posts.useGet(id: id, vendored: true),
+      builder: (context, state) => QueryFilter(
+        state: state,
+        builder: (context, state) {
+          final List<Post>? posts = state.data?.pages.firstOrNull;
+          if (posts == null) {
+            if ((hidden, state.error) case (
+              final String hidden,
+              DioException(response: Response(statusCode: 403)),
+            )) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    width: 360,
-                    child: ListView(
-                      primary: false,
-                      padding: defaultListPadding,
+                  RelationHeader(title: title),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      spacing: 12,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                height: 100,
-                                width: 100,
-                                child: UserAvatar(
-                                  id: user.avatarId,
-                                  controller: controllers.profilePost,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 16,
-                                  bottom: 32,
-                                ),
-                                child: Text(
-                                  user.name,
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                              ),
-                            ],
+                        Icon(
+                          Icons.lock,
+                          size: 18,
+                          color: dimTextColor(context),
+                        ),
+                        Expanded(
+                          child: Text(
+                            hidden,
+                            style: TextStyle(color: dimTextColor(context)),
                           ),
                         ),
-                        UserInfo(user: user, compact: false),
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: LimitedWidthLayout(
-                      child: TileLayout(
-                        child: TabBarView(
-                          children: tabs.values
-                              .toList()
-                              .sublist(0, tabs.length)
-                              .map(
-                                (e) => CustomScrollView(slivers: [e(context)]),
-                              )
-                              .toList(),
-                        ),
-                      ),
-                    ),
-                  ),
+                  const Divider(),
                 ],
-              );
-              appbar = DefaultAppBar(
-                ignoreTitlePointer: false,
-                title: TabBar(
-                  isScrollable: true,
-                  labelColor: Theme.of(context).iconTheme.color,
-                  indicatorColor: Theme.of(context).iconTheme.color,
-                  tabs: tabs.keys.toList().sublist(0, tabs.length).toList(),
-                ),
-                actions: [
-                  _UserProfileActions(user: user),
-                  const ContextDrawerButton(),
-                ],
-                elevation: 0,
               );
             }
-
-            return ControllerHistoryConnector<PostController?>(
-              controller: controllers.profilePost,
-              addToHistory: (context, client, controller) => client.histories
-                  .addUser(user: user, avatar: controller?.items?.first),
-              child: DefaultTabController(
-                length: tabs.length,
-                initialIndex: initialPage.index,
-                child: Scaffold(
-                  appBar: appbar,
-                  drawer: const RouterDrawer(),
-                  endDrawer: ContextDrawer(
-                    title: const Text('帖子'),
-                    children: [
-                      DrawerMultiDenySwitch(controllers: controllers.all),
-                      DrawerMultiTagCounter(controllers: controllers.all),
-                    ],
+            if (state.error != null) return const SizedBox.shrink();
+            return PostRowSection.loading(title: title, onAll: onAll);
+          }
+          if (posts.isEmpty) return const SizedBox.shrink();
+          return PostRowSection(
+            title: title,
+            count: count,
+            onAll: onAll,
+            children: [
+              for (final Post post in posts)
+                PostRowTile(
+                  post: post,
+                  onTap: () => pushPostGallery(
+                    context,
+                    params: params,
+                    initialPostId: post.id,
                   ),
-                  body: body,
                 ),
-              ),
-            );
-          },
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -204,17 +187,20 @@ class UserSliverAppBar extends StatelessWidget {
   const UserSliverAppBar({
     super.key,
     required this.user,
-    this.tabs,
-    this.avatar,
+    this.summary,
+    this.scrollController,
   });
 
   final User user;
-  final List<Widget>? tabs;
-  final PostController? avatar;
+  final UserSummary? summary;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
+    final UserSummary header = summary ?? user;
+    final bool known = header is! Ghost;
     return DefaultSliverAppBar(
+      scrollController: scrollController,
       pinned: true,
       expandedHeight: 250,
       flexibleSpace: Builder(
@@ -234,35 +220,41 @@ class UserSliverAppBar extends StatelessWidget {
             collapseMode: CollapseMode.pin,
             title: Opacity(
               opacity: 1 - (extension * 6).clamp(0, 1),
-              child: Text(user.name),
+              child: Skeleton.keep(keep: known, child: Text(header.name)),
             ),
-            background: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 100,
-                  width: 100,
-                  child: UserAvatar(id: user.avatarId, controller: avatar),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 32),
-                  child: Text(
-                    user.name,
-                    style: Theme.of(context).textTheme.titleLarge,
+            background: SafeArea(
+              bottom: false,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 100,
+                    width: 100,
+                    child: Skeleton.keep(
+                      keep: known,
+                      child: UserAvatar(
+                        id: header.avatarId,
+                        userId: header.id,
+                        hasCroppedAvatar: header.hasCroppedAvatar,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Skeleton.keep(
+                      keep: known,
+                      child: Text(
+                        header.name,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
-      bottom: tabs != null
-          ? TabBar(
-              labelColor: Theme.of(context).iconTheme.color,
-              indicatorColor: Theme.of(context).iconTheme.color,
-              tabs: tabs!,
-            )
-          : null,
       actions: [_UserProfileActions(user: user)],
     );
   }
@@ -308,11 +300,11 @@ class _UserProfileActions extends StatelessWidget {
           value: () {
             if (blocked) {
               traits.value = traits.value.copyWith(
-                denylist: traits.value.denylist..remove(userTag),
+                denylist: traits.value.denylist.toList()..remove(userTag),
               );
             } else {
               traits.value = traits.value.copyWith(
-                denylist: traits.value.denylist..add(userTag),
+                denylist: traits.value.denylist.toList()..add(userTag),
               );
             }
           },
@@ -322,49 +314,10 @@ class _UserProfileActions extends StatelessWidget {
   }
 }
 
-class _UserPageControllers {
-  _UserPageControllers({
-    required this.favoritePosts,
-    required this.uploadedPosts,
-    this.profilePost,
-  });
-
-  List<PostController> get all => [
-    favoritePosts,
-    uploadedPosts,
-    if (profilePost != null) profilePost!,
-  ];
-
-  final PostController favoritePosts;
-  final PostController uploadedPosts;
-  final PostController? profilePost;
-
-  void dispose() => all.forEach((e) => e.dispose());
-}
-
-class _UserPageProvider extends SubProvider<Client, _UserPageControllers> {
-  // ignore: unused_element, unused_element_parameter
-  _UserPageProvider({required User user, super.child, super.builder})
-    : super(
-        create: (context, client) => _UserPageControllers(
-          favoritePosts: UserFavoritesController(
-            client: client,
-            user: user.name,
-          ),
-          uploadedPosts: UserUploadsController(client: client, user: user.name),
-          profilePost: user.avatarId != null
-              ? SinglePostController(client: client, id: user.avatarId!)
-              : null,
-        ),
-        dispose: (context, value) => value.dispose(),
-      );
-}
-
 class UserInfo extends StatelessWidget {
-  const UserInfo({super.key, required this.user, this.compact = true});
+  const UserInfo({super.key, required this.user});
 
   final User user;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -380,7 +333,6 @@ class UserInfo extends StatelessWidget {
         title: title,
         value: value.toString(),
         onLongPress: onLongPress,
-        compact: compact,
       );
     }
 
@@ -404,7 +356,7 @@ class UserInfo extends StatelessWidget {
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    child: DText(bio),
+                    child: DTextFold(text: bio),
                   ),
                 ),
               ),
@@ -415,7 +367,7 @@ class UserInfo extends StatelessWidget {
                   controller: Expandables.of(context, 'comission'),
                   header: const ListTile(
                     leading: Icon(Icons.attach_money),
-                    title: Text('委托'),
+                    title: Text('约稿'),
                   ),
                   collapsed: const SizedBox.shrink(),
                   expanded: Padding(
@@ -423,13 +375,13 @@ class UserInfo extends StatelessWidget {
                       horizontal: 16,
                       vertical: 8,
                     ),
-                    child: DText(comission),
+                    child: DTextFold(text: comission),
                   ),
                 ),
               ),
             Card(
               child: ExpandablePanel(
-                controller: Expandables.of(context, 'info'),
+                controller: Expandables.of(context, 'info', expanded: false),
                 header: const ListTile(
                   leading: Icon(Icons.info_outline),
                   title: Text('信息'),
@@ -458,21 +410,72 @@ class UserInfo extends StatelessWidget {
                       if (user.stats case final stats?) ...[
                         info(
                           Icons.calendar_today,
-                          '加入时间',
+                          'joined',
                           stats.createdAt != null
                               ? DateFormatting.named(stats.createdAt!)
                               : null,
                         ),
                         info(
                           Icons.shield,
-                          '等级',
+                          'rank',
                           stats.levelString?.toLowerCase(),
                         ),
-                        info(Icons.upload, '帖子', stats.postUploadCount),
-                        info(Icons.edit, '编辑', stats.postUpdateCount),
-                        info(Icons.favorite, '收藏', stats.favoriteCount),
-                        info(Icons.comment, '评论', stats.commentCount),
-                        info(Icons.forum, '论坛', stats.forumPostCount),
+                        info(Icons.upload, 'posts', stats.postUploadCount),
+                        info(Icons.edit, 'edits', stats.postUpdateCount),
+                        info(Icons.favorite, 'favorites', stats.favoriteCount),
+                        info(Icons.comment, 'comments', stats.commentCount),
+                        info(Icons.forum, 'forum', stats.forumPostCount),
+                        if (stats.poolUpdateCount case final count?
+                            when count != 0)
+                          info(Icons.collections, 'pool edits', count),
+                        if (stats.artistUpdateCount case final count?
+                            when count != 0)
+                          info(Icons.brush, 'artist edits', count),
+                        if (stats.wikiUpdateCount case final count?
+                            when count != 0)
+                          info(Icons.menu_book, 'wiki edits', count),
+                        if (stats.noteUpdateCount case final count?
+                            when count != 0)
+                          info(Icons.sticky_note_2, 'note edits', count),
+                        info(
+                          Icons.trending_up,
+                          'upload karma',
+                          stats.uploadKarma,
+                        ),
+                        info(
+                          Icons.hourglass_empty,
+                          'upload slots',
+                          stats.canUploadFree ? null : stats.uploadSlots,
+                        ),
+                        if ((
+                              stats.positiveFeedbackCount ?? 0,
+                              stats.neutralFeedbackCount ?? 0,
+                              stats.negativeFeedbackCount ?? 0,
+                            )
+                            case (final positive, final neutral, final negative)
+                            when positive + neutral + negative > 0)
+                          info(
+                            Icons.thumbs_up_down,
+                            '反馈',
+                            '$positive 好评，$neutral 中评，'
+                                '$negative 差评',
+                          ),
+                        if ([
+                              if (stats.canApprovePosts) '审核帖子',
+                              if (stats.canUploadFree) '无限制上传',
+                            ]
+                            case final permissions when permissions.isNotEmpty)
+                          info(
+                            Icons.verified_user,
+                            'permissions',
+                            permissions.join(', '),
+                          ),
+                        if ([
+                              if (stats.isBanned) 'banned',
+                              if (!stats.isVerified) 'unactivated',
+                            ]
+                            case final status when status.isNotEmpty)
+                          info(Icons.gavel, 'status', status.join(', ')),
                       ],
                     ],
                   ),
@@ -493,14 +496,12 @@ class UserInfoTile extends StatelessWidget {
     required this.title,
     required this.icon,
     this.onLongPress,
-    this.compact = true,
   });
 
   final String value;
   final String title;
   final IconData icon;
   final VoidCallback? onLongPress;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -518,21 +519,13 @@ class UserInfoTile extends StatelessWidget {
             Icon(icon),
             const SizedBox(width: 16),
             Expanded(
-              child: compact
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(title, style: titleStyle),
-                        Text(value, style: valueStyle),
-                      ],
-                    )
-                  : Row(
-                      children: [
-                        Expanded(child: Text(title, style: valueStyle)),
-                        const SizedBox(height: 4),
-                        Text(value, style: valueStyle),
-                      ],
-                    ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: titleStyle),
+                  Text(value, style: valueStyle),
+                ],
+              ),
             ),
           ],
         ),

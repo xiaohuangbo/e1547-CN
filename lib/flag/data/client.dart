@@ -7,17 +7,15 @@ class FlagClient {
 
   final Dio dio;
 
-  Future<List<PostFlag>> list({
+  Future<List<PostFlag>> page({
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
   }) => dio
       .get(
         '/post_flags.json',
         queryParameters: {'page': page, 'limit': limit, ...?query},
-        options: forceOptions(force),
         cancelToken: cancelToken,
       )
       .then(unwrapRailsArray)

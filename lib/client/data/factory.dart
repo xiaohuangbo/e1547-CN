@@ -48,10 +48,9 @@ class ClientFactory {
     };
   }
 
-  String? apiKeysUrl(String host, String username) {
-    if (username.isEmpty) return null;
+  String? apiKeysUrl(String host) {
     return switch (normalizeHostUrl(host)) {
-      _e621Host || _e926Host => '$host/users/$username/api_key',
+      _e621Host || _e926Host => '$host/api_keys',
       _ => null,
     };
   }

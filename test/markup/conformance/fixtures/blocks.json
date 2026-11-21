@@ -1,0 +1,1380 @@
+[
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Header 1",
+              "type": "text"
+            }
+          ],
+          "level": 1,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h1. Header 1\n",
+    "label": "h1 header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Header 2",
+              "type": "text"
+            }
+          ],
+          "level": 2,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h2. Header 2\n",
+    "label": "h2 header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Header 3",
+              "type": "text"
+            }
+          ],
+          "level": 3,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h3. Header 3\n",
+    "label": "h3 header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Header 4",
+              "type": "text"
+            }
+          ],
+          "level": 4,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h4. Header 4\n",
+    "label": "h4 header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Header 5",
+              "type": "text"
+            }
+          ],
+          "level": 5,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h5. Header 5\n",
+    "label": "h5 header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Header 6",
+              "type": "text"
+            }
+          ],
+          "level": 6,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h6. Header 6\n",
+    "label": "h6 header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Bold",
+                  "type": "text"
+                }
+              ],
+              "type": "bold"
+            },
+            {
+              "content": " Header",
+              "type": "text"
+            }
+          ],
+          "level": 1,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h1. [b]Bold[/b] Header\n",
+    "label": "header with inline bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Section",
+              "type": "text"
+            }
+          ],
+          "level": 2,
+          "type": "header"
+        },
+        {
+          "children": [
+            {
+              "content": "Body copy follows.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h2. Section\n\nBody copy follows.",
+    "label": "header then paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Just one paragraph of plain text.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "Just one paragraph of plain text.",
+    "label": "single paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Some ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "italic",
+                  "type": "text"
+                }
+              ],
+              "type": "italic"
+            },
+            {
+              "content": " inside a sentence.",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "Some [i]italic[/i] inside a sentence.",
+    "label": "paragraph with inline italic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "first paragraph",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "second paragraph",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "first paragraph\n\nsecond paragraph",
+    "label": "two paragraphs split by blank line"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "alpha",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "beta",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "gamma",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "alpha\n\nbeta\n\ngamma",
+    "label": "three paragraphs"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "first line",
+              "type": "text"
+            },
+            {
+              "type": "line_break"
+            },
+            {
+              "content": "second line",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "first line\nsecond line",
+    "label": "paragraph with embedded line break"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Please quote me!",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote]Please quote me![/quote]",
+    "label": "quote basic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "First paragraph",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "content": "Second paragraph",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote]First paragraph\n\nSecond paragraph[/quote]",
+    "label": "quote multiple paragraphs"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "contains ",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "bold",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "bold"
+                },
+                {
+                  "content": " text",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote]contains [b]bold[/b] text[/quote]",
+    "label": "quote with nested bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "in red",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "color": "red",
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote=red]\nin red\n[/quote]",
+    "label": "quote color named red"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "custom hex",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "color": "#abc",
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote=#abc]\ncustom hex\n[/quote]",
+    "label": "quote color hex"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "in character colour",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "color": "character",
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote=character]\nin character colour\n[/quote]",
+    "label": "quote color tag-category"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Hidden content",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "spoiler_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[spoiler]\nHidden content\n[/spoiler]",
+    "label": "block spoiler"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "First hidden",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            },
+            {
+              "children": [
+                {
+                  "content": "Second hidden",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "spoiler_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[spoiler]\nFirst hidden\n\nSecond hidden\n[/spoiler]",
+    "label": "block spoiler with multiple paragraphs"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Content here",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section]Content here[/section]",
+    "label": "section bare"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Content",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "title": "Some Title",
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section=Some Title]Content[/section]",
+    "label": "section with title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Content",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "expanded": true,
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section,expanded]Content[/section]",
+    "label": "section expanded"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Content",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "expanded": true,
+          "title": "Title",
+          "type": "section"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[section,expanded=Title]Content[/section]",
+    "label": "section expanded with title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "content": "std::cout << \"Hello, World!\";",
+          "type": "code_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[code]std::cout << \"Hello, World!\";[/code]",
+    "label": "code block single line"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "content": "line one\nline two\n",
+          "type": "code_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[code]\nline one\nline two\n[/code]",
+    "label": "code block multi-line"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "content": "<script>alert(\"xss\")</script>",
+          "type": "code_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[code]<script>alert(\"xss\")</script>[/code]",
+    "label": "code block with HTML chars"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "content": "[b]not bold[/b] and post #123",
+          "type": "code_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[code][b]not bold[/b] and post #123[/code]",
+    "label": "code block with dtext-shaped content"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "Item 1",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "Item 2",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "Item 3",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* Item 1\n* Item 2\n* Item 3\n",
+    "label": "flat unordered list"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "parent",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "child",
+                  "type": "text"
+                }
+              ],
+              "depth": 2,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "sibling",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* parent\n** child\n* sibling\n",
+    "label": "nested list two deep"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "a",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "b",
+                  "type": "text"
+                }
+              ],
+              "depth": 2,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "c",
+                  "type": "text"
+                }
+              ],
+              "depth": 3,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* a\n** b\n*** c\n",
+    "label": "nested list three deep"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "plain item",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "content": "italic",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "italic"
+                },
+                {
+                  "content": " item",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* plain item\n* [i]italic[/i] item\n",
+    "label": "list item with inline italic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "cells": [
+                {
+                  "cellType": "td",
+                  "children": [
+                    {
+                      "content": "Cell",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "table_cell"
+                }
+              ],
+              "type": "table_row"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[table][tr][td]Cell[/td][/tr][/table]",
+    "label": "table minimal"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": "Header",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_head"
+            },
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": "Cell",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_body"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[table]\n[thead]\n[tr]\n[th]Header[/th]\n[/tr]\n[/thead]\n[tbody]\n[tr]\n[td]Cell[/td]\n[/tr]\n[/tbody]\n[/table]",
+    "label": "table with thead and tbody"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "cells": [
+                {
+                  "cellType": "td",
+                  "children": [
+                    {
+                      "content": "A",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "table_cell"
+                },
+                {
+                  "cellType": "td",
+                  "children": [
+                    {
+                      "content": "B",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "table_cell"
+                },
+                {
+                  "cellType": "td",
+                  "children": [
+                    {
+                      "content": "C",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "table_cell"
+                }
+              ],
+              "type": "table_row"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[table][tr][td]A[/td][td]B[/td][td]C[/td][/tr][/table]",
+    "label": "table multiple cells per row"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "cells": [
+                {
+                  "cellType": "td",
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "content": "Bold Cell",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "bold"
+                    }
+                  ],
+                  "type": "table_cell"
+                }
+              ],
+              "type": "table_row"
+            }
+          ],
+          "type": "table"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[table][tr][td][b]Bold Cell[/b][/td][/tr][/table]",
+    "label": "table with inline formatting in cell"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": "head ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": " head",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_head"
+            },
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": "body ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": " body",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_body"
+            }
+          ],
+          "source": "head | head\nbody | body",
+          "type": "ltable"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[ltable]\nhead | head\nbody | body\n[/ltable]",
+    "label": "ltable single row"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": "a ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": " b",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_head"
+            },
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": "c ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": " d",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                },
+                {
+                  "cells": [
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": "e ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": " f",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_body"
+            }
+          ],
+          "source": "a | b\nc | d\ne | f",
+          "type": "ltable"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[ltable]\na | b\nc | d\ne | f\n[/ltable]",
+    "label": "ltable multiple body rows"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": "head1 ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "th",
+                      "children": [
+                        {
+                          "content": " head2",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_head"
+            },
+            {
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": "body1 ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": " body2",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                },
+                {
+                  "cells": [
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": "body3 ",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    },
+                    {
+                      "cellType": "td",
+                      "children": [
+                        {
+                          "content": " body4",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "table_cell"
+                    }
+                  ],
+                  "type": "table_row"
+                }
+              ],
+              "type": "table_body"
+            }
+          ],
+          "source": "head1 | head2\nbody1 | body2\nbody3 | body4",
+          "type": "ltable"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[ltable]\nhead1 | head2\nbody1 | body2\nbody3 | body4\n[/ltable]",
+    "label": "ltable with header"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "no open above",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [],
+          "prefix": "[/code]",
+          "type": "literal_html"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "no open above[/code]",
+    "label": "stray code close becomes raw_block_text"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "untable",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [],
+          "prefix": "[/table]",
+          "type": "literal_html"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "untable[/table]",
+    "label": "stray table close becomes raw_block_text"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "\"Alice said\":",
+                  "type": "text"
+                },
+                {
+                  "type": "line_break"
+                },
+                {
+                  "content": "hello",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote]\"Alice said\":\nhello\n[/quote]",
+    "label": "quote with named author"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote][/quote]",
+    "label": "empty quote body"
+  }
+]

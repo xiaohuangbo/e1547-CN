@@ -14,6 +14,7 @@ final class AppInfo extends PackageInfo {
     required this.website,
     required this.kofi,
     required this.email,
+    required this.forumTopicId,
     required this.source,
     required super.appName,
     required super.packageName,
@@ -30,6 +31,7 @@ final class AppInfo extends PackageInfo {
     required String? website,
     required String? kofi,
     required String? email,
+    required int? forumTopicId,
   }) async {
     PackageInfo info = await PackageInfo.fromPlatform();
     Source source = await Future(() {
@@ -45,6 +47,7 @@ final class AppInfo extends PackageInfo {
       website: website,
       kofi: kofi,
       email: email,
+      forumTopicId: forumTopicId,
       source: source,
       appName: info.appName,
       packageName: info.packageName,
@@ -61,6 +64,7 @@ final class AppInfo extends PackageInfo {
     required String? website,
     required String? kofi,
     required String? email,
+    required int? forumTopicId,
     required String appName,
     required String packageName,
     required String version,
@@ -74,6 +78,7 @@ final class AppInfo extends PackageInfo {
     website: website,
     kofi: kofi,
     email: email,
+    forumTopicId: forumTopicId,
     source: source,
     appName: appName,
     packageName: packageName,
@@ -107,6 +112,9 @@ final class AppInfo extends PackageInfo {
 
   /// Developer email.
   final String? email;
+
+  /// e621 forum topic where app releases are announced.
+  final int? forumTopicId;
 
   /// Source of installation.
   final Source source;

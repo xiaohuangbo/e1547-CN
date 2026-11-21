@@ -9,9 +9,20 @@ class ColoredCard extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.onSecondaryTap,
-    this.leading,
     this.trailing,
+    this.icon,
+    this.padding = const EdgeInsets.only(
+      top: 4,
+      bottom: 4,
+      right: 10,
+      left: stripeWidth + 6,
+    ),
   });
+
+  /// The content has to clear this width.
+  static const double stripeWidth = 5;
+
+  static const double iconStripeWidth = 26;
 
   final Widget child;
   final Color? backgroundColor;
@@ -19,24 +30,65 @@ class ColoredCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final VoidCallback? onSecondaryTap;
-  final Widget? leading;
   final Widget? trailing;
+  final IconData? icon;
+  final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: backgroundColor,
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        onSecondaryTap: onSecondaryTap,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(2),
+    child: PressBuilder(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      onSecondaryTap: onSecondaryTap,
+      builder: _body,
+    ),
+  );
+
+  Widget _body(BuildContext context, bool pressed) {
+    final baseColor = backgroundColor ?? Theme.of(context).cardColor;
+    final brightness = Theme.of(context).brightness;
+    final pressedColor = Color.lerp(
+      baseColor,
+      brightness == Brightness.dark ? Colors.white : Colors.black,
+      0.1,
+    )!;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: pressed ? pressedColor : baseColor,
         borderRadius: const BorderRadius.all(Radius.circular(4)),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (color case final stripeColor?)
-              Container(
-                height: 27,
+      ),
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Padding(
+                  padding: icon == null
+                      ? padding
+                      : padding.add(
+                          const EdgeInsets.only(
+                            left: iconStripeWidth - stripeWidth,
+                          ),
+                        ),
+                  child: child,
+                ),
+              ),
+              if (trailing case final trailing?) trailing,
+            ],
+          ),
+          // Stacking gives the stripe the content's height rather than a
+          // fixed one.
+          if (color case final stripeColor?)
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: icon == null ? stripeWidth : iconStripeWidth,
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: stripeColor,
                   borderRadius: const BorderRadius.only(
@@ -44,65 +96,87 @@ class ColoredCard extends StatelessWidget {
                     bottomLeft: Radius.circular(4),
                   ),
                 ),
-                child: leading ?? const SizedBox(width: 5),
-              ),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 4,
-                  bottom: 4,
-                  right: 10,
-                  left: 6,
-                ),
-                child: child,
+                child: switch (icon) {
+                  final IconData icon => Icon(
+                    icon,
+                    size: 16,
+                    color: Colors.black.withValues(alpha: 0.78),
+                  ),
+                  null => null,
+                },
               ),
             ),
-            if (trailing case final trailing?) trailing,
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class IndentedCard extends StatelessWidget {
-  const IndentedCard({
+class PressBuilder extends StatefulWidget {
+  const PressBuilder({
     super.key,
-    required this.child,
-    this.backgroundColor,
-    this.color,
+    required this.builder,
+    this.onTap,
+    this.onLongPress,
+    this.onSecondaryTap,
   });
 
-  final Widget child;
-  final Color? backgroundColor;
-  final Color? color;
+  final Widget Function(BuildContext context, bool pressed) builder;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onSecondaryTap;
+
+  @override
+  State<PressBuilder> createState() => _PressBuilderState();
+}
+
+class _PressBuilderState extends State<PressBuilder> {
+  bool _pressed = false;
+  bool _held = false;
+  int _pressToken = 0;
+
+  void _press() {
+    setState(() => _pressed = true);
+    final token = ++_pressToken;
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted && _pressToken == token && !_held) {
+        setState(() => _pressed = false);
+      }
+    });
+  }
+
+  void _cancel() => setState(() => _pressed = false);
+
+  void _hold() {
+    _held = true;
+    setState(() => _pressed = true);
+  }
+
+  void _release() {
+    _held = false;
+    _press();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: backgroundColor,
-      child: Stack(
-        fit: StackFit.passthrough,
-        children: [
-          Padding(padding: const EdgeInsets.only(left: 5), child: child),
-          if (color != null)
-            Positioned(
-              top: 0,
-              bottom: 0,
-              left: 0,
-              child: Container(
-                width: 5,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(4),
-                    bottomLeft: Radius.circular(4),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+    final Widget child = widget.builder(context, _pressed);
+    final bool tap = widget.onTap != null;
+    final bool hold = widget.onLongPress != null;
+    final bool secondary = widget.onSecondaryTap != null;
+    if (!tap && !hold && !secondary) return child;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      onTapDown: tap ? (_) => _press() : null,
+      onTapCancel: tap ? _cancel : null,
+      onLongPress: widget.onLongPress,
+      onLongPressDown: hold ? (_) => _hold() : null,
+      onLongPressUp: hold ? _release : null,
+      onLongPressCancel: hold ? _release : null,
+      onSecondaryTap: widget.onSecondaryTap,
+      onSecondaryTapDown: secondary ? (_) => _press() : null,
+      onSecondaryTapCancel: secondary ? _cancel : null,
+      child: child,
     );
   }
 }

@@ -7,7 +7,7 @@ import 'package:drift/internal/modular.dart' as i3;
 import 'package:e1547/identity/data/database.drift.dart' as i4;
 import 'package:e1547/history/data/history.dart' as i5;
 import 'package:e1547/history/data/database.dart' as i6;
-import 'package:e1547/interface/data/sql.dart' as i7;
+import 'package:e1547/shared/data/sql.dart' as i7;
 
 typedef $$HistoriesTableTableCreateCompanionBuilder =
     i2.HistoryCompanion Function({
@@ -878,6 +878,27 @@ mixin $HistoryRepositoryMixin on i0.DatabaseAccessor<i1.GeneratedDatabase> {
         attachedDatabase,
       ).resultSet<i2.$HistoriesIdentitiesTableTable>(
         'histories_identities_table',
+      );
+  HistoryRepositoryManager get managers => HistoryRepositoryManager(this);
+}
+
+class HistoryRepositoryManager {
+  final $HistoryRepositoryMixin _db;
+  HistoryRepositoryManager(this._db);
+  i2.$$HistoriesTableTableTableManager get historiesTable =>
+      i2.$$HistoriesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.historiesTable,
+      );
+  i4.$$IdentitiesTableTableTableManager get identitiesTable =>
+      i4.$$IdentitiesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.identitiesTable,
+      );
+  i2.$$HistoriesIdentitiesTableTableTableManager get historiesIdentitiesTable =>
+      i2.$$HistoriesIdentitiesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.historiesIdentitiesTable,
       );
 }
 

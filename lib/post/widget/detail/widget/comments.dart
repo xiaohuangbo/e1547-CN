@@ -1,7 +1,8 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class CommentDisplay extends StatelessWidget {
@@ -32,7 +33,7 @@ class CommentDisplay extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  '评论'
+                  'COMMENTS'
                   ' (${post.commentCount})',
                 ),
               ),
@@ -46,82 +47,46 @@ class CommentDisplay extends StatelessWidget {
 }
 
 class SliverPostCommentSection extends StatelessWidget {
-  const SliverPostCommentSection({super.key, required this.post});
+  const SliverPostCommentSection({super.key, required this.postId});
 
-  final Post post;
+  final int postId;
 
   @override
   Widget build(BuildContext context) {
-    return CommentProvider(
-      postId: post.id,
-      child: Consumer<CommentController>(
-        builder: (context, controller, child) => SliverMainAxisGroup(
+    final client = context.watch<Client>();
+    return FilterControllerProvider(
+      create: (_) => CommentFilter(client),
+      keys: (_) => [client],
+      child: ChangeNotifierProvider(
+        create: (_) => CommentParamsController(
+          CommentParams(
+            postId: postId,
+            groupBy: CommentGroupBy.comment,
+            order: CommentOrder.oldest,
+          ),
+        ),
+        builder: (context, _) => SliverMainAxisGroup(
           slivers: [
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       child: Row(
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              '评论',
+                              'Comments',
                               style: TextStyle(fontSize: 16),
                             ),
                           ),
-                          PopupMenuButton<VoidCallback>(
-                            icon: const Icon(Icons.more_vert),
-                            onSelected: (value) => value(),
-                            itemBuilder: (context) => [
-                              PopupMenuTile(
-                                title: '刷新',
-                                icon: Icons.refresh,
-                                value: () => controller.refresh(force: true),
-                              ),
-                              PopupMenuTile(
-                                icon: Icons.sort,
-                                title: controller.orderByOldest
-                                    ? '最新优先'
-                                    : '最旧优先',
-                                value: () => controller.orderByOldest =
-                                    !controller.orderByOldest,
-                              ),
-                              PopupMenuTile(
-                                title: '评论',
-                                icon: Icons.comment,
-                                value: () => guardWithLogin(
-                                  context: context,
-                                  callback: () async {
-                                    PostController postsController = context
-                                        .read<PostController>();
-                                    bool success = await writeComment(
-                                      context: context,
-                                      postId: post.id,
-                                    );
-                                    if (success) {
-                                      postsController.replacePost(
-                                        post.copyWith(
-                                          commentCount: post.commentCount + 1,
-                                        ),
-                                      );
-                                      controller.refresh(force: true);
-                                    }
-                                  },
-                                  error: '您必须登录才能发表评论！',
-                                ),
-                              ),
-                            ],
-                          ),
+                          CommentListDropdown(),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -130,20 +95,7 @@ class SliverPostCommentSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(
                 horizontal: 12,
               ).add(const EdgeInsets.only(bottom: 30)),
-              sliver: ListenableBuilder(
-                listenable: controller,
-                builder: (context, _) => PagedSliverList<int, Comment>(
-                  state: controller.state,
-                  fetchNextPage: controller.getNextPage,
-                  builderDelegate: defaultPagedChildBuilderDelegate(
-                    onRetry: controller.getNextPage,
-                    itemBuilder: (context, item, index) =>
-                        CommentTile(comment: item),
-                    onEmpty: const Text('没有评论'),
-                    onError: const Text('加载评论失败'),
-                  ),
-                ),
-              ),
+              sliver: const SliverCommentList(),
             ),
           ],
         ),

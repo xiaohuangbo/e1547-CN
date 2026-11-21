@@ -1,3 +1,4 @@
+import 'package:e1547/settings/settings.dart';
 import 'package:e1547/shared/shared.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -127,6 +128,8 @@ class AdaptiveScaffold extends StatefulWidget {
 
 class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
   /// Default adaptive scaffold configuration.
+  static const double _defaultDrawerWidth = 304;
+
   static const AdaptiveScaffoldConfig _defaultConfig = AdaptiveScaffoldConfig(
     navigationRailBreakpoint: 800,
     drawerBreakpoint: 1200,
@@ -230,6 +233,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
 
         bool showInlineDrawer = (drawerAction?.isDrawerOpen ?? true);
         bool showInlineEndDrawer = (endDrawerAction?.isDrawerOpen ?? true);
+        double drawerWidth =
+            DrawerTheme.of(context).width ?? _defaultDrawerWidth;
 
         if (!showInlineDrawer) {
           effectiveDrawer = inlineDrawer;
@@ -243,7 +248,8 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
             showChild: inlineDrawer != null && showInlineDrawer,
             builder: (context) => inlineDrawer!,
           ),
-          if (widget.body != null) Expanded(child: widget.body!),
+          if (widget.body != null)
+            Expanded(child: SkeletonIgnore(child: widget.body!)),
           CrossFade.builder(
             showChild: inlineEndDrawer != null && showInlineEndDrawer,
             builder: (context) => inlineEndDrawer!,
@@ -253,8 +259,17 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
         return _AdaptiveScaffoldBody(
           appBar: widget.appBar,
           body: Row(children: bodyChildren),
-          floatingActionButton: widget.floatingActionButton,
-          floatingActionButtonLocation: widget.floatingActionButtonLocation,
+          floatingActionButton: isSkeleton(context)
+              ? null
+              : widget.floatingActionButton,
+          floatingActionButtonLocation: _InsetFabLocation(
+            widget.floatingActionButtonLocation ??
+                Handedness.of(context).floatingActionButtonLocation,
+            left: inlineDrawer != null && showInlineDrawer ? drawerWidth : 0,
+            right: inlineEndDrawer != null && showInlineEndDrawer
+                ? drawerWidth
+                : 0,
+          ),
           floatingActionButtonAnimator: widget.floatingActionButtonAnimator,
           persistentFooterButtons: widget.persistentFooterButtons,
           drawer: effectiveDrawer,
@@ -496,4 +511,52 @@ class AdaptiveScaffoldScope
          ),
          keys: (context) => [isDrawerOpen, isEndDrawerOpen],
        );
+}
+
+@immutable
+class _InsetFabLocation extends FloatingActionButtonLocation {
+  const _InsetFabLocation(
+    this.location, {
+    required this.left,
+    required this.right,
+  });
+
+  final FloatingActionButtonLocation location;
+  final double left;
+  final double right;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final Offset offset = location.getOffset(
+      ScaffoldPrelayoutGeometry(
+        bottomSheetSize: scaffoldGeometry.bottomSheetSize,
+        contentBottom: scaffoldGeometry.contentBottom,
+        contentTop: scaffoldGeometry.contentTop,
+        floatingActionButtonSize: scaffoldGeometry.floatingActionButtonSize,
+        minInsets: scaffoldGeometry.minInsets,
+        minViewPadding: scaffoldGeometry.minViewPadding,
+        scaffoldSize: Size(
+          scaffoldGeometry.scaffoldSize.width - left - right,
+          scaffoldGeometry.scaffoldSize.height,
+        ),
+        snackBarSize: scaffoldGeometry.snackBarSize,
+        materialBannerSize: scaffoldGeometry.materialBannerSize,
+        textDirection: scaffoldGeometry.textDirection,
+      ),
+    );
+    return offset.translate(left, 0);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is _InsetFabLocation &&
+      other.location == location &&
+      other.left == left &&
+      other.right == right;
+
+  @override
+  int get hashCode => Object.hash(location, left, right);
+
+  @override
+  String toString() => '$location inset by ($left, $right)';
 }

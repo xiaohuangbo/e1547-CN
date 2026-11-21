@@ -23,16 +23,14 @@ class SourcesEditDisplay extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(
-              child: Text('Sources', style: TextStyle(fontSize: 16)),
-            ),
+            const Expanded(child: Text('来源', style: TextStyle(fontSize: 16))),
             IconButton(
               onPressed: (enabled ?? true)
                   ? () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (context) => TextEditor(
-                            title: Text('#$postId sources'),
+                            title: Text('#$postId 来源'),
                             content: controller.text,
                             onSubmitted: (text) {
                               controller.text = text;

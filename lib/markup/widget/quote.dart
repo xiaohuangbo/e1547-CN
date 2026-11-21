@@ -1,4 +1,4 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class QuoteWrap extends StatelessWidget {
@@ -8,20 +8,16 @@ class QuoteWrap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IndentedCard(
+    return ColoredCard(
       backgroundColor: Theme.of(context).canvasColor,
       color: dimTextColor(context),
+      padding: const EdgeInsets.only(left: ColoredCard.stripeWidth),
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [child],
-              ),
-            ),
-          ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [child],
         ),
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:deep_pick/deep_pick.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/shared/shared.dart';
 
 abstract final class E621Comment {
   static Comment fromJson(dynamic json) => pick(json).letOrThrow(
@@ -12,7 +11,8 @@ abstract final class E621Comment {
       updatedAt: pick('updated_at').asDateTimeOrThrow(),
       creatorId: pick('creator_id').asIntOrThrow(),
       creatorName: pick('creator_name').asStringOrThrow(),
-      vote: VoteInfo(score: pick('score').asIntOrThrow()),
+      score: pick('score').asIntOrThrow(),
+      vote: pick('vote').asIntOrNull(),
       warning: pick(
         'warning_type',
       ).letOrNull((pick) => WarningType.values.asNameMap()[pick.asString()]!),

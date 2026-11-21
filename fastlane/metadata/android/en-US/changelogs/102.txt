@@ -1,0 +1,13 @@
+### Added
+- Previews for parent, child and pool posts
+- Posting and reporting forum replies
+- Windows and Linux releases
+- Links to headings in wiki and forum pages
+
+### Fixed
+- Clearing history
+- Missing bookmark and follow thumbnails
+- Rewinding a video jumping to its end
+- Wide tables overflowing wiki and forum pages
+- Blacklist differing from the site
+- Reporting posts

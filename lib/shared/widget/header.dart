@@ -1,30 +1,28 @@
 import 'package:flutter/material.dart';
 
-class ListTileHeader extends StatelessWidget {
-  const ListTileHeader({super.key, required this.title});
+/// Heading above a group of rows.
+///
+/// [indent] aligns the title with whatever the rows put on their left.
+class SectionHeader extends StatelessWidget {
+  const SectionHeader({super.key, required this.title, this.indent = 16});
+
+  /// Lines the title up with the title column of a [ListTile] that has a
+  /// leading widget.
+  static const double listTileIndent = 72;
 
   final String title;
+  final double indent;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            left: 72,
-            bottom: 8,
-            top: 8,
-            right: 16,
-          ),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.secondary,
-              fontSize: 16,
-            ),
-          ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(indent, 8, 16, 8),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          color: Theme.of(context).colorScheme.secondary,
         ),
-      ],
+      ),
     );
   }
 }

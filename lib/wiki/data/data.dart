@@ -1,3 +1,5 @@
 export 'actions.dart';
-export 'service.dart';
+export 'client.dart';
+export 'json.dart';
+export 'query.dart';
 export 'wiki.dart';

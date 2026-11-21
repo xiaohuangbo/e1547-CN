@@ -25,6 +25,7 @@ class AutocompleteTextField<T> extends StatelessWidget {
     this.textInputAction,
     this.focusNode,
     this.inputFormatters,
+    this.style,
     this.maxLines = 1,
     this.cutoutForFab = true,
   });
@@ -38,6 +39,7 @@ class AutocompleteTextField<T> extends StatelessWidget {
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final List<TextInputFormatter>? inputFormatters;
+  final TextStyle? style;
   final int? maxLines;
   final ValueSetter<T> onSelected;
   final Widget Function(BuildContext context, T value) itemBuilder;
@@ -51,6 +53,7 @@ class AutocompleteTextField<T> extends StatelessWidget {
     bool hasFab = Scaffold.maybeOf(context)?.hasFloatingActionButton ?? false;
     return TypeAheadField<T>(
       controller: controller,
+      focusNode: focusNode,
       direction: direction,
       hideOnEmpty: true,
       hideOnSelect: false,
@@ -59,6 +62,7 @@ class AutocompleteTextField<T> extends StatelessWidget {
         autofocus: autofocus,
         focusNode: focusNode,
         inputFormatters: inputFormatters,
+        style: style,
         decoration:
             decoration?.copyWith(labelText: labelText) ??
             InputDecoration(labelText: labelText),
@@ -86,17 +90,12 @@ class AutocompleteTextField<T> extends StatelessWidget {
       loadingBuilder: (context) => const ListTile(
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [SizedCircularProgressIndicator(size: 24)],
+          children: [HexagonalLoadingIndicator(size: 24)],
         ),
       ),
       errorBuilder: (context, error) => const Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          IconMessage(
-            icon: Icon(Icons.error),
-            title: Text('Failed to load suggestions'),
-          ),
-        ],
+        children: [IconMessage(icon: Icon(Icons.error), title: Text('加载建议失败'))],
       ),
       onSelected: onSelected,
       itemBuilder: itemBuilder,
@@ -121,30 +120,25 @@ class AutocompleteCutout extends ShapeBorder {
 
   @override
   Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    const shape = CircularNotchedRectangle();
-
-    Size size = rect.size;
     double edgeDistance = 16;
     double padding = 2;
     double offset = 4;
     double width = 56;
-    double radius = width / 2;
+    double radius = width / 2 + padding;
 
-    return shape
-        .getOuterPath(
-          rect,
-          Rect.fromCircle(
-            center: Offset(size.width - radius - edgeDistance, 0),
-            radius: radius + padding,
+    final rectPath = Path()..addRect(rect);
+    final notchPath = Path()
+      ..addOval(
+        Rect.fromCircle(
+          center: Offset(
+            rect.right - radius - edgeDistance + padding,
+            rect.bottom + offset,
           ),
-        )
-        .transform(
-          (Matrix4.diagonal3Values(
-            1,
-            -1,
-            1,
-          )..translate(0.0, -size.height - offset)).storage,
-        );
+          radius: radius,
+        ),
+      );
+
+    return Path.combine(PathOperation.difference, rectPath, notchPath);
   }
 
   @override

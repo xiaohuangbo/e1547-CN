@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:drift/drift.dart';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
+import 'package:e1547/files/files.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/identity/identity.dart';
 import 'package:e1547/logs/logs.dart';
@@ -24,17 +26,17 @@ Future<void> runFollowUpdates({
     await allFollows.all(types: [FollowType.notify]),
   );
 
-  List<Identity> identities = await IdentityService(
+  List<Identity> identities = await IdentityClient(
     database: storage.sqlite,
   ).all();
 
   final clientFactory = ClientFactory();
 
   for (final identity in identities) {
-    TraitsService traits = TraitsService(database: storage.sqlite);
+    TraitsClient traits = TraitsClient(database: storage.sqlite);
     await traits.activate(identity.id);
 
-    Client client = clientFactory.create(
+    final client = clientFactory.create(
       ClientConfig(
         identity: identity,
         traits: traits.notifier,
@@ -44,6 +46,7 @@ Future<void> runFollowUpdates({
 
     await runClientFollowUpdate(
       client: client,
+      database: storage.sqlite,
       notifications: notifications,
       cancelToken: cancelToken,
     );
@@ -56,6 +59,7 @@ Future<void> runFollowUpdates({
 
 Future<void> runClientFollowUpdate({
   required Client client,
+  required GeneratedDatabase database,
   required FlutterLocalNotificationsPlugin notifications,
   CancelToken? cancelToken,
 }) async {
@@ -63,20 +67,32 @@ Future<void> runClientFollowUpdate({
     query: FollowsQuery(types: [FollowType.notify]),
   );
 
-  cancelToken?.whenCancel.then((_) => client.follows.currentSync?.cancel());
+  cancelToken?.whenCancel.then(
+    (_) => client.followServer.currentSync?.cancel(),
+  );
 
-  await client.follows.sync();
+  await client.followServer.sync();
 
   List<Follow> updated = await client.follows.all(
     query: FollowsQuery(types: [FollowType.notify]),
   );
 
-  await updateFollowNotifications(
-    identity: client.identity.id,
-    previous: previous,
-    updated: updated,
-    notifications: notifications,
+  final BaseCacheManager cache = createFileCache(
+    dio: client.dio,
+    database: database,
   );
+
+  try {
+    await updateFollowNotifications(
+      identity: client.identity.id,
+      previous: previous,
+      updated: updated,
+      notifications: notifications,
+      cache: cache,
+    );
+  } finally {
+    await cache.dispose();
+  }
 }
 
 Future<void> updateFollowNotifications({
@@ -84,8 +100,9 @@ Future<void> updateFollowNotifications({
   required List<Follow> previous,
   required List<Follow> updated,
   required FlutterLocalNotificationsPlugin notifications,
+  required BaseCacheManager cache,
 }) async {
-  final Logger logger = Logger('Notifications');
+  final Logger logger = Logger('FollowNotifications', {'identity': identity});
 
   Map<Follow, int> updates = {};
   List<Follow> seen = [];
@@ -106,26 +123,38 @@ Future<void> updateFollowNotifications({
     String? thumbnail = follow.thumbnail;
     String? picture;
     if (thumbnail != null) {
-      picture = (await DefaultCacheManager().getSingleFile(thumbnail)).path;
+      try {
+        picture = (await cache.getSingleFile(thumbnail)).path;
+      } on Exception catch (e, s) {
+        logger.warn(
+          'Failed to load thumbnail for {tags}',
+          {'tags': follow.tags},
+          e,
+          s,
+        );
+      }
     }
 
-    logger.fine('${follow.tags} has $unseen new posts!');
+    logger.debug('{tags} has {unseen} new posts', {
+      'tags': follow.tags,
+      'unseen': unseen,
+    });
 
     NotificationDetails notificationDetails = _createNotificationDetails(
       thumbnailPath: picture,
     );
 
     String title = follow.name;
-    String description = 'has $unseen new posts!';
+    String description = '有 $unseen 条新帖子！';
     if (unseen == 1) {
-      description = 'has a new post!';
+      description = '有一条新帖子！';
     }
 
     await notifications.show(
-      follow.id,
-      title,
-      description,
-      notificationDetails,
+      id: follow.id,
+      title: title,
+      body: description,
+      notificationDetails: notificationDetails,
       payload: json.encode(
         NotificationPayload(
           identity: identity,
@@ -149,24 +178,26 @@ Future<void> updateFollowNotifications({
           summary: true,
         );
         await notifications.show(
-          followsBackgroundTaskKey.hashCode,
-          'New posts!',
-          null,
-          notificationDetails,
+          id: followsBackgroundTaskKey.hashCode,
+          title: '新帖子！',
+          notificationDetails: notificationDetails,
           payload: json.encode(
             NotificationPayload(identity: identity, type: 'follow'),
           ),
         );
       } else {
-        notifications.cancel(followsBackgroundTaskKey.hashCode);
+        notifications.cancel(id: followsBackgroundTaskKey.hashCode);
       }
     }
 
-    logger.info('Sent notification, title: $title\nbody: $description');
+    logger.info('Notified: {title} {body}', {
+      'title': title,
+      'body': description,
+    });
   }
 
   for (final follow in seen) {
-    notifications.cancel(follow.id);
+    notifications.cancel(id: follow.id);
   }
 }
 
@@ -178,7 +209,7 @@ NotificationDetails _createNotificationDetails({
     android: AndroidNotificationDetails(
       'follows',
       'Followed Tags',
-      channelDescription: 'Notifications for tags you are following',
+      channelDescription: '您关注的标签的通知',
       largeIcon: thumbnailPath != null
           ? FilePathAndroidBitmap(thumbnailPath)
           : null,

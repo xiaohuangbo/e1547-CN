@@ -70,7 +70,7 @@ class DatabaseInfoDisplay extends StatelessWidget {
         final dbInfo =
             snapshot.data ??
             (snapshot.error != null
-                ? (name: 'Error loading database', size: 'N/A')
+                ? (name: '加载数据库出错', size: '无')
                 : (name: 'Loading...', size: '...'));
 
         return Center(
@@ -121,12 +121,12 @@ class DatabaseExportTile extends StatelessWidget {
                 child: SizedBox(
                   height: 28,
                   width: 28,
-                  child: CircularProgressIndicator(),
+                  child: HexagonalLoadingIndicator(),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text('Exporting database...'),
+                child: Text('正在导出数据库…'),
               ),
             ],
           ),
@@ -136,11 +136,11 @@ class DatabaseExportTile extends StatelessWidget {
       final dbPath = await getAppDatabasePath();
       final dbFile = File(dbPath);
       if (!dbFile.existsSync()) {
-        throw Exception('Database file does not exist');
+        throw Exception('数据库文件不存在');
       }
 
       String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: 'Export Database',
+        dialogTitle: '导出数据库',
         fileName: 'e1547_database_backup.db',
         type: FileType.custom,
         allowedExtensions: ['db'],
@@ -149,14 +149,12 @@ class DatabaseExportTile extends StatelessWidget {
 
       navigator.pop();
       if (outputFile != null) {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('Database exported successfully')),
-        );
+        messenger.showSnackBar(const SnackBar(content: Text('数据库导出成功')));
       }
     } on Exception catch (e) {
       navigator.pop();
-      messenger.showSnackBar(const SnackBar(content: Text('Export failed')));
-      _logger.severe('Database export failed', e);
+      messenger.showSnackBar(const SnackBar(content: Text('导出失败')));
+      _logger.warn('数据库导出失败', null, e);
     }
   }
 
@@ -164,11 +162,8 @@ class DatabaseExportTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.file_download),
-      title: const Text('Export'),
-      subtitle: const Text(
-        'Save a backup copy of your database',
-        overflow: TextOverflow.ellipsis,
-      ),
+      title: const Text('导出'),
+      subtitle: const Text('保存数据库的备份副本', overflow: TextOverflow.ellipsis),
       onTap: () => _exportDatabase(context),
     );
   }
@@ -185,10 +180,11 @@ class DatabaseImportTile extends StatelessWidget {
     if (!confirmed) return;
 
     try {
+      // iOS needs custom file type declarations but we are lazy so we pick any
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        dialogTitle: 'Import Database',
-        type: FileType.custom,
-        allowedExtensions: ['db'],
+        dialogTitle: '导入数据库',
+        type: Platform.isIOS ? FileType.any : FileType.custom,
+        allowedExtensions: Platform.isIOS ? null : ['db'],
       );
 
       final path = result?.files.single.path;
@@ -208,12 +204,12 @@ class DatabaseImportTile extends StatelessWidget {
                 child: SizedBox(
                   height: 28,
                   width: 28,
-                  child: CircularProgressIndicator(),
+                  child: HexagonalLoadingIndicator(),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text('Importing database...'),
+                child: Text('正在导入数据库…'),
               ),
             ],
           ),
@@ -232,10 +228,8 @@ class DatabaseImportTile extends StatelessWidget {
         await importDb.close();
       } on Exception catch (e) {
         navigator.pop();
-        messenger.showSnackBar(
-          SnackBar(content: Text('Invalid database file: $e')),
-        );
-        _logger.warning('Database validation failed', e);
+        messenger.showSnackBar(SnackBar(content: Text('无效的数据库文件：$e')));
+        _logger.warn('数据库校验失败', null, e);
         return;
       } finally {
         driftRuntimeOptions.dontWarnAboutMultipleDatabases = false;
@@ -252,7 +246,7 @@ class DatabaseImportTile extends StatelessWidget {
       }
     } on Exception catch (e) {
       navigator.pop();
-      messenger.showSnackBar(SnackBar(content: Text('Import failed: $e')));
+      messenger.showSnackBar(SnackBar(content: Text('导入失败：$e')));
     }
   }
 
@@ -262,22 +256,22 @@ class DatabaseImportTile extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 600),
         child: AlertDialog(
-          title: const Text('Import Database'),
+          title: const Text('导入数据库'),
           content: const Text(
-            'This will replace your current database. \n'
-            'All data will be lost. This cannot be undone!',
+            '这将替换您当前的数据库。\n'
+            '所有数据都将丢失，且无法恢复！',
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('CANCEL'),
+              child: const Text('取消'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.error,
               ),
-              child: const Text('IMPORT'),
+              child: const Text('导入'),
             ),
           ],
         ),
@@ -289,12 +283,12 @@ class DatabaseImportTile extends StatelessWidget {
     context: context,
     barrierDismissible: false,
     builder: (context) => AlertDialog(
-      title: const Text('Restart Required'),
-      content: const Text('The app needs to restart to apply changes.'),
+      title: const Text('需要重启'),
+      content: const Text('应用需要重启才能应用更改。'),
       actions: [
         TextButton(
           onPressed: () => AppInit.of(context).reinitialize(),
-          child: const Text('RESTART NOW'),
+          child: const Text('立即重启'),
         ),
       ],
     ),
@@ -304,11 +298,8 @@ class DatabaseImportTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const Icon(Icons.file_upload),
-      title: const Text('Import'),
-      subtitle: const Text(
-        'Replace current database with imported one',
-        overflow: TextOverflow.ellipsis,
-      ),
+      title: const Text('导入'),
+      subtitle: const Text('用导入的数据库替换当前数据库', overflow: TextOverflow.ellipsis),
       onTap: () => _importDatabase(context),
     );
   }

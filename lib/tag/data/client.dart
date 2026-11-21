@@ -12,13 +12,11 @@ class TagClient {
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
   }) => dio
       .get(
         '/tags.json',
         queryParameters: {'page': page, 'limit': limit, ...?query},
-        options: forceOptions(force),
         cancelToken: cancelToken,
       )
       .then(unwrapRailsArray)
@@ -26,13 +24,11 @@ class TagClient {
 
   Future<List<TagPreview>> preview({
     required String tags,
-    bool? force,
     CancelToken? cancelToken,
   }) => dio
       .post(
         '/tags/preview.json',
         data: {'tags': tags},
-        options: forceOptions(force),
         cancelToken: cancelToken,
       )
       .then(unwrapRailsArray)
@@ -48,7 +44,6 @@ class TagClient {
     String? search,
     int? limit,
     int? category,
-    bool? force,
     CancelToken? cancelToken,
   }) async {
     search ??= '';
@@ -59,7 +54,6 @@ class TagClient {
           .get(
             '/tags/autocomplete.json',
             queryParameters: {'search[name_matches]': search},
-            options: forceOptions(force),
             cancelToken: cancelToken,
           )
           .then(unwrapRailsArray)
@@ -75,7 +69,6 @@ class TagClient {
           'search[category]': category,
           'search[order]': 'count',
         }.toQuery(),
-        force: force,
       );
     }
   }
@@ -84,18 +77,16 @@ class TagClient {
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
   }) => dio
       .get(
         '/tag_aliases.json',
         queryParameters: {'page': page, 'limit': limit, ...?query},
-        options: forceOptions(force),
         cancelToken: cancelToken,
       )
       .then(unwrapRailsArray)
       .then((response) {
-        return response.data
+        return (response.data as List)
             .cast<Map<String, dynamic>>()
             .where((e) => e['status'] != 'deleted')
             .map((e) => e['consequent_name'] as String?)

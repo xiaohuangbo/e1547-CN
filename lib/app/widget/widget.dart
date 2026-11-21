@@ -1,9 +1,11 @@
 export 'app.dart';
+export 'bubbles.dart';
 export 'display.dart';
-export 'errors.dart';
 export 'link.dart';
 export 'loading.dart';
 export 'lock.dart';
+export 'logging.dart';
 export 'notifications.dart';
+export 'pin.dart';
 export 'provider.dart';
 export 'window.dart';

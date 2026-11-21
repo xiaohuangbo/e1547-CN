@@ -1,3 +1,4 @@
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,19 +22,6 @@ enum AppTheme {
   amoled,
   light,
   blue;
-
-  String get title {
-    switch (this) {
-      case AppTheme.dark:
-        return '深色';
-      case AppTheme.amoled:
-        return 'Amoled';
-      case AppTheme.light:
-        return '浅色';
-      case AppTheme.blue:
-        return '蓝色';
-    }
-  }
 
   ThemeData get data {
     switch (this) {
@@ -116,6 +104,7 @@ extension M2ThemeData on ThemeData {
   }
 
   static ThemeData prepareTheme(ThemeData theme) => theme.copyWith(
+    extensions: [AppStyle.from(theme)],
     applyElevationOverlayColor: false,
     appBarTheme: theme.appBarTheme.copyWith(
       surfaceTintColor:
@@ -127,11 +116,12 @@ extension M2ThemeData on ThemeData {
             ? Brightness.dark
             : Brightness.light,
         systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarContrastEnforced: false,
         systemNavigationBarIconBrightness: theme.brightness == Brightness.light
             ? Brightness.dark
             : Brightness.light,
       ),
-      color: theme.canvasColor,
+      backgroundColor: theme.canvasColor,
       foregroundColor: theme.iconTheme.color,
     ),
     dialogTheme: theme.dialogTheme.copyWith(
@@ -146,8 +136,11 @@ extension M2ThemeData on ThemeData {
     tooltipTheme: theme.tooltipTheme.copyWith(
       waitDuration: const Duration(milliseconds: 400),
     ),
-    pageTransitionsTheme: SnapshotlessPageTransitionTheme(
-      parent: theme.pageTransitionsTheme,
+    snackBarTheme: theme.snackBarTheme.copyWith(
+      behavior: SnackBarBehavior.floating,
+      width: 600,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
   );
 }
@@ -166,45 +159,5 @@ class AndroidStretchScrollBehaviour extends ScrollBehavior {
       );
     }
     return super.buildOverscrollIndicator(context, child, details);
-  }
-}
-
-class SnapshotlessPageTransitionTheme extends PageTransitionsTheme {
-  const SnapshotlessPageTransitionTheme({this.parent});
-
-  final PageTransitionsTheme? parent;
-
-  @override
-  Map<TargetPlatform, PageTransitionsBuilder> get builders =>
-      _transformBuilders(parent);
-
-  Map<TargetPlatform, PageTransitionsBuilder> _transformBuilders(
-    PageTransitionsTheme? parent,
-  ) {
-    Map<TargetPlatform, PageTransitionsBuilder> builders = {};
-    if (parent != null) {
-      builders.addAll(
-        Map.fromEntries(
-          parent.builders.entries.map((e) {
-            if (e.value is ZoomPageTransitionsBuilder) {
-              return MapEntry(
-                e.key,
-                const ZoomPageTransitionsBuilder(allowSnapshotting: false),
-              );
-            } else {
-              return e;
-            }
-          }),
-        ),
-      );
-    }
-    for (final platform in TargetPlatform.values) {
-      if (builders[platform] == null) {
-        builders[platform] = const ZoomPageTransitionsBuilder(
-          allowSnapshotting: false,
-        );
-      }
-    }
-    return builders;
   }
 }

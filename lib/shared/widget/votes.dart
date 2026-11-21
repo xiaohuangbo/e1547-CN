@@ -5,49 +5,25 @@ import 'package:like_button/like_button.dart';
 part 'votes.freezed.dart';
 part 'votes.g.dart';
 
-@freezed
-abstract class VoteInfo with _$VoteInfo {
-  const factory VoteInfo({
-    required int score,
-    @Default(VoteStatus.unknown) VoteStatus status,
-  }) = _VoteInfo;
-
-  const VoteInfo._();
-
-  factory VoteInfo.fromJson(Map<String, dynamic> json) =>
-      _$VoteInfoFromJson(json);
-
-  VoteInfo withVote(bool upvote, [bool replace = false]) => switch (upvote) {
-    true => switch (status) {
-      VoteStatus.upvoted =>
-        replace ? this : copyWith(score: score - 1, status: VoteStatus.unknown),
-      VoteStatus.downvoted => copyWith(
-        score: score + 2,
-        status: VoteStatus.upvoted,
-      ),
-      VoteStatus.unknown => copyWith(
-        score: score + 1,
-        status: VoteStatus.upvoted,
-      ),
-    },
-    false => switch (status) {
-      VoteStatus.upvoted => copyWith(
-        score: score - 2,
-        status: VoteStatus.downvoted,
-      ),
-      VoteStatus.downvoted =>
-        replace ? this : copyWith(score: score + 1, status: VoteStatus.unknown),
-      VoteStatus.unknown => copyWith(
-        score: score - 1,
-        status: VoteStatus.downvoted,
-      ),
-    },
-  };
-}
-
-enum VoteStatus { upvoted, unknown, downvoted }
-
 typedef VoteRequest = ({bool upvote, bool replace});
+
+({int score, int? vote}) applyVote({
+  required int score,
+  required int? vote,
+  required bool upvote,
+  required bool replace,
+}) {
+  final current = vote ?? 0;
+  final target = upvote ? 1 : -1;
+  if (current == target) {
+    if (replace) return (score: score, vote: current);
+    return (score: score - target, vote: 0);
+  }
+  if (current == -target) {
+    return (score: score + 2 * target, vote: target);
+  }
+  return (score: score + target, vote: target);
+}
 
 @freezed
 abstract class VoteResult with _$VoteResult {
@@ -58,28 +34,17 @@ abstract class VoteResult with _$VoteResult {
       _$VoteResultFromJson(json);
 }
 
-extension VoteResultInfoExtension on VoteResult {
-  VoteInfo get info => VoteInfo(
-    score: score,
-    status: switch (ourScore) {
-      1 => VoteStatus.upvoted,
-      -1 => VoteStatus.downvoted,
-      _ => VoteStatus.unknown,
-    },
-  );
-}
-
 class VoteDisplay extends StatelessWidget {
   const VoteDisplay({
     super.key,
-    required this.status,
+    required this.vote,
     required this.score,
     this.onUpvote,
     this.onDownvote,
     this.padding,
   });
 
-  final VoteStatus status;
+  final int? vote;
   final int score;
   final Future<bool> Function(bool isVoted)? onUpvote;
   final Future<bool> Function(bool isVoted)? onDownvote;
@@ -87,12 +52,15 @@ class VoteDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isUpvoted = vote == 1;
+    final isDownvoted = vote == -1;
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         InkResponse(
           onTap: onUpvote != null ? () {} : null,
           child: LikeButton(
-            isLiked: status == VoteStatus.upvoted,
+            isLiked: isUpvoted,
             circleColor: const CircleColor(
               start: Colors.orange,
               end: Colors.amber,
@@ -107,7 +75,7 @@ class VoteDisplay extends StatelessWidget {
               Icons.arrow_upward,
               color: isLiked ? Colors.deepOrange : null,
             ),
-            onTap: onUpvote ?? (_) async => status == VoteStatus.upvoted,
+            onTap: onUpvote ?? (_) async => isUpvoted,
           ),
         ),
         Padding(
@@ -115,18 +83,18 @@ class VoteDisplay extends StatelessWidget {
           child: Text(
             score.toString(),
             style: TextStyle(
-              color: switch (status) {
-                VoteStatus.upvoted => Colors.deepOrange,
-                VoteStatus.downvoted => Colors.blue,
-                VoteStatus.unknown => null,
-              },
+              color: isUpvoted
+                  ? Colors.deepOrange
+                  : isDownvoted
+                  ? Colors.blue
+                  : null,
             ),
           ),
         ),
         InkResponse(
           onTap: onDownvote != null ? () {} : null,
           child: LikeButton(
-            isLiked: status == VoteStatus.downvoted,
+            isLiked: isDownvoted,
             circleColor: const CircleColor(
               start: Colors.blue,
               end: Colors.cyanAccent,
@@ -139,7 +107,7 @@ class VoteDisplay extends StatelessWidget {
             ),
             likeBuilder: (bool isLiked) =>
                 Icon(Icons.arrow_downward, color: isLiked ? Colors.blue : null),
-            onTap: onDownvote ?? (_) async => status == VoteStatus.downvoted,
+            onTap: onDownvote ?? (_) async => isDownvoted,
           ),
         ),
       ],

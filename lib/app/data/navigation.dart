@@ -1,9 +1,10 @@
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/history/history.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
+import 'package:e1547/task/task.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:e1547/traits/traits.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ const String _drawerSettingsGroup = 'settings';
 final List<RouterDrawerDestination> rootDestintations = [
   NamedRouterDrawerDestination(
     path: '/',
-    name: '主页',
+    name: 'Home',
     icon: const Icon(Icons.home),
     builder: (context) => const HomePage(),
     unique: true,
@@ -24,7 +25,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/hot',
-    name: '热门',
+    name: 'Hot',
     icon: const Icon(Icons.whatshot),
     builder: (context) => const HotPage(),
     unique: true,
@@ -32,14 +33,14 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/search',
-    name: '搜索',
+    name: 'Search',
     icon: const Icon(Icons.search),
-    builder: (context) => const PostsSearchPage(),
+    builder: (context) => const PostsPage(),
     group: _drawerSearchGroup,
   ),
   NamedRouterDrawerDestination(
     path: '/favorites',
-    name: '收藏',
+    name: 'Favorites',
     icon: const Icon(Icons.favorite),
     builder: (context) => const FavPage(),
     unique: true,
@@ -47,7 +48,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/timeline',
-    name: '时间线',
+    name: 'Timeline',
     icon: const Icon(Icons.feed),
     builder: (context) => const FollowsTimelinePage(),
     unique: true,
@@ -55,7 +56,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/subscriptions',
-    name: '订阅',
+    name: 'Subscriptions',
     icon: const Icon(Icons.person_add),
     builder: (context) => const FollowsSubscriptionsPage(),
     unique: true,
@@ -63,7 +64,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/bookmarks',
-    name: '书签',
+    name: 'Bookmarks',
     icon: const Icon(Icons.bookmark),
     builder: (context) => const FollowsBookmarkPage(),
     unique: true,
@@ -71,7 +72,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/pools',
-    name: '图集',
+    name: 'Pools',
     icon: const Icon(Icons.collections),
     builder: (context) => const PoolsPage(),
     unique: true,
@@ -87,7 +88,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/history',
-    name: '历史',
+    name: 'History',
     icon: const Icon(Icons.history),
     builder: (context) => const HistoriesPage(),
     group: _drawerSettingsGroup,
@@ -97,8 +98,16 @@ final List<RouterDrawerDestination> rootDestintations = [
     builder: (context) => const DenyListPage(),
   ),
   NamedRouterDrawerDestination(
+    path: '/tasks',
+    name: 'Tasks',
+    icon: const Icon(Icons.task_alt),
+    builder: (context) => const TasksPage(),
+    enabled: _nonRecursive<TasksPage>,
+    group: _drawerSettingsGroup,
+  ),
+  NamedRouterDrawerDestination(
     path: '/settings',
-    name: '设置',
+    name: 'Settings',
     icon: const Icon(Icons.settings),
     builder: (context) => const SettingsPage(),
     enabled: _nonRecursive<SettingsPage>,
@@ -106,7 +115,7 @@ final List<RouterDrawerDestination> rootDestintations = [
   ),
   NamedRouterDrawerDestination(
     path: '/about',
-    name: '关于',
+    name: 'About',
     icon: const DrawerUpdateIcon(),
     builder: (context) => const AboutPage(),
     group: _drawerSettingsGroup,

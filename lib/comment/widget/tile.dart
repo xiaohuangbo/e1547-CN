@@ -1,6 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
 import 'package:e1547/markup/markup.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/user/user.dart';
@@ -24,9 +25,18 @@ class CommentTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(right: 8, top: 4),
-                  child: Icon(Icons.person),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8, top: 4),
+                  child: UserSummaryAvatar(
+                    userId: comment.creatorId,
+                    radius: 12,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            UserLoadingPage(comment.creatorId),
+                      ),
+                    ),
+                  ),
                 ),
                 Expanded(
                   child: Column(
@@ -94,8 +104,7 @@ class CommentHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(4),
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>
-                    UserLoadingPage(comment.creatorId.toString()),
+                builder: (context) => UserLoadingPage(comment.creatorId),
               ),
             ),
             child: TimedText(
@@ -126,56 +135,54 @@ class CommentVotes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final client = context.watch<Client>();
-    VoteInfo? vote = comment.vote;
-    if (vote == null) return const SizedBox();
-
-    final controller = context.read<CommentController>();
     final messenger = ScaffoldMessenger.of(context);
 
-    return Dimmed(
-      child: VoteDisplay(
-        padding: EdgeInsets.zero,
-        score: vote.score,
-        status: vote.status,
-        onUpvote: client.hasLogin
-            ? (isLiked) async {
-                controller
-                    .vote(comment: comment, upvote: true, replace: !isLiked)
-                    .then((value) {
-                      if (!value) {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(
-                              'Failed to upvote comment #${comment.id}',
-                            ),
-                          ),
-                        );
-                      }
-                    });
-                return !isLiked;
-              }
-            : null,
-        onDownvote: client.hasLogin
-            ? (isLiked) async {
-                controller
-                    .vote(comment: comment, upvote: false, replace: !isLiked)
-                    .then((value) {
-                      if (!value) {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(
-                              'Failed to downvote comment #${comment.id}',
-                            ),
-                          ),
-                        );
-                      }
-                    });
-                return !isLiked;
-              }
-            : null,
-      ),
+    return MutationBuilder(
+      mutation: client.comments.useVote(id: comment.id),
+      builder: (context, state, mutate) {
+        final bool enabled = client.hasLogin && !state.isLoading;
+        return Dimmed(
+          child: VoteDisplay(
+            padding: EdgeInsets.zero,
+            score: comment.score,
+            vote: comment.vote,
+            onUpvote: enabled
+                ? (isLiked) async {
+                    if ((await mutate((
+                      upvote: true,
+                      replace: !isLiked,
+                    ))).isError) {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          duration: const Duration(seconds: 1),
+                          content: Text('点赞评论 #${comment.id} 失败'),
+                        ),
+                      );
+                      return isLiked;
+                    }
+                    return !isLiked;
+                  }
+                : null,
+            onDownvote: enabled
+                ? (isLiked) async {
+                    if ((await mutate((
+                      upvote: false,
+                      replace: !isLiked,
+                    ))).isError) {
+                      messenger.showSnackBar(
+                        SnackBar(
+                          duration: const Duration(seconds: 1),
+                          content: Text('点踩评论 #${comment.id} 失败'),
+                        ),
+                      );
+                      return isLiked;
+                    }
+                    return !isLiked;
+                  }
+                : null,
+          ),
+        );
+      },
     );
   }
 }
@@ -189,7 +196,7 @@ class CommentVisibilityIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!comment.hidden) return const SizedBox();
     return Tooltip(
-      message: 'This comment is hidden',
+      message: '此评论已隐藏',
       child: Icon(
         Icons.visibility_off,
         size: smallIconSize(context),
@@ -213,53 +220,38 @@ class CommentMenu extends StatelessWidget {
       itemBuilder: (context) => [
         if (client.identity.username == comment.creatorName)
           PopupMenuTile(
-            title: 'Edit',
+            title: '编辑',
             icon: Icons.edit,
             value: () => guardWithLogin(
               context: context,
-              callback: () {
-                CommentController controller = context
-                    .read<CommentController>();
-                editComment(context: context, comment: comment).then((value) {
-                  if (value) {
-                    controller.refresh(force: true);
-                  }
-                });
-              },
-              error: 'You must be logged in to edit comments!',
+              callback: () => editComment(context: context, comment: comment),
+              error: '您必须登录才能编辑评论！',
             ),
           ),
         PopupMenuTile(
-          title: 'Reply',
+          title: '回复',
           icon: Icons.reply,
           value: () => guardWithLogin(
             context: context,
-            callback: () {
-              CommentController controller = context.read<CommentController>();
-              replyComment(context: context, comment: comment).then((value) {
-                if (value) {
-                  controller.refresh(force: true);
-                }
-              });
-            },
-            error: 'You must be logged in to reply to comments!',
+            callback: () => replyComment(context: context, comment: comment),
+            error: '您必须登录才能回复评论！',
           ),
         ),
         PopupMenuTile(
-          title: 'Copy ID',
+          title: '复制 ID',
           icon: Icons.tag,
           value: () async {
             Clipboard.setData(ClipboardData(text: comment.id.toString()));
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 duration: const Duration(seconds: 1),
-                content: Text('Copied comment id #${comment.id}'),
+                content: Text('已复制评论 ID #${comment.id}'),
               ),
             );
           },
         ),
         PopupMenuTile(
-          title: 'Report',
+          title: '举报',
           icon: Icons.report,
           value: () => guardWithLogin(
             context: context,
@@ -268,7 +260,7 @@ class CommentMenu extends StatelessWidget {
                 builder: (context) => CommentReportScreen(comment: comment),
               ),
             ),
-            error: 'You must be logged in to report comments!',
+            error: '您必须登录才能举报评论！',
           ),
         ),
       ],

@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/identity/identity.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class NoUserLoginException implements Exception {
@@ -40,10 +40,10 @@ String? findFavicon(String html) {
     caseSensitive: false,
   );
   final linkRegExp = RegExp(
-    r'<link\\s+[^>]*?rel=".*?icon.*?".*?>',
+    r'<link\s+[^>]*?rel=".*?icon.*?"[^>]*?>',
     caseSensitive: false,
   );
-  final sizeRegExp = RegExp(r'(\\d+)x\\d+');
+  final sizeRegExp = RegExp(r'(\d+)x\d+');
 
   final headMatch = headRegExp.firstMatch(html);
   if (headMatch == null) return null;

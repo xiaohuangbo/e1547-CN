@@ -1,4 +1,4 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -26,6 +26,7 @@ class TagSearchFilter extends StatelessWidget {
         labelText: state.filter.name,
         decoration: theme.decoration,
         focusNode: theme.focusNode,
+        autofocus: theme.primary,
         controller: controller,
         submit: (value) => state.onSubmit?.call(value),
       ),
@@ -59,7 +60,7 @@ class EditTagPrompt extends StatelessWidget {
           submitIcon: isDesktop ? const Icon(Icons.add) : null,
           filters: [
             PrimaryFilterConfig(
-              filter: TagSearchFilterTag(tag: 'tags', name: title ?? 'Tags'),
+              filter: TagSearchFilterTag(tag: 'tags', name: title ?? '标签'),
             ),
           ],
           controller: actionController,
@@ -69,8 +70,8 @@ class EditTagPrompt extends StatelessWidget {
   }
 }
 
-class AddTagFloatingActionButton extends StatelessWidget {
-  const AddTagFloatingActionButton({
+class AddTagFab extends StatelessWidget {
+  const AddTagFab({
     super.key,
     this.tag,
     required this.onSubmit,
@@ -88,7 +89,7 @@ class AddTagFloatingActionButton extends StatelessWidget {
     PromptActionController controller =
         this.controller ?? PromptActions.of(context);
 
-    return PromptFloatingActionButton(
+    return PromptFab(
       controller: controller,
       builder: (context) => EditTagPrompt(
         tag: tag,

@@ -1,44 +1,71 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
+import 'package:e1547/tag/tag.dart';
+import 'package:e1547/traits/traits.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> with RouterDrawerEntryWidget {
-  @override
   Widget build(BuildContext context) {
-    Client client = context.watch<Client>();
-    return PostProvider(
-      query: {'tags': client.traits.value.homeTags},
-      child: Consumer<PostController>(
-        builder: (context, controller, child) =>
-            PostsControllerHistoryConnector(
-              controller: controller,
-              child: SubListener(
-                initialize: true,
-                listenable: controller,
-                listener: () => client.accounts.push(
-                  traits: client.traits.value.copyWith(
-                    homeTags: controller.query['tags'].toString(),
+    final client = context.watch<Client>();
+    return RouterDrawerEntry<HomePage>(
+      child: FilterControllerProvider(
+        create: (_) => PostFilter(client),
+        keys: (_) => [client],
+        child: ChangeNotifierProvider(
+          create: (_) => PostParamsController(
+            initial: PostParams(tags: client.traits.value.homeTags),
+          ),
+          builder: (context, _) => SubValueListener(
+            listenable: context.watch<PostParamsController>(),
+            listener: (PostParams value) => client.traits.value = client
+                .traits
+                .value
+                .copyWith(homeTags: value.tags ?? ''),
+            builder: (context, _) => PostPageHistoryConnector(
+              child: PostPageQueryBuilder(
+                builder: (context, state, query) => SelectionLayout<Post>(
+                  items: state.data?.pages.expand((p) => p).toList(),
+                  child: AdaptiveScaffold(
+                    appBar: const PostSelectionAppBar(
+                      child: DefaultAppBar(
+                        title: Center(child: AppIcon()),
+                        actions: [ContextDrawerButton()],
+                      ),
+                    ),
+                    floatingActionButton: const PostsPageFab(),
+                    drawer: const RouterDrawer(),
+                    endDrawer: ContextDrawer(
+                      title: const Text('帖子'),
+                      children: [
+                        const DrawerDenySwitch(),
+                        DrawerTagCounter(
+                          posts: state.data?.pages.expand((p) => p).toList(),
+                          error: state.error,
+                        ),
+                      ],
+                    ),
+                    body: LimitedWidthLayout(
+                      child: ListenableBuilder(
+                        listenable: context.watch<Settings>().tileSize,
+                        builder: (context, child) => TileLayout(
+                          tileSize: context.watch<Settings>().tileSize.value,
+                          child: const PostList(),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                builder: (context) => PostsPage(
-                  appBar: const DefaultAppBar(
-                    title: Center(child: AppIcon()),
-                    actions: [ContextDrawerButton()],
-                  ),
-                  controller: controller,
                 ),
               ),
             ),
+          ),
+        ),
       ),
     );
   }

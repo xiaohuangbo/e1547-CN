@@ -23,7 +23,7 @@ class SelectionLayoutData<T> extends InheritedWidget {
   /// Ensures that an item is part of this [SelectionLayout].
   void _assertItemOwnership(T item) {
     if (!items.contains(item)) {
-      throw StateError('Cannot select an item which is not part of items!');
+      throw StateError('无法选择不属于列表的项目！');
     }
   }
 
@@ -184,16 +184,16 @@ class SelectionAppBar<T> extends StatelessWidget with AppBarBuilderWidget {
       builder: (context) => DefaultAppBar(
         title:
             titleBuilder?.call(context, layoutData!) ??
-            Text('${layoutData!.selections.length} items'),
+            Text('${layoutData!.selections.length} 个项目'),
         leading: IconButton(
           icon: const Icon(Icons.clear),
-          tooltip: 'Abort',
+          tooltip: '中止',
           onPressed: layoutData!.clear,
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.select_all),
-            tooltip: 'Select all',
+            tooltip: '全选',
             onPressed: layoutData.selectAll,
           ),
           ...actionBuilder(context, layoutData),

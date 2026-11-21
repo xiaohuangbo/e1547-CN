@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -19,10 +19,11 @@ class PostImageWidget extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.cacheSize,
     this.lowResCacheSize,
+    this.load,
   });
 
   /// The post which provides the image.
-  final Post post;
+  final PostSummary post;
 
   /// How the image should be fit.
   final BoxFit fit;
@@ -42,6 +43,8 @@ class PostImageWidget extends StatelessWidget {
   /// The cache size of a previously loaded lower resolution image.
   /// Used to bridge the gap between loading a downsized image and the full sized one.
   final int? lowResCacheSize;
+
+  final ImageLoadController? load;
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +70,11 @@ class PostImageWidget extends StatelessWidget {
                 showProgress: showProgress,
                 fit: fit,
                 cacheSize: cacheSize,
+                load: load,
                 progressIndicatorBuilder: withLowRes
                     ? (context, url, progress) => ImageProgressWrapper(
                         aspectRatio: aspectRatio,
-                        progress: progress.progress,
+                        progress: load == null ? progress.progress : null,
                         child: lowResCacheSize != null
                             ? RawPostImageWidget(
                                 post: post,
@@ -94,9 +98,10 @@ class PostImageWidget extends StatelessWidget {
                 showProgress: showProgress,
                 fit: fit,
                 cacheSize: cacheSize,
+                load: load,
                 progressIndicatorBuilder: (context, url, progress) =>
                     ImageProgressWrapper(
-                      progress: progress.progress,
+                      progress: load == null ? progress.progress : null,
                       aspectRatio: aspectRatio,
                       child: RawPostImageWidget(
                         post: post,
@@ -114,7 +119,7 @@ class PostImageWidget extends StatelessWidget {
   }
 }
 
-class RawPostImageWidget extends StatelessWidget {
+class RawPostImageWidget extends StatefulWidget {
   const RawPostImageWidget({
     super.key,
     required this.post,
@@ -124,19 +129,79 @@ class RawPostImageWidget extends StatelessWidget {
     this.stacked = false,
     this.showProgress = true,
     this.cacheSize,
+    this.load,
   });
 
-  final Post post;
+  final PostSummary post;
   final PostImageSize size;
   final BoxFit? fit;
   final ProgressIndicatorBuilder? progressIndicatorBuilder;
   final bool stacked;
   final bool showProgress;
   final int? cacheSize;
+  final ImageLoadController? load;
+
+  @override
+  State<RawPostImageWidget> createState() => _RawPostImageWidgetState();
+}
+
+class _RawPostImageWidgetState extends State<RawPostImageWidget> {
+  ImageProvider? _held;
+  ImageStream? _stream;
+  late final ImageStreamListener _listener = ImageStreamListener(
+    (image, synchronousCall) => image.dispose(),
+    onError: (error, stackTrace) {},
+  );
+
+  String get _url =>
+      switch (widget.size) {
+        PostImageSize.preview => widget.post.preview,
+        PostImageSize.sample => widget.post.sample,
+        PostImageSize.file => widget.post.file!,
+      } ??
+      widget.post.file!;
+
+  bool get _wide => widget.post.width > widget.post.height;
+
+  void _hold() {
+    final ImageProvider image = ResizeImage.resizeIfNeeded(
+      _wide ? null : widget.cacheSize,
+      _wide ? widget.cacheSize : null,
+      CachedNetworkImageProvider(
+        _url,
+        cacheManager: context.read<BaseCacheManager>(),
+      ),
+    );
+    if (image == _held) return;
+    _held = image;
+    _stream?.removeListener(_listener);
+    _stream = image.resolve(createLocalImageConfiguration(context))
+      ..addListener(_listener);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _hold();
+  }
+
+  @override
+  void didUpdateWidget(RawPostImageWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _hold();
+  }
+
+  @override
+  void dispose() {
+    _stream?.removeListener(_listener);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    Duration fades = stacked
+    final ImageLoadController? load = widget.load;
+    final String url = _url;
+    final Duration fades = widget.stacked
         ? Duration.zero
         : const Duration(milliseconds: 500);
 
@@ -146,46 +211,45 @@ class RawPostImageWidget extends StatelessWidget {
       DownloadProgress progress,
     ) {
       return Center(
-        child: SizedCircularProgressIndicator(
-          size: 30,
-          value: progress.progress,
-        ),
+        child: switch (progress.progress) {
+          final double value => HexagonalLoadingIndicator(
+            state: HexagonState.tracing,
+            progress: value,
+            size: 30,
+          ),
+          null => const HexagonalLoadingIndicator(size: 30),
+        },
       );
     }
 
-    String url =
-        switch (size) {
-          PostImageSize.preview => post.preview,
-          PostImageSize.sample => post.sample,
-          PostImageSize.file => post.file!,
-        } ??
-        post.file!;
-    Size dimensions = Size(post.width.toDouble(), post.height.toDouble());
-
-    double aspectRatio = dimensions.width / dimensions.height;
-
-    int? memCacheWidth;
-    int? memCacheHeight;
-
-    if (aspectRatio > 1) {
-      memCacheHeight = cacheSize;
-    } else {
-      memCacheWidth = cacheSize;
-    }
-
     return CachedNetworkImage(
-      fit: fit,
+      fit: widget.fit,
       fadeInDuration: fades,
       fadeOutDuration: fades,
       imageUrl: url,
-      errorWidget: stacked
-          ? defaultErrorBuilder
-          : (context, url, error) => const SizedBox.shrink(),
-      progressIndicatorBuilder: showProgress || stacked
-          ? progressIndicatorBuilder ?? progressIndicator
+      errorWidget: (context, url, error) {
+        load?.report(url, ImageFailed(error));
+        if (!widget.stacked) return const SizedBox.shrink();
+        return defaultErrorBuilder(context, url, error);
+      },
+      progressIndicatorBuilder: widget.showProgress || widget.stacked
+          ? (context, url, progress) {
+              load?.report(url, ImageLoading(progress.progress));
+              return (widget.progressIndicatorBuilder ?? progressIndicator)(
+                context,
+                url,
+                progress,
+              );
+            }
           : null,
-      memCacheWidth: memCacheWidth,
-      memCacheHeight: memCacheHeight,
+      imageBuilder: load != null
+          ? (context, image) {
+              load.report(url, const ImageLoaded());
+              return Image(image: image, fit: widget.fit);
+            }
+          : null,
+      memCacheWidth: _wide ? null : widget.cacheSize,
+      memCacheHeight: _wide ? widget.cacheSize : null,
       cacheManager: context.read<BaseCacheManager>(),
     );
   }

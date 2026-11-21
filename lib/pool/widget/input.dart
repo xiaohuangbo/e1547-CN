@@ -2,23 +2,22 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/history/history.dart';
-import 'package:e1547/interface/interface.dart';
-import 'package:e1547/pool/data/controller.dart';
+import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
-class PoolsPageFloatingActionButton extends StatelessWidget {
-  const PoolsPageFloatingActionButton({super.key, required this.controller});
-
-  final PoolController controller;
+class PoolsPageFab extends StatelessWidget {
+  const PoolsPageFab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SearchPromptFloatingActionButton(
-      tags: controller.query,
-      onSubmit: (value) => controller.query = value,
+    final controller = context.watch<PoolParamsController>();
+    return SearchPromptFab(
+      tags: controller.value.toQuery(),
+      onSubmit: (value) => controller.value = PoolParams.fromQuery(value),
       filters: [
         WrapperFilterConfig(
           wrapper: (value) => 'search[$value]',
@@ -34,41 +33,41 @@ class PoolsPageFloatingActionButton extends StatelessWidget {
                 ),
                 TextFilterTag(
                   tag: 'creator_name',
-                  name: '创建者',
+                  name: 'Creator',
                   icon: Icon(Icons.person),
                 ),
                 ToggleFilterTag(
                   tag: 'is_active',
-                  name: '活跃',
+                  name: 'Active',
                   enabled: 'true',
                   disabled: 'false',
                   description: '是否活跃',
                 ),
                 ChoiceFilterTag(
                   tag: 'category',
-                  name: '类别',
+                  name: 'Category',
                   icon: Icon(Icons.category),
                   options: [
-                    ChoiceFilterTagValue(value: null, name: '默认'),
-                    ChoiceFilterTagValue(value: 'series', name: '系列'),
+                    ChoiceFilterTagValue(value: null, name: 'Default'),
+                    ChoiceFilterTagValue(value: 'series', name: 'Series'),
                     ChoiceFilterTagValue(
                       value: 'collection',
-                      name: '合集',
+                      name: 'Collection',
                     ),
                   ],
                 ),
                 ChoiceFilterTag(
                   tag: 'order',
-                  name: '排序方式',
+                  name: 'Sort by',
                   icon: Icon(Icons.sort),
                   options: [
-                    ChoiceFilterTagValue(value: null, name: '默认'),
-                    ChoiceFilterTagValue(value: 'name', name: '名称'),
-                    ChoiceFilterTagValue(value: 'created_at', name: '创建时间'),
-                    ChoiceFilterTagValue(value: 'updated_at', name: '更新时间'),
+                    ChoiceFilterTagValue(value: null, name: 'Default'),
+                    ChoiceFilterTagValue(value: 'name', name: 'Name'),
+                    ChoiceFilterTagValue(value: 'created_at', name: 'Created'),
+                    ChoiceFilterTagValue(value: 'updated_at', name: 'Updated'),
                     ChoiceFilterTagValue(
                       value: 'post_count',
-                      name: '帖子数量',
+                      name: 'Post count',
                     ),
                   ],
                 ),
@@ -130,17 +129,14 @@ class PoolNameFilter extends StatelessWidget {
             },
             suggestionsCallback: (value) async {
               value = value.trim();
-              Client client = context.read<Client>();
+              final client = context.read<Client>();
               return (await client.histories.page(
                     page: 1,
-                    query: HistoryQuery(
+                    query: HistoryParams(
                       date: DateTime.now(),
                       link: r'/pools/.*',
-                      title:
-                          r'.*' +
-                          RegExp.escape(value.replaceAll(' ', '_')) +
-                          r'.*',
-                    ),
+                      title: RegExp.escape(value.replaceAll(' ', '_')),
+                    ).toQuery(),
                     limit: 4,
                   ))
                   .where((e) => e.title != null)

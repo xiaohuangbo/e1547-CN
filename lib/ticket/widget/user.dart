@@ -1,5 +1,5 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/user/user.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ class UserReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReasonReportScreen(
-      title: Text('User #${user.id}'),
+      title: Text('用户 #${user.id}'),
       onReport: (reason) => validateCall(
         () => context.read<Client>().tickets.create(
           type: TicketType.user,
@@ -20,8 +20,8 @@ class UserReportScreen extends StatelessWidget {
           reason: reason,
         ),
       ),
-      onSuccess: 'Reported user #${user.id}',
-      onFailure: 'Failed to report user #${user.id}',
+      onSuccess: '已举报用户 #${user.id}',
+      onFailure: '举报用户 #${user.id} 失败',
       previewBuilder: (context, isLoading) => Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -32,7 +32,11 @@ class UserReportScreen extends StatelessWidget {
                 SizedBox(
                   height: 100,
                   width: 100,
-                  child: PostAvatar(id: user.avatarId),
+                  child: PostAvatar(
+                    id: user.avatarId,
+                    userId: user.id,
+                    hasCroppedAvatar: user.hasCroppedAvatar,
+                  ),
                 ),
                 Positioned.fill(
                   child: CrossFade(
@@ -42,7 +46,7 @@ class UserReportScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         color: Colors.black54,
                       ),
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(child: HexagonalLoadingIndicator()),
                     ),
                   ),
                 ),

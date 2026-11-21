@@ -1,11 +1,12 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'ghost.dart';
 part 'comment.freezed.dart';
 part 'comment.g.dart';
 
 @freezed
-class Comment with _$Comment {
+abstract class Comment with _$Comment {
   const factory Comment({
     required int id,
     required int postId,
@@ -14,12 +15,27 @@ class Comment with _$Comment {
     required DateTime updatedAt,
     required int creatorId,
     required String creatorName,
-    required VoteInfo? vote,
+    required int score,
+    required int? vote,
     required WarningType? warning,
     required bool hidden,
   }) = _Comment;
 
+  const Comment._();
+
   factory Comment.fromJson(dynamic json) => _$CommentFromJson(json);
+}
+
+extension CommentVoting on Comment {
+  Comment withVote({required bool upvote, required bool replace}) {
+    final result = applyVote(
+      score: score,
+      vote: vote,
+      upvote: upvote,
+      replace: replace,
+    );
+    return copyWith(score: result.score, vote: result.vote);
+  }
 }
 
 @JsonEnum()
@@ -31,11 +47,11 @@ enum WarningType {
   String get message {
     switch (this) {
       case warning:
-        return 'User received a warning for this message';
+        return '用户因此消息收到警告';
       case record:
-        return 'User received a record for this message';
+        return '用户因此消息收到记过';
       case ban:
-        return 'User was banned for this message';
+        return '用户因此消息被封禁';
     }
   }
 }

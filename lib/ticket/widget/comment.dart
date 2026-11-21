@@ -1,6 +1,6 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +12,7 @@ class CommentReportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ReasonReportScreen(
-      title: Text('Comment #${comment.id}'),
+      title: Text('评论 #${comment.id}'),
       onReport: (reason) => validateCall(
         () => context.read<Client>().tickets.create(
           type: TicketType.comment,
@@ -20,8 +20,8 @@ class CommentReportScreen extends StatelessWidget {
           reason: reason,
         ),
       ),
-      onSuccess: 'Reported comment #${comment.id}',
-      onFailure: 'Failed to report user #${comment.id}',
+      onSuccess: '已举报评论 #${comment.id}',
+      onFailure: '举报评论 #${comment.id} 失败',
       previewBuilder: (context, isLoading) => Card(
         clipBehavior: Clip.antiAlias,
         child: ReportLoadingOverlay(

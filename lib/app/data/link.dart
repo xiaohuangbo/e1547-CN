@@ -3,14 +3,12 @@ import 'dart:io';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/reply/reply.dart';
-import 'package:e1547/settings/settings.dart';
 import 'package:e1547/topic/topic.dart';
 import 'package:e1547/user/user.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_tabs/flutter_custom_tabs.dart' as tabs;
 import 'package:path_to_regexp/path_to_regexp.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart' as urls;
 
 Future<void> launch(String url) async {
@@ -63,12 +61,17 @@ class LeafLinkParser extends LinkParser {
     Uri? uri = Uri.tryParse(link);
     if (uri == null) return null;
 
+    String path = uri.path;
+    if (path.length > 1 && path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
+    }
+
     List<String> names = [];
     Match? match = pathToRegExp(
-      path,
+      this.path,
       parameters: names,
       caseSensitive: false,
-    ).firstMatch(uri.path);
+    ).firstMatch(path);
 
     if (match != null) {
       Map<String, String> arguments = extract(names, match);
@@ -112,7 +115,21 @@ class E621LinkParser extends BranchLinkParser {
           Link(type: LinkType.post, id: int.parse(args['id']!), query: query),
     ),
     LeafLinkParser(
+      path: r'/post/:action(view|flag)/:id(\d+)',
+      transformer: (args, query) =>
+          Link(type: LinkType.post, id: int.parse(args['id']!), query: query),
+    ),
+    LeafLinkParser(
+      path: r'/post/:action(show|view)/:id(\d+)/:title',
+      transformer: (args, query) =>
+          Link(type: LinkType.post, id: int.parse(args['id']!), query: query),
+    ),
+    LeafLinkParser(
       path: r'/posts',
+      transformer: (args, query) => Link(type: LinkType.post, query: query),
+    ),
+    LeafLinkParser(
+      path: r'/post',
       transformer: (args, query) => Link(type: LinkType.post, query: query),
     ),
     LeafLinkParser(
@@ -128,6 +145,10 @@ class E621LinkParser extends BranchLinkParser {
       transformer: (args, query) => Link(type: LinkType.pool, query: query),
     ),
     LeafLinkParser(
+      path: r'/pool',
+      transformer: (args, query) => Link(type: LinkType.pool, query: query),
+    ),
+    LeafLinkParser(
       path:
           r'/user'
           '$_showEnding'
@@ -137,6 +158,19 @@ class E621LinkParser extends BranchLinkParser {
         id: int.tryParse(args['name']!) ?? args['name']!,
         query: query,
       ),
+    ),
+    LeafLinkParser(
+      path: r'/user',
+      transformer: (args, query) => Link(type: LinkType.user, query: query),
+    ),
+    LeafLinkParser(
+      path: r'/wiki_pages/show_or_new',
+      transformer: (args, query) =>
+          Link(type: LinkType.wiki, id: query?['title'], query: query),
+    ),
+    LeafLinkParser(
+      path: r'/wiki_pages/search',
+      transformer: (args, query) => Link(type: LinkType.wiki, query: query),
     ),
     LeafLinkParser(
       path:
@@ -175,59 +209,66 @@ class E621LinkParser extends BranchLinkParser {
 extension LinkOnTapExtension on LinkParser {
   VoidCallback? parseOnTap(BuildContext context, String link) {
     final Link? result = this.parse(link);
-    if (result != null) {
-      if (!context.read<Settings>().showBeta.value &&
-          [LinkType.topic, LinkType.reply].contains(result.type)) {
-        return null;
-      }
+    if (result == null) return null;
 
-      VoidCallback navWrapper(WidgetBuilder builder, [bool root = false]) {
-        return () {
-          if (root) {
-            Navigator.of(context).popUntil((route) => false);
-          }
-          Navigator.of(context).push(MaterialPageRoute(builder: builder));
-        };
-      }
+    VoidCallback navWrapper(WidgetBuilder builder, [bool root = false]) {
+      return () {
+        if (root) {
+          Navigator.of(context).popUntil((route) => false);
+        }
+        Navigator.of(context).push(MaterialPageRoute(builder: builder));
+      };
+    }
 
-      switch (result.type) {
-        case LinkType.post:
-          int? id = result.id as int?;
-          if (id != null) {
-            return navWrapper((context) => PostLoadingPage(id));
-          }
-          return navWrapper((context) => PostsSearchPage(query: result.query));
-        case LinkType.pool:
-          int? id = result.id as int?;
-          if (id != null) {
-            return navWrapper((context) => PoolLoadingPage(id));
-          }
-          return navWrapper((context) => PoolsPage(search: result.query), true);
-        case LinkType.user:
-          Object? id = result.id;
-          if (id != null) {
-            return navWrapper((context) => UserLoadingPage(id.toString()));
-          }
-          break;
-        case LinkType.wiki:
-          Object? id = result.id;
-          if (id != null) {
-            return navWrapper((context) => WikiLoadingPage(id.toString()));
-          }
-          break;
-        case LinkType.topic:
-          int? id = result.id as int?;
-          if (id != null) {
-            return navWrapper((context) => TopicLoadingPage(id));
-          }
-          return navWrapper((context) => TopicsPage(query: result.query), true);
-        case LinkType.reply:
-          int? id = result.id as int?;
-          if (id != null) {
-            return navWrapper((context) => ReplyLoadingPage(id));
-          }
-          return navWrapper((context) => TopicsPage(query: result.query), true);
-      }
+    switch (result.type) {
+      case LinkType.post:
+        int? id = result.id as int?;
+        if (id != null) {
+          return navWrapper((context) => PostLoadingPage(id));
+        }
+        return navWrapper(
+          (context) =>
+              PostsPage(params: PostParams(tags: result.query?['tags'])),
+        );
+      case LinkType.pool:
+        int? id = result.id as int?;
+        if (id != null) {
+          return navWrapper((context) => PoolLoadingPage(id));
+        }
+        return navWrapper(
+          (context) => PoolsPage(search: PoolParams.fromQuery(result.query)),
+          true,
+        );
+      case LinkType.user:
+        Object? id = result.id;
+        if (id is int) {
+          return navWrapper((context) => UserLoadingPage(id));
+        }
+        if (id != null) {
+          return navWrapper((context) => UserLoadingPage.name(id.toString()));
+        }
+        break;
+      case LinkType.wiki:
+        Object? id = result.id;
+        if (id is int) {
+          return navWrapper((context) => WikiLoadingPage(id));
+        }
+        if (id != null) {
+          return navWrapper((context) => WikiLoadingPage.title(id.toString()));
+        }
+        break;
+      case LinkType.topic:
+        int? id = result.id as int?;
+        if (id != null) {
+          return navWrapper((context) => TopicLoadingPage(id));
+        }
+        return navWrapper((context) => TopicsPage(query: result.query), true);
+      case LinkType.reply:
+        int? id = result.id as int?;
+        if (id != null) {
+          return navWrapper((context) => ReplyLoadingPage(id));
+        }
+        return navWrapper((context) => TopicsPage(query: result.query), true);
     }
     return null;
   }

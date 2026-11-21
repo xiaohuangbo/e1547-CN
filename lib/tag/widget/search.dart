@@ -1,10 +1,10 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
-class SearchPromptFloatingActionButton extends StatelessWidget {
-  const SearchPromptFloatingActionButton({
+class SearchPromptFab extends StatelessWidget {
+  const SearchPromptFab({
     super.key,
     required this.tags,
     this.onChanged,
@@ -22,7 +22,7 @@ class SearchPromptFloatingActionButton extends StatelessWidget {
     bool isDesktop = Theme.of(context).isDesktop;
     return SubValue<PromptActionController>(
       create: () => PromptActionController(),
-      builder: (context, actionController) => PromptFloatingActionButton(
+      builder: (context, actionController) => PromptFab(
         controller: actionController,
         builder: (context) => Material(
           child: PromptFilterList(

@@ -2,63 +2,76 @@ import 'dart:io';
 
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:e1547/app/app.dart';
+import 'package:e1547/client/client.dart';
+import 'package:e1547/files/files.dart';
+import 'package:e1547/identity/identity.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/query/query.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:http_cache_drift_store/http_cache_drift_store.dart';
 import 'package:notified_preferences/notified_preferences.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
-export 'package:e1547/logs/logs.dart' show Logs;
+export 'package:e1547/logs/logs.dart' show LogErrors, Logs;
 export 'package:e1547/settings/settings.dart' show AppInfo;
 export 'package:window_manager/window_manager.dart' show WindowManager;
 
 /// Initializes an AppInfo with default production values.
 Future<void> initializeAppInfo() => AppInfo.initializePlatform(
   developer: 'binaryfloof',
-  github: 'clragon/e1547',
+  github: 'xiaohuangbo/e1547-CN',
   discord: 'MRwKGqfmUz',
   website: 'e1547.clynamic.net',
   kofi: 'binaryfloof',
   email: 'support@clynamic.net',
+  forumTopicId: 25854,
 );
 
 Future<String> getTemporaryAppDirectory() => getTemporaryDirectory().then(
   (dir) => join(dir.path, AppInfo.instance.appName),
 );
 
+Future<String> getAppDatabasePath() =>
+    getApplicationSupportDirectory().then((dir) => join(dir.path, 'app.db'));
+
 /// Initializes the logger used by the app with default production values.
 Future<Logs> initializeLogger({
-  required String path,
+  String? path,
   String? postfix,
   List<LogPrinter>? printers,
+  LogLevel? level,
 }) async {
-  Logger.root.level = Level.ALL;
+  setLogLevel(level ?? verboseLogLevel(verbose: false));
+  path ??= await getTemporaryAppDirectory();
 
-  Logs logs = Logs();
-  File logFile = createLogFile(path, postfix);
+  final logFile = createLogFile(path, postfix);
+  final logs = Logs(
+    printers: [
+      ...?printers,
+      JsonLogPrinter(logFile),
+      const ConsoleLogPrinter(),
+    ],
+  );
 
-  printers ??= [];
-  printers.add(logs);
-  printers.add(FileLogPrinter(logFile));
-  printers.add(const ConsoleLogPrinter());
-
-  for (final printer in printers) {
-    printer.connect(Logger.root.onRecord);
-  }
+  logs.connect();
 
   registerFlutterErrorHandler(
-    (error, trace) => Logger('Flutter').log(Level.SHOUT, error, error, trace),
+    (error, trace) => Logger('Flutter').error('未捕获的框架错误', null, error, trace),
   );
   return logs;
+}
+
+LogLevel verboseLogLevel({required bool verbose}) {
+  if (verbose) return LogLevel.trace;
+  return kDebugMode ? LogLevel.debug : LogLevel.info;
 }
 
 File createLogFile(String directoryPath, String? postfix) {
   File logFile = File(
     join(
       directoryPath,
-      '${logFileDateFormat.format(DateTime.now())}${postfix != null ? '.$postfix' : ''}.log',
+      '${logFileDateFormat.format(DateTime.now())}${postfix != null ? '.$postfix' : ''}$logFileExtension',
     ),
   );
 
@@ -66,22 +79,25 @@ File createLogFile(String directoryPath, String? postfix) {
   if (!dir.existsSync()) {
     dir.createSync(recursive: true);
   }
-  List<File> logFiles = dir
-      .listSync()
-      .whereType<File>()
-      .where((entity) => entity.path.endsWith('.log'))
-      .toList();
-
-  DateTime getFileDate(String fileName) {
-    var name = basenameWithoutExtension(fileName);
-    return logFileDateFormat.parse(name);
+  List<({File file, DateTime date})> logFiles = [];
+  for (final entity in dir.listSync().whereType<File>()) {
+    if (!entity.path.endsWith(logFileExtension)) continue;
+    try {
+      logFiles.add((file: entity, date: LogFileInfo.parse(entity.path).date));
+    } on FormatException {
+      continue;
+    }
   }
 
-  logFiles.sort((a, b) => getFileDate(b.path).compareTo(getFileDate(a.path)));
+  logFiles.sort((a, b) => b.date.compareTo(a.date));
 
   if (logFiles.length > 50) {
-    for (final oldFile in logFiles.sublist(10)) {
-      oldFile.deleteSync();
+    for (final old in logFiles.sublist(10)) {
+      try {
+        old.file.deleteSync();
+      } on FileSystemException {
+        continue;
+      }
     }
   }
 
@@ -101,48 +117,62 @@ void registerFlutterErrorHandler(
 }
 
 /// Initializes the storages used by the app with default production values.
-Future<AppStorage> initializeAppStorage({bool cache = true}) async {
+Future<AppStorage> initializeAppStorage() async {
   final String temporaryFiles = await getTemporaryAppDirectory();
-  cleanupImageCache();
-  return AppStorage(
-    preferences: await SharedPreferences.getInstance(),
-    temporaryFiles: temporaryFiles,
-    httpCache: cache ? DriftCacheStore(databasePath: temporaryFiles) : null,
-    sqlite: AppDatabase(
-      driftDatabase(
-        name: 'app',
-        native: DriftNativeOptions(
-          shareAcrossIsolates: true,
-          databasePath: () => getApplicationSupportDirectory().then(
-            (dir) => join(dir.path, 'app.db'),
-          ),
-        ),
+  await completeDbImport();
+  final AppDatabase sqlite = AppDatabase(
+    driftDatabase(
+      name: 'app',
+      native: const DriftNativeOptions(
+        shareAcrossIsolates: true,
+        databasePath: getAppDatabasePath,
       ),
     ),
   );
+  await discardLegacyFileCache();
+  return AppStorage(
+    preferences: await SharedPreferences.getInstance(),
+    temporaryFiles: temporaryFiles,
+    // TODO: query storage is disabled because a page of writes costs a frame
+    queryCache: CachedQuery.asNewInstance()
+      ..configFlutter(
+        config: const GlobalQueryConfig(
+          staleDuration: Duration(minutes: 5),
+          refetchOnResume: false,
+          refetchOnConnection: false,
+        ),
+      ),
+    sqlite: sqlite,
+  );
 }
 
-/// Workaround for flutter_cache_manager not evicting files properly.
-/// See: https://github.com/Baseflow/flutter_cache_manager/issues/476
-Future<void> cleanupImageCache({
-  Duration stalePeriod = const Duration(days: 1),
-}) async {
-  final base = await getTemporaryDirectory();
-  final cacheDir = Directory(join(base.path, DefaultCacheManager.key));
-  if (!cacheDir.existsSync()) return;
+Future<void> backfillOnboardingSeen(AppStorage storage) async {
+  if (storage.preferences.getBool('onboardingSeen') ?? false) return;
+  final identities = await IdentityRepository(storage.sqlite).all();
+  final defaultHost = ClientFactory().createDefaultIdentity().host;
+  final existing =
+      identities.length > 1 ||
+      identities.any((identity) => identity.host != defaultHost);
+  if (existing) {
+    await storage.preferences.setBool('onboardingSeen', true);
+  }
+}
 
-  final staleBefore = DateTime.now().subtract(stalePeriod);
+Future<void> completeDbImport() async {
+  final dbPath = await getAppDatabasePath();
+  final newDbPath = '$dbPath.new';
+  final newDbFile = File(newDbPath);
 
-  await for (final entity in cacheDir.list()) {
-    if (entity is! File) continue;
-
+  if (newDbFile.existsSync()) {
+    final oldDbFile = File(dbPath);
     try {
-      final stat = entity.statSync();
-      if (stat.modified.isBefore(staleBefore)) {
-        await entity.delete();
+      if (oldDbFile.existsSync()) {
+        await oldDbFile.delete();
       }
-    } on FileSystemException {
-      // ignore
+      await newDbFile.rename(dbPath);
+    } on Exception {
+      await newDbFile.copy(dbPath);
+      await newDbFile.delete();
     }
   }
 }

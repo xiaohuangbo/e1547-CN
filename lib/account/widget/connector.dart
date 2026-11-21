@@ -1,7 +1,6 @@
 import 'package:e1547/account/account.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -22,26 +21,14 @@ class AccountConnector extends StatelessWidget {
       navigatorKey: navigatorKey,
       child: SubEffect(
         effect: () {
-          client.follows.sync();
+          client.accounts.pull();
           return null;
         },
         keys: [client],
-        child: SubStream<List<Follow>>(
-          create: () => client.follows.all().streamed,
-          keys: [client],
-          listener: (event) => client.follows.sync(),
-          builder: (context, _) => SubEffect(
-            effect: () {
-              client.accounts.pull(force: true);
-              return null;
-            },
-            keys: [client],
-            child: SubValueListener(
-              listenable: client.traits,
-              listener: (traits) => client.accounts.push(traits: traits),
-              builder: (context, _) => child,
-            ),
-          ),
+        child: SubValueListener(
+          listenable: client.traits,
+          listener: (traits) => client.accounts.push(traits: traits),
+          builder: (context, _) => child,
         ),
       ),
     );

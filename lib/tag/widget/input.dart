@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,28 +11,34 @@ import 'package:intl/intl.dart';
 class TagInput extends StatelessWidget {
   const TagInput({
     super.key,
-    required this.submit,
     required this.controller,
+    this.submit,
     this.multiInput = true,
     this.category,
     this.direction,
     this.readOnly = false,
+    this.autofocus,
     this.labelText,
     this.decoration,
     this.textInputAction,
     this.focusNode,
+    this.maxLines = 1,
+    this.cutoutForFab,
   });
 
-  final SubmitString submit;
+  final SubmitString? submit;
   final TextEditingController? controller;
   final bool multiInput;
   final int? category;
   final VerticalDirection? direction;
   final bool readOnly;
+  final bool? autofocus;
   final String? labelText;
   final InputDecoration? decoration;
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
+  final int? maxLines;
+  final bool? cutoutForFab;
 
   int findTag(List<String> tags, int offset) {
     List<String> before = [];
@@ -53,16 +59,18 @@ class TagInput extends StatelessWidget {
       builder: (context, controller) => SubValue(
         create: () {
           if (controller.text.isNotEmpty) {
+            controller.text = controller.text.trimRight();
             controller.text += ' ';
           }
           return controller;
         },
         keys: [controller],
-        builder: (context, controller) => AutocompleteTextField<Tag>(
+        builder: (context, controller) => AutocompleteTextField<TagSuggestion>(
           controller: controller,
           submit: submit,
           direction: direction,
           readOnly: readOnly,
+          autofocus: autofocus ?? true,
           labelText: labelText,
           decoration: decoration,
           inputFormatters: [
@@ -72,18 +80,14 @@ class TagInput extends StatelessWidget {
           private: PrivateTextFields.of(context),
           textInputAction: textInputAction,
           focusNode: focusNode,
+          maxLines: maxLines,
+          cutoutForFab: cutoutForFab ?? true,
           onSelected: (suggestion) {
             List<String> tags = controller.text.split(' ');
             int selection = findTag(tags, controller.selection.extent.offset);
-            String tag = tags[selection];
-            String operator = tag[0];
-            if (['-', '~'].contains(operator)) {
-              tags[selection] = tag.substring(1);
-            } else {
-              operator = '';
-            }
-            tags[selection] = operator + suggestion.name;
-            controller.text = '${tags.join(' ')} ';
+            tags[selection] = suggestion.name;
+            final String text = tags.join(' ');
+            controller.text = suggestion.complete ? '$text ' : text;
             controller.setFocusToEnd();
           },
           itemBuilder: (context, value) => Row(
@@ -91,7 +95,7 @@ class TagInput extends StatelessWidget {
               Container(
                 color: TagCategory.values
                     .firstWhereOrNull((e) => e.id == value.category)
-                    ?.color,
+                    ?.colorFor(Theme.of(context).brightness),
                 height: 54,
                 width: 5,
               ),
@@ -105,26 +109,23 @@ class TagInput extends StatelessWidget {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  NumberFormat.compact().format(value.count),
-                  style: const TextStyle(fontSize: 16),
+              if (value.count case final int count)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    NumberFormat.compact().format(count),
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ),
-              ),
             ],
           ),
           suggestionsCallback: (pattern) async {
-            Client client = context.read<Client>();
+            final client = context.read<Client>();
             List<String> tags = controller.text.split(' ');
             int selection = findTag(tags, controller.selection.extent.offset);
             String tag = tags[selection];
             if (tag.isEmpty) return [];
-            return client.tags.autocomplete(
-              search: tagToRaw(tags[selection]),
-              category: category,
-              limit: 3,
-            );
+            return suggestTerm(client, tag, category: category);
           },
         ),
       ),

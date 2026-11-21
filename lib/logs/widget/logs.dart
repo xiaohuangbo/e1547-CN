@@ -1,10 +1,11 @@
-import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:e1547/app/app.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 
@@ -16,32 +17,41 @@ class LogsPage extends StatefulWidget {
 }
 
 class _LogsPageState extends State<LogsPage> {
-  late LogLoader loader;
-
-  @override
-  void initState() {
-    super.initState();
-    loader = liveLoader();
-  }
-
-  LogLoader liveLoader() => LogLoader(
-    load: () => context.read<Logs>().stream().map(
-      (records) =>
-          records.reversed.map((e) => LogString.fromRecord(e)).toList(),
-    ),
-  );
+  LogFileInfo? _file;
 
   @override
   Widget build(BuildContext context) {
-    return LogPage(
-      loader: loader,
-      onShowAll: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => LogFileList(
-            onSelected: (loader) {
-              setState(() => this.loader = loader);
-              Navigator.of(context).pop();
-            },
+    final LogErrors? errors = context.watch<LogErrors?>();
+    final LogFileInfo? file = _file;
+    return SubValue<LogSource>(
+      create: () =>
+          (file == null
+                ? LiveLogSource(context.read<Logs>())
+                : LogFileSource(File(file.path), date: file.date))
+            ..load(),
+      keys: [file?.path],
+      dispose: (source) => source.dispose(),
+      builder: (context, source) => SubEffect(
+        effect: () {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => errors?.suppressBubble.value = true,
+          );
+          return () => WidgetsBinding.instance.addPostFrameCallback(
+            (_) => errors?.suppressBubble.value = false,
+          );
+        },
+        keys: [errors],
+        child: LogPage(
+          source: source,
+          onShowAll: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => LogFileList(
+                onSelected: (file) {
+                  setState(() => _file = file);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
           ),
         ),
       ),
@@ -49,94 +59,49 @@ class _LogsPageState extends State<LogsPage> {
   }
 }
 
-class LogLoader {
-  const LogLoader({this.date, required this.load});
-
-  final DateTime? date;
-  final Stream<List<LogString>> Function() load;
-}
-
 class LogFileList extends StatefulWidget {
   const LogFileList({super.key, required this.onSelected});
 
-  final ValueSetter<LogLoader> onSelected;
+  final ValueSetter<LogFileInfo?> onSelected;
 
   @override
   State<LogFileList> createState() => _LogFileListState();
 }
 
 class _LogFileListState extends State<LogFileList> {
-  late Future<List<LogFileInfo>> files;
+  Key _key = UniqueKey();
 
-  @override
-  void initState() {
-    super.initState();
-    load();
-  }
-
-  void load() {
-    files = Directory(context.read<AppStorage>().temporaryFiles)
-        .list()
-        .where(
-          (e) => FileSystemEntity.isFileSync(e.path) && e.path.endsWith('.log'),
-        )
-        .cast<File>()
-        .map((e) => LogFileInfo.parse(e.path))
-        .toList();
-    setState(() {});
-  }
-
-  LogLoader liveLoader() => LogLoader(
-    load: () => context.read<Logs>().stream().map(
-      (records) => records.map((e) => LogString.fromRecord(e)).toList(),
-    ),
-  );
-
-  Stream<List<LogString>> loadFile(String path) {
-    File file = File(path);
-    late StreamController<List<LogString>> controller;
-    controller = StreamController(
-      onListen: () async {
-        controller.add(await _read(file));
-        try {
-          controller.addStream(
-            file
-                .watch(events: FileSystemEvent.modify)
-                .asyncMap((_) async => _read(file)),
-          );
-        } on FileSystemException {
-          controller.addStream(Stream.value(await _read(file)));
-        }
-      },
-      onCancel: () => controller.close(),
-    );
-    return controller.stream;
-  }
-
-  Future<List<LogString>> _read(File file) async =>
-      LogString.parse(await file.readAsString()).reversed.toList();
+  Future<List<LogFileInfo>> _read(String path) => Directory(path)
+      .list()
+      .where(
+        (e) =>
+            FileSystemEntity.isFileSync(e.path) &&
+            e.path.endsWith(logFileExtension),
+      )
+      .map((e) => LogFileInfo.parse(e.path))
+      .toList();
 
   @override
   Widget build(BuildContext context) {
+    final String path = context.read<AppStorage>().temporaryFiles;
     return TileLayout(
       tileSize: 160,
-      child: FutureBuilder(
-        future: files,
+      child: SubFuture<List<LogFileInfo>>(
+        create: () => _read(path),
+        keys: [_key, path],
         builder: (context, snapshot) {
-          List<LogFileInfo>? files = snapshot.data
-              ?.map((e) => LogFileInfo.parse(e.path))
-              .sorted((a, b) => b.date.compareTo(a.date))
+          final List<LogFileInfo>? files = snapshot.data
+              ?.sorted((a, b) => b.date.compareTo(a.date))
               .toList();
           return SelectionLayout<LogFileInfo>(
             items: files,
             child: Scaffold(
               appBar: LogFileSelectionAppBar(
-                child: const DefaultAppBar(title: Text('Log Files')),
-                onDelete: (files) {
-                  for (final file in files) {
-                    File(file.path).delete();
-                  }
-                  load();
+                child: const DefaultAppBar(title: Text('日志文件')),
+                onDelete: (files) async {
+                  await Future.wait(files.map((e) => File(e.path).delete()));
+                  if (!context.mounted) return;
+                  setState(() => _key = UniqueKey());
                 },
               ),
               body: Builder(
@@ -144,16 +109,16 @@ class _LogFileListState extends State<LogFileList> {
                   if (snapshot.hasError) {
                     return const IconMessage(
                       icon: Icon(Icons.warning_amber),
-                      title: Text('Failed to load log files!'),
+                      title: Text('加载日志文件失败！'),
                     );
                   }
                   if (files == null) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: HexagonalLoadingIndicator());
                   }
                   if (files.isEmpty) {
                     return const IconMessage(
                       icon: Icon(Icons.close),
-                      title: Text('No log files available!'),
+                      title: Text('没有可用的日志文件！'),
                     );
                   }
                   return GridView.custom(
@@ -167,13 +132,13 @@ class _LogFileListState extends State<LogFileList> {
                       (context, index) {
                         if (index == 0) {
                           return InkWell(
-                            onTap: () => widget.onSelected(liveLoader()),
+                            onTap: () => widget.onSelected(null),
                             child: Column(
                               children: [
                                 Expanded(
                                   child: Center(
                                     child: Icon(
-                                      Icons.note_add,
+                                      Icons.videocam,
                                       size: 38,
                                       color: dimTextColor(context),
                                     ),
@@ -182,7 +147,7 @@ class _LogFileListState extends State<LogFileList> {
                                 Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Text(
-                                    'Current\n',
+                                    'Live\n',
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: Theme.of(
@@ -197,12 +162,7 @@ class _LogFileListState extends State<LogFileList> {
                         index--;
                         return LogFileTile(
                           file: files[index],
-                          onSelected: (file) => widget.onSelected(
-                            LogLoader(
-                              date: file.date,
-                              load: () => loadFile(file.path),
-                            ),
-                          ),
+                          onSelected: widget.onSelected,
                         );
                       },
                     ),
@@ -267,9 +227,9 @@ class LogFileTile extends StatelessWidget {
 }
 
 class LogPage extends StatefulWidget {
-  const LogPage({super.key, required this.loader, this.onShowAll});
+  const LogPage({super.key, required this.source, this.onShowAll});
 
-  final LogLoader loader;
+  final LogSource source;
   final VoidCallback? onShowAll;
 
   @override
@@ -277,85 +237,161 @@ class LogPage extends StatefulWidget {
 }
 
 class _LogPageState extends State<LogPage> {
-  List<int> levels = Level.LEVELS.map((e) => e.value).toList();
+  final ScrollController _scrollController = ScrollController();
+
+  Set<LogLevel> _levels = LogLevel.values.toSet();
+  int? _head;
+
+  /// Distance from the newest entry within which the log keeps following.
+  static const double _followRange = 4;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant LogPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.source != oldWidget.source) _head = null;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Older pages arrive at the end, where they disturb nothing. New entries
+  /// arrive at the head, which would slide whatever is being read across the
+  /// screen. While scrolled away from it, they wait behind [_head].
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels <= _followRange) {
+      if (_head == null) return;
+      setState(() => _head = null);
+    } else {
+      if (_head != null) return;
+      final int? head = widget.source.entries.lastOrNull?.id;
+      if (head == null) return;
+      setState(() => _head = head);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SubStream<List<LogString>>(
-      create: () => widget.loader.load().map(
-        (records) =>
-            records.where((e) => levels.contains(e.level.value)).toList(),
+    final Settings? settings = widget.source.live
+        ? context.watch<Settings?>()
+        : null;
+    if (settings == null) return _body();
+    return ValueListenableBuilder<bool>(
+      valueListenable: settings.verboseLogs,
+      builder: (context, verbose, child) => _body(
+        recording: verboseLogLevel(verbose: verbose),
+        verbose: verbose,
+        onVerbose: (value) => settings.verboseLogs.value = value,
       ),
-      keys: [widget.loader, levels],
-      builder: (context, snapshot) {
-        List<LogString>? logs = snapshot.data;
-        return SelectionLayout<LogString>(
-          items: logs,
-          child: Expandables(
-            child: Scaffold(
-              appBar: LogSelectionAppBar(
-                child: DefaultAppBar(
-                  title: Text(
-                    'Logs${widget.loader.date != null ? ' - ${DateFormatting.date(widget.loader.date!)}' : ''}',
-                  ),
-                  actions: [
-                    if (widget.onShowAll != null)
-                      IconButton(
-                        icon: const Icon(Icons.folder),
-                        onPressed: widget.onShowAll,
-                      ),
-                    const ContextDrawerButton(),
-                  ],
-                ),
-              ),
-              body: Builder(
-                builder: (context) {
-                  if (logs == null) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (logs.isEmpty) {
-                    return const Center(
-                      child: IconMessage(
-                        title: Text('No log items!'),
-                        icon: Icon(Icons.close),
-                      ),
-                    );
-                  }
-                  return LimitedWidthLayout.builder(
-                    builder: (context) => ListView.builder(
-                      reverse: true,
-                      padding: LimitedWidthLayout.of(
-                        context,
-                      ).padding.add(defaultActionListPadding),
-                      itemCount: logs.length,
-                      itemBuilder: (context, index) =>
-                          SelectionItemOverlay<LogString>(
-                            item: logs[index],
-                            padding: const EdgeInsets.all(4),
-                            child: LogStringCard(item: logs[index]),
-                          ),
-                    ),
-                  );
-                },
-              ),
-              floatingActionButton: (logs?.isNotEmpty ?? false)
-                  ? FloatingActionButton(
-                      onPressed: () => Share.asFile(
-                        context,
-                        logs!.map((e) => e.toString()).join('\n'),
-                        name: '${logFileDateFormat.format(DateTime.now())}.log',
-                      ),
-                      child: const Icon(Icons.file_download),
-                    )
-                  : null,
-              endDrawer: LogRecordDrawer(
-                levels: levels,
-                onChanged: (value) => setState(() => levels = value),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
+
+  Widget _body({
+    LogLevel? recording,
+    bool verbose = false,
+    ValueSetter<bool>? onVerbose,
+  }) => ListenableBuilder(
+    listenable: widget.source,
+    builder: (context, _) {
+      final Set<LogLevel> levels = recording == null
+          ? _levels
+          : _levels.where((e) => e.isAtLeast(recording)).toSet();
+      final List<LogEntry> filtered = widget.source.entries.reversed
+          .where((e) => levels.contains(e.level))
+          .toList();
+      final int? head = _head;
+      List<LogEntry> items = head == null
+          ? filtered
+          : filtered.where((e) => (e.id ?? head) <= head).toList();
+      if (items.isEmpty) items = filtered;
+      final DateTime? date = widget.source.date;
+      return SelectionLayout<LogEntry>(
+        items: items,
+        child: Expandables(
+          child: Scaffold(
+            appBar: LogSelectionAppBar(
+              child: DefaultAppBar(
+                title: Text(
+                  'Logs${date != null ? ' - ${DateFormatting.date(date)}' : ''}',
+                ),
+                actions: [
+                  if (widget.onShowAll != null)
+                    IconButton(
+                      icon: const Icon(Icons.folder),
+                      onPressed: widget.onShowAll,
+                    ),
+                  const ContextDrawerButton(),
+                ],
+              ),
+            ),
+            body: LimitedWidthLayout.builder(
+              maxWidth: 1200,
+              builder: (context) => CustomScrollView(
+                controller: _scrollController,
+                reverse: true,
+                slivers: [
+                  SliverPadding(
+                    padding: LimitedWidthLayout.of(
+                      context,
+                    ).padding.add(defaultActionListPadding),
+                    sliver: PagedSliverList<int, LogEntry>(
+                      state: PagingState(
+                        pages: items.isEmpty ? null : [items],
+                        keys: items.isEmpty ? null : const [0],
+                        hasNextPage: widget.source.hasEarlier,
+                        isLoading:
+                            widget.source.loading ||
+                            widget.source.loadingEarlier,
+                      ),
+                      fetchNextPage: widget.source.loadEarlier,
+                      builderDelegate:
+                          defaultPagedChildBuilderDelegate<LogEntry>(
+                            itemBuilder: (context, item, index) =>
+                                SelectionRowOverlay<LogEntry>(
+                                  key: ValueKey(item.id ?? item),
+                                  item: item,
+                                  child: LogEntryTile(item: item),
+                                ),
+                            onEmpty: const Text('暂无日志'),
+                            onError: const Text('读取日志失败'),
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            floatingActionButtonLocation: Handedness.of(
+              context,
+            ).floatingActionButtonLocation,
+            floatingActionButton: items.isEmpty
+                ? null
+                : FloatingActionButton(
+                    onPressed: () => Share.asFile(
+                      context,
+                      items.map((e) => jsonEncode(e.toJson())).join('\n'),
+                      '${logFileDateFormat.format(DateTime.now())}$logFileExtension',
+                    ),
+                    child: const Icon(Icons.file_download),
+                  ),
+            endDrawer: LogsDrawer(
+              levels: _levels,
+              onChanged: (value) => setState(() => _levels = value),
+              recording: recording,
+              verbose: verbose,
+              onVerbose: onVerbose,
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

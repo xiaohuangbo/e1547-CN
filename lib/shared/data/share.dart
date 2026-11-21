@@ -30,7 +30,7 @@ abstract final class Share {
     } else {
       final messenger = ScaffoldMessenger.of(context);
       String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save file',
+        dialogTitle: '保存文件',
         fileName: name,
       );
       if (outputFile == null) return;
@@ -39,7 +39,7 @@ abstract final class Share {
       messenger.showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 1),
-          content: Text('File saved as ${basename(outputFile)}'),
+          content: Text('文件已保存为 ${basename(outputFile)}'),
         ),
       );
     }
@@ -55,7 +55,7 @@ abstract final class Share {
       if (!context.mounted) return;
 
       String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save file',
+        dialogTitle: '保存文件',
         fileName: basename(path),
       );
       if (outputFile == null) return;
@@ -64,7 +64,7 @@ abstract final class Share {
       messenger.showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 1),
-          content: Text('File saved as ${basename(outputFile)}'),
+          content: Text('文件已保存为 ${basename(outputFile)}'),
         ),
       );
     }
@@ -74,10 +74,7 @@ abstract final class Share {
     ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
     await Clipboard.setData(ClipboardData(text: text));
     messenger.showSnackBar(
-      const SnackBar(
-        duration: Duration(seconds: 1),
-        content: Text('Copied to clipboard'),
-      ),
+      const SnackBar(duration: Duration(seconds: 1), content: Text('已复制到剪贴板')),
     );
   }
 }

@@ -1,0 +1,514 @@
+[
+  {
+    "id": 1000,
+    "created_at": "2023-10-09T04:17:41.599-04:00",
+    "updated_at": "2026-08-12T17:37:58.349-04:00",
+    "change_seq": 78634850,
+    "files": {
+      "meta": {
+        "md5": "59806192859806192859806192859806",
+        "ext": "jpg",
+        "size": 288485,
+        "duration": null,
+        "has_sample": true
+      },
+      "original": {
+        "width": 2048,
+        "height": 1942,
+        "url": "{{host}}/data/59/80/59806192859806192859806192859806.jpg"
+      },
+      "preview": {
+        "width": 270,
+        "height": 256,
+        "jpg": "{{host}}/data/preview/59/80/59806192859806192859806192859806.jpg",
+        "webp": "{{host}}/data/preview/59/80/59806192859806192859806192859806.webp"
+      },
+      "sample": {
+        "width": 896,
+        "height": 850,
+        "jpg": "{{host}}/data/sample/59/80/59806192859806192859806192859806.jpg",
+        "webp": "{{host}}/data/sample/59/80/59806192859806192859806192859806.webp"
+      }
+    },
+    "uploader_id": 1014,
+    "uploader_name": "user_5",
+    "approver_id": 1007,
+    "stats": {
+      "score": {
+        "up": 9063,
+        "down": -1359,
+        "total": 7704
+      },
+      "fav_count": 4056,
+      "is_favorited": false,
+      "vote": 0,
+      "comment_count": 450,
+      "hotness": 0.0
+    },
+    "flags": {
+      "pending": false,
+      "flagged": false,
+      "note_locked": true,
+      "status_locked": false,
+      "rating_locked": true,
+      "deleted": false
+    },
+    "has": {
+      "parent": false,
+      "children": false,
+      "active_children": false,
+      "notes": false,
+      "sample": true
+    },
+    "relationships": {
+      "parent_id": null,
+      "children": []
+    },
+    "pools": [],
+    "rating": "s",
+    "locked_tags": [
+      "-pride_colors",
+      "-lgbt_pride"
+    ],
+    "sources": [
+      "https://x.com/user_1/user_2/123456",
+      "https://pbs.twimg.com/user_3/user_4?format=123456&name=123456"
+    ],
+    "description": "Recorded text with \"a link\":/posts/1000.",
+    "tags": {
+      "general": [
+        "tag_1",
+        "tag_2",
+        "tag_3",
+        "tag_4",
+        "tag_5",
+        "tag_6",
+        "tag_7",
+        "tag_8",
+        "tag_9",
+        "tag_10",
+        "tag_11",
+        "tag_12",
+        "tag_13",
+        "tag_14",
+        "tag_15",
+        "tag_16",
+        "tag_17",
+        "tag_18",
+        "tag_19",
+        "tag_20",
+        "tag_21",
+        "tag_22",
+        "tag_23",
+        "tag_24",
+        "tag_25",
+        "tag_26",
+        "tag_27",
+        "tag_28",
+        "tag_29",
+        "tag_30",
+        "tag_31"
+      ],
+      "artist": [
+        "tag_32"
+      ],
+      "contributor": [],
+      "copyright": [],
+      "character": [],
+      "species": [
+        "tag_33",
+        "tag_34",
+        "tag_35",
+        "tag_36",
+        "tag_37"
+      ],
+      "invalid": [],
+      "meta": [
+        "tag_38",
+        "tag_39",
+        "tag_40",
+        "tag_41",
+        "tag_42",
+        "tag_43",
+        "tag_44",
+        "tag_45",
+        "tag_46"
+      ],
+      "lore": []
+    }
+  },
+  {
+    "id": 1021,
+    "created_at": "2021-10-15T20:26:25.188-04:00",
+    "updated_at": "2026-08-12T13:25:59.429-04:00",
+    "change_seq": 77547984,
+    "files": {
+      "meta": {
+        "md5": "95728357895728357895728357895728",
+        "ext": "webm",
+        "size": 216387,
+        "duration": 3.953,
+        "has_sample": true
+      },
+      "original": {
+        "width": 640,
+        "height": 640,
+        "url": "{{host}}/data/95/72/95728357895728357895728357895728.webm"
+      },
+      "preview": {
+        "width": 256,
+        "height": 256,
+        "jpg": "{{host}}/data/preview/95/72/95728357895728357895728357895728.jpg",
+        "webp": "{{host}}/data/preview/95/72/95728357895728357895728357895728.webp"
+      },
+      "sample": {
+        "width": 850,
+        "height": 850,
+        "jpg": "{{host}}/data/sample/95/72/95728357895728357895728357895728.jpg",
+        "webp": "{{host}}/data/sample/95/72/95728357895728357895728357895728.webp"
+      },
+      "video": {
+        "has": true,
+        "original": {
+          "fps": 30.0,
+          "codec": "vp9",
+          "size": 216387,
+          "width": 640,
+          "height": 640,
+          "url": "{{host}}/data/95/72/95728357895728357895728357895728.webm"
+        },
+        "variants": {
+          "mp4": {
+            "codec": "avc1.4D401E",
+            "fps": 30.0,
+            "size": 224107,
+            "width": 640,
+            "height": 640,
+            "url": "{{host}}/data/sample/24/88/24881626424881626424881626424881.mp4"
+          }
+        },
+        "samples": {
+          "480p": {
+            "fps": 30.0,
+            "size": 161004,
+            "codec": "avc1.4D401E",
+            "width": 480,
+            "height": 480,
+            "url": "{{host}}/data/sample/43/07/43077983743077983743077983743077.mp4"
+          }
+        }
+      }
+    },
+    "uploader_id": 1035,
+    "uploader_name": "user_7",
+    "approver_id": 1028,
+    "stats": {
+      "score": {
+        "up": 6746,
+        "down": -280,
+        "total": 6466
+      },
+      "fav_count": 4858,
+      "is_favorited": false,
+      "vote": 0,
+      "comment_count": 147,
+      "hotness": 0.0
+    },
+    "flags": {
+      "pending": false,
+      "flagged": false,
+      "note_locked": false,
+      "status_locked": false,
+      "rating_locked": true,
+      "deleted": false
+    },
+    "has": {
+      "parent": false,
+      "children": false,
+      "active_children": false,
+      "notes": false,
+      "sample": true
+    },
+    "relationships": {
+      "parent_id": null,
+      "children": []
+    },
+    "pools": [],
+    "rating": "s",
+    "locked_tags": [],
+    "sources": [
+      "https://x.com/user_6/user_2/123456"
+    ],
+    "description": "Recorded text with \"a link\":/posts/1000.",
+    "tags": {
+      "general": [
+        "tag_47",
+        "tag_48",
+        "tag_1",
+        "tag_49",
+        "tag_50",
+        "tag_51",
+        "tag_52",
+        "tag_53",
+        "tag_54",
+        "tag_55",
+        "tag_56",
+        "tag_57",
+        "tag_58",
+        "tag_59",
+        "tag_60",
+        "tag_61",
+        "tag_62",
+        "tag_63",
+        "tag_64",
+        "tag_65",
+        "tag_66",
+        "tag_67",
+        "tag_68",
+        "tag_69",
+        "tag_70",
+        "tag_71",
+        "tag_72",
+        "tag_73",
+        "tag_21",
+        "tag_22",
+        "tag_74",
+        "tag_75",
+        "tag_76",
+        "tag_77",
+        "tag_78",
+        "tag_79",
+        "tag_80",
+        "tag_81",
+        "tag_26",
+        "tag_82",
+        "tag_83",
+        "tag_84",
+        "tag_85",
+        "tag_86",
+        "tag_87",
+        "tag_88",
+        "tag_89",
+        "tag_90",
+        "tag_91",
+        "tag_92"
+      ],
+      "artist": [
+        "tag_93",
+        "tag_94"
+      ],
+      "contributor": [],
+      "copyright": [
+        "tag_95",
+        "tag_96"
+      ],
+      "character": [
+        "tag_97",
+        "tag_98"
+      ],
+      "species": [
+        "tag_99",
+        "tag_100",
+        "tag_101",
+        "tag_37",
+        "tag_102",
+        "tag_103",
+        "tag_104"
+      ],
+      "invalid": [],
+      "meta": [
+        "tag_105",
+        "tag_106",
+        "tag_107",
+        "tag_108",
+        "tag_43",
+        "tag_109",
+        "tag_110",
+        "tag_111",
+        "tag_112"
+      ],
+      "lore": [
+        "tag_113"
+      ]
+    }
+  },
+  {
+    "id": 1042,
+    "created_at": "2023-09-25T01:28:59.929-04:00",
+    "updated_at": "2026-08-12T17:05:40.803-04:00",
+    "change_seq": 77602021,
+    "files": {
+      "meta": {
+        "md5": "10159205461015920546101592054610",
+        "ext": "webm",
+        "size": 385023,
+        "duration": 7.282,
+        "has_sample": true
+      },
+      "original": {
+        "width": 1280,
+        "height": 720,
+        "url": "{{host}}/data/10/15/10159205461015920546101592054610.webm"
+      },
+      "preview": {
+        "width": 455,
+        "height": 256,
+        "jpg": "{{host}}/data/preview/10/15/10159205461015920546101592054610.jpg",
+        "webp": "{{host}}/data/preview/10/15/10159205461015920546101592054610.webp"
+      },
+      "sample": {
+        "width": 1511,
+        "height": 850,
+        "jpg": "{{host}}/data/sample/10/15/10159205461015920546101592054610.jpg",
+        "webp": "{{host}}/data/sample/10/15/10159205461015920546101592054610.webp"
+      },
+      "video": {
+        "has": true,
+        "original": {
+          "fps": 60.0,
+          "codec": "vp9",
+          "size": 385023,
+          "width": 1280,
+          "height": 720,
+          "url": "{{host}}/data/10/15/10159205461015920546101592054610.webm"
+        },
+        "variants": {
+          "mp4": {
+            "codec": "avc1.4D401E",
+            "fps": 60.0,
+            "size": 306258,
+            "width": 1280,
+            "height": 720,
+            "url": "{{host}}/data/sample/61/53/61538337061538337061538337061538.mp4"
+          }
+        },
+        "samples": {
+          "480p": {
+            "fps": 30.0,
+            "size": 238058,
+            "codec": "avc1.4D401E",
+            "width": 960,
+            "height": 540,
+            "url": "{{host}}/data/sample/19/41/19418725519418725519418725519418.mp4"
+          }
+        }
+      }
+    },
+    "uploader_id": 1070,
+    "uploader_name": "user_14",
+    "approver_id": 1063,
+    "stats": {
+      "score": {
+        "up": 5832,
+        "down": -144,
+        "total": 5688
+      },
+      "fav_count": 7101,
+      "is_favorited": false,
+      "vote": 0,
+      "comment_count": 61,
+      "hotness": 0.0
+    },
+    "flags": {
+      "pending": false,
+      "flagged": false,
+      "note_locked": false,
+      "status_locked": false,
+      "rating_locked": false,
+      "deleted": false
+    },
+    "has": {
+      "parent": false,
+      "children": true,
+      "active_children": true,
+      "notes": false,
+      "sample": true
+    },
+    "relationships": {
+      "parent_id": null,
+      "children": [
+        1049,
+        1056
+      ]
+    },
+    "pools": [],
+    "rating": "s",
+    "locked_tags": [],
+    "sources": [
+      "https://video.twimg.com/user_8/123456/user_9/user_10/user_11/user_12?tag=123456",
+      "https://x.com/user_13/user_2/123456"
+    ],
+    "description": "Recorded text with \"a link\":/posts/1000.",
+    "tags": {
+      "general": [
+        "tag_47",
+        "tag_1",
+        "tag_114",
+        "tag_115",
+        "tag_116",
+        "tag_117",
+        "tag_56",
+        "tag_118",
+        "tag_119",
+        "tag_120",
+        "tag_14",
+        "tag_121",
+        "tag_122",
+        "tag_123",
+        "tag_124",
+        "tag_125",
+        "tag_19",
+        "tag_66",
+        "tag_67",
+        "tag_126",
+        "tag_127",
+        "tag_22",
+        "tag_26",
+        "tag_27",
+        "tag_128",
+        "tag_129",
+        "tag_130",
+        "tag_131",
+        "tag_132",
+        "tag_133",
+        "tag_30",
+        "tag_86",
+        "tag_134",
+        "tag_89",
+        "tag_135"
+      ],
+      "artist": [
+        "tag_136"
+      ],
+      "contributor": [],
+      "copyright": [
+        "tag_137"
+      ],
+      "character": [
+        "tag_138"
+      ],
+      "species": [
+        "tag_139",
+        "tag_140",
+        "tag_141",
+        "tag_142",
+        "tag_37"
+      ],
+      "invalid": [],
+      "meta": [
+        "tag_143",
+        "tag_38",
+        "tag_107",
+        "tag_108",
+        "tag_144",
+        "tag_41",
+        "tag_145",
+        "tag_109",
+        "tag_110",
+        "tag_112",
+        "tag_146"
+      ],
+      "lore": []
+    }
+  }
+]

@@ -6,16 +6,20 @@ class LimitedWidthLayoutData extends InheritedWidget {
     required super.child,
     required this.maxWidth,
     required this.space,
+    required this.contentWidth,
   });
 
   final double space;
   final double maxWidth;
+  final double contentWidth;
 
   EdgeInsets get padding => EdgeInsets.symmetric(horizontal: space);
 
   @override
   bool updateShouldNotify(covariant LimitedWidthLayoutData oldWidget) =>
-      oldWidget.space != space || oldWidget.maxWidth != maxWidth;
+      oldWidget.space != space ||
+      oldWidget.maxWidth != maxWidth ||
+      oldWidget.contentWidth != contentWidth;
 }
 
 class LimitedWidthLayout extends StatelessWidget {
@@ -58,6 +62,7 @@ class LimitedWidthLayout extends StatelessWidget {
         return LimitedWidthLayoutData(
           space: padding,
           maxWidth: maxWidth,
+          contentWidth: constraints.maxWidth - padding * 2,
           child: Builder(builder: builder),
         );
       },

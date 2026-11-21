@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
-import 'package:sliding_sheet/sliding_sheet.dart';
+import 'package:smooth_sheets/smooth_sheets.dart';
 
 abstract class _PromptActionRoute {
   /// Whether the dialog is open.
@@ -132,7 +132,7 @@ class LoadingDialogActionController extends PromptActionController {
         child: Builder(
           builder: (context) {
             if (isLoading) {
-              return const Text('Loading...');
+              return const Text('加载中…');
             } else if (isError) {
               return Text(error!.message);
             } else {
@@ -219,7 +219,7 @@ class ActionIndicators extends StatelessWidget {
                   : controller.isLoading
                   ? const Padding(
                       padding: EdgeInsets.only(right: 10),
-                      child: SizedCircularProgressIndicator(size: 24),
+                      child: HexagonalLoadingIndicator(size: 24),
                     )
                   : const SizedBox(),
             ),
@@ -231,8 +231,8 @@ class ActionIndicators extends StatelessWidget {
   }
 }
 
-class PromptFloatingActionButton extends StatelessWidget {
-  const PromptFloatingActionButton({
+class PromptFab extends StatelessWidget {
+  const PromptFab({
     super.key,
     this.controller,
     required this.builder,
@@ -288,78 +288,6 @@ class PromptTextFieldSuffix extends StatelessWidget {
   }
 }
 
-Future<T?> showDefaultSlidingBottomSheet<T>(
-  BuildContext context,
-  SheetBuilder builder, {
-  SnapSpec snapSpec = const SnapSpec(snappings: [0.6, SnapSpec.expanded]),
-  SheetBuilder? footerBuilder,
-}) async {
-  return showSlidingBottomSheet<T>(
-    context,
-    builder: (context) => defaultSlidingSheetDialog(
-      context,
-      builder,
-      snapSpec: snapSpec,
-      footerBuilder: footerBuilder,
-    ),
-  );
-}
-
-SlidingSheetDialog defaultSlidingSheetDialog(
-  BuildContext context,
-  SheetBuilder builder, {
-  SnapSpec snapSpec = const SnapSpec(snappings: [0.6, SnapSpec.expanded]),
-  SheetBuilder? footerBuilder,
-}) {
-  return SlidingSheetDialog(
-    scrollSpec: const ScrollSpec(physics: ClampingScrollPhysics()),
-    duration: const Duration(milliseconds: 400),
-    avoidStatusBar: true,
-    isBackdropInteractable: true,
-    cornerRadius: 16,
-    cornerRadiusOnFullscreen: 0,
-    maxWidth: 600,
-    headerBuilder: (context, state) => const SheetHandle(),
-    footerBuilder: footerBuilder,
-    builder: builder,
-    snapSpec: snapSpec,
-  );
-}
-
-class DefaultSheetBody extends StatelessWidget {
-  const DefaultSheetBody({super.key, this.title, required this.body});
-
-  final Widget? title;
-  final Widget body;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (title != null)
-            Padding(
-              padding: const EdgeInsets.all(4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: DefaultTextStyle(
-                      style: Theme.of(context).textTheme.titleLarge!,
-                      child: title!,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          body,
-        ],
-      ),
-    );
-  }
-}
-
 class SheetHandle extends StatelessWidget {
   const SheetHandle({super.key});
 
@@ -378,6 +306,137 @@ class SheetHandle extends StatelessWidget {
           width: 32,
         ),
       ],
+    );
+  }
+}
+
+const double promptSheetRest = 0.6;
+
+/// Shows [sliver] under [header], as a dialog on desktop and a sheet
+/// elsewhere.
+///
+/// Both sides scroll the content themselves, so the caller passes plain
+/// slivers.
+///
+/// [pinnedHeader] holds the header while the content scrolls under it, and the
+/// sheet's grab handle stays pinned either way.
+Future<T?> showSliverPrompt<T>(
+  BuildContext context, {
+  required WidgetBuilder header,
+  required Widget sliver,
+  bool pinnedHeader = true,
+  double dialogWidth = 600,
+  Widget Function(BuildContext context, Widget child)? parentBuilder,
+  BoxConstraints? dialogConstraints,
+}) {
+  final Widget headerSliver = SliverToBoxAdapter(
+    child: Builder(builder: header),
+  );
+  final List<Widget> slivers = [if (!pinnedHeader) headerSliver, sliver];
+
+  if (Theme.of(context).isDesktop) {
+    Widget content = CustomScrollView(shrinkWrap: true, slivers: slivers);
+    if (dialogConstraints != null) {
+      content = ConstrainedBox(constraints: dialogConstraints, child: content);
+    }
+    return showDialog<T>(
+      context: context,
+      builder: (context) {
+        final Widget dialog = AlertDialog(
+          titlePadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.zero,
+          title: pinnedHeader
+              ? SizedBox(
+                  width: dialogWidth,
+                  child: Builder(builder: header),
+                )
+              : null,
+          content: SizedBox(width: dialogWidth, child: content),
+        );
+        return parentBuilder?.call(context, dialog) ?? dialog;
+      },
+    );
+  }
+  return showAppSheet<T>(
+    context,
+    initialOffset: const SheetOffset.proportionalToViewport(promptSheetRest),
+    snapGrid: const SheetSnapGrid(
+      snaps: [
+        SheetOffset.proportionalToViewport(promptSheetRest),
+        SheetOffset(1),
+      ],
+    ),
+    builder: (context) {
+      final Widget sheet = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SheetHandle(),
+          if (pinnedHeader) Builder(builder: header),
+          Expanded(child: CustomScrollView(primary: true, slivers: slivers)),
+        ],
+      );
+      return parentBuilder?.call(context, sheet) ?? sheet;
+    },
+  );
+}
+
+/// Shows a box [body] under [header], as a dialog on desktop and a sheet
+/// elsewhere.
+Future<T?> showPrompt<T>(
+  BuildContext context, {
+  required WidgetBuilder header,
+  required Widget body,
+  bool pinnedHeader = false,
+  double dialogWidth = 600,
+  Widget Function(BuildContext context, Widget child)? parentBuilder,
+  BoxConstraints? dialogConstraints,
+}) => showSliverPrompt<T>(
+  context,
+  header: header,
+  sliver: SliverToBoxAdapter(child: body),
+  pinnedHeader: pinnedHeader,
+  dialogWidth: dialogWidth,
+  parentBuilder: parentBuilder,
+  dialogConstraints: dialogConstraints,
+);
+
+class PromptHeader extends StatelessWidget {
+  const PromptHeader({super.key, required this.title, required this.actions});
+
+  final Widget title;
+  final Widget actions;
+
+  static const EdgeInsets padding = EdgeInsets.symmetric(
+    vertical: 12,
+    horizontal: 16,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    const Widget divider = Divider(indent: 4, endIndent: 4);
+    if (Theme.of(context).isDesktop) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: padding,
+            child: OverflowBar(
+              alignment: MainAxisAlignment.spaceBetween,
+              overflowSpacing: 8,
+              children: [title, actions],
+            ),
+          ),
+          divider,
+        ],
+      );
+    }
+    return Padding(
+      padding: padding,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [title, divider, actions],
+      ),
     );
   }
 }

@@ -1,112 +1,114 @@
-import 'package:collection/collection.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-typedef SpoilerMap = Map<DTextId, SpoilerInfo>;
-
-@immutable
-class SpoilerInfo {
-  const SpoilerInfo({required this.spoilered, required this.recognizer});
-
-  final bool spoilered;
-  final GestureRecognizer recognizer;
-
-  SpoilerInfo copyWith({bool? spoilered, GestureRecognizer? recognizer}) =>
-      SpoilerInfo(
-        spoilered: spoilered ?? this.spoilered,
-        recognizer: recognizer ?? this.recognizer,
-      );
-}
-
-/// Provides spoilering and unspoilering text segments.
+/// Tracks reveal state for inline spoilers in a single rendered document.
+/// Keys are [DTextInlineSpoiler] node instances; each parsed document yields
+/// fresh instances, so a re-parse starts every spoiler hidden again.
 class SpoilerController extends ChangeNotifier
-    implements ValueNotifier<SpoilerMap> {
+    implements ValueNotifier<Map<DTextInlineSpoiler, SpoilerEntry>> {
   SpoilerController();
 
-  SpoilerMap _value = {};
-
-  /// The list of unspoilered ids.
-  @override
-  SpoilerMap get value => _value;
+  Map<DTextInlineSpoiler, SpoilerEntry> _value = {};
 
   @override
-  set value(SpoilerMap newValue) {
+  Map<DTextInlineSpoiler, SpoilerEntry> get value => _value;
+
+  @override
+  set value(Map<DTextInlineSpoiler, SpoilerEntry> newValue) {
     if (!mapEquals(_value, newValue)) {
       _value = newValue;
       notifyListeners();
     }
   }
 
-  SpoilerInfo Function() _defaultInfo(DTextId id) =>
-      () => SpoilerInfo(
-        spoilered: true,
-        recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            List<DTextId> spoilers = parents(id);
-            DTextId? top = spoilers.firstWhereOrNull(spoilered);
-            toggle(top ?? id);
-          },
-      );
+  SpoilerEntry _entryFor(DTextInlineSpoiler node) =>
+      _value.putIfAbsent(node, () {
+        return SpoilerEntry(
+          hidden: true,
+          recognizer: TapGestureRecognizer()..onTap = () => toggle(node),
+        );
+      });
 
-  void _with(SpoilerMap Function(SpoilerMap value) call) {
-    SpoilerMap result = call(Map.from(value));
-    if (!mapEquals(value, result)) {
-      value = result;
-    }
+  void register(DTextInlineSpoiler node) {
+    _entryFor(node);
   }
 
-  /// Registers a new text segment.
-  // This intentionally does not notify listeners, as that would cause a build cascade.
-  void register(DTextId id) => _value.putIfAbsent(id, _defaultInfo(id));
+  bool hidden(DTextInlineSpoiler node) => _entryFor(node).hidden;
 
-  /// Whether a given spoiler is active
-  bool spoilered(DTextId id) => value[id]?.spoilered ?? false;
+  GestureRecognizer recognizer(DTextInlineSpoiler node) =>
+      _entryFor(node).recognizer;
 
-  /// Whether a given text segment is hidden. This is true if any of its parents are spoilered.
-  bool hidden(DTextId id) => [...parents(id), id].any(spoilered);
-
-  /// Unspoilers a text segment.
-  void unspoiler(DTextId id) => _with(
-    (value) => value
-      ..update(
-        id,
-        (e) => e.copyWith(spoilered: false),
-        ifAbsent: _defaultInfo(id),
-      ),
-  );
-
-  /// Restores spoiler on a given text segment.
-  void respoiler(DTextId id) => _with(
-    (value) => value
-      ..update(
-        id,
-        (e) => e.copyWith(spoilered: true),
-        ifAbsent: _defaultInfo(id),
-      ),
-  );
-
-  /// Toggles the spoiler status of a text segment.
-  void toggle(DTextId id) => spoilered(id) ? unspoiler(id) : respoiler(id);
-
-  /// Returns the list of parents of a given text segment.
-  List<DTextId> parents(DTextId id) =>
-      value.keys.where(id.isContainedBy).toList();
-
-  /// Returns the gesture recognizer for a given text segment.
-  GestureRecognizer recognizer(DTextId id) {
-    _with((value) => value..putIfAbsent(id, _defaultInfo(id)));
-    return value[id]!.recognizer;
+  void toggle(DTextInlineSpoiler node) {
+    final entry = _entryFor(node);
+    _value[node] = entry.copyWith(hidden: !entry.hidden);
+    notifyListeners();
   }
 
   @override
   void dispose() {
-    for (SpoilerInfo info in value.values) {
-      info.recognizer.dispose();
+    for (final entry in _value.values) {
+      entry.recognizer.dispose();
     }
     super.dispose();
+  }
+}
+
+@immutable
+class SpoilerEntry {
+  const SpoilerEntry({required this.hidden, required this.recognizer});
+
+  final bool hidden;
+  final GestureRecognizer recognizer;
+
+  SpoilerEntry copyWith({bool? hidden, GestureRecognizer? recognizer}) =>
+      SpoilerEntry(
+        hidden: hidden ?? this.hidden,
+        recognizer: recognizer ?? this.recognizer,
+      );
+}
+
+class SpoilerBlockWrap extends StatefulWidget {
+  const SpoilerBlockWrap({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<SpoilerBlockWrap> createState() => _SpoilerBlockWrapState();
+}
+
+class _SpoilerBlockWrapState extends State<SpoilerBlockWrap> {
+  bool _hidden = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = Theme.of(context).textTheme.bodyMedium?.color;
+    return GestureDetector(
+      onTap: () => setState(() => _hidden = !_hidden),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: baseColor?.withAlpha(26),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            padding: const EdgeInsets.all(4),
+            child: widget.child,
+          ),
+          if (_hidden)
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: baseColor?.withAlpha(255),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 

@@ -1,13 +1,13 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 extension GridQuiltDescription on GridQuilt {
   String get description {
     switch (this) {
       case GridQuilt.square:
-        return '格子是方形的';
+        return '格子为正方形';
       case GridQuilt.vertical:
-        return '格子垂直扩展';
+        return '格子纵向伸展';
     }
   }
 
@@ -30,7 +30,7 @@ class GridSettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: const Text('瀑布流'),
+      title: const Text('拼贴'),
       subtitle: Text(state.description),
       leading: Icon(state.icon),
       onTap: () => showDialog(

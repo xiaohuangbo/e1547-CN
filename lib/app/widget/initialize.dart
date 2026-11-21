@@ -35,6 +35,7 @@ class AppInitState extends State<AppInit> {
     await initializeAppInfo();
     final logs = await initializeLogger();
     final storage = await initializeAppStorage();
+    await backfillOnboardingSeen(storage);
     unawaited(initializeBackgroundTasks());
     VideoService.ensureInitialized();
     return (
@@ -71,7 +72,7 @@ class AppInitState extends State<AppInit> {
                         const AppIcon(radius: 64),
                         if (snapshot.error != null) ...[
                           const SizedBox(height: 16),
-                          const Text('Failed to initialize'),
+                          const Text('初始化失败'),
                           if (kDebugMode) ...[
                             const SizedBox(height: 8),
                             Text(snapshot.error.toString()),
@@ -91,6 +92,7 @@ class AppInitState extends State<AppInit> {
           providers: [
             Provider.value(value: logs),
             Provider.value(value: storage),
+            ChangeNotifierProvider(create: (context) => LogErrors(logs)),
           ],
           child: widget.child,
         );

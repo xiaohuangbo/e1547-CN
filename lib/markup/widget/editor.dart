@@ -1,5 +1,5 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:overflow_view/overflow_view.dart';
 
@@ -35,7 +35,7 @@ class DTextEditor extends StatelessWidget {
                 return DText(controller.text);
               } else {
                 return Text(
-                  'your text here',
+                  '在此输入文本',
                   style: TextStyle(
                     color: dimTextColor(context),
                     fontStyle: FontStyle.italic,
@@ -102,22 +102,22 @@ class _DTextEditorBarState extends State<DTextEditorBar> {
           IconButton(
             icon: const Icon(Icons.subject),
             onPressed: () => enclose('section,expanded=', endTag: 'section'),
-            tooltip: 'Section',
+            tooltip: '小节',
           ),
           IconButton(
             icon: const Icon(Icons.format_quote),
             onPressed: () => enclose('quote'),
-            tooltip: 'Quote',
+            tooltip: '引用',
           ),
           IconButton(
             icon: const Icon(Icons.code),
             onPressed: () => enclose('code'),
-            tooltip: 'Code',
+            tooltip: '代码',
           ),
           IconButton(
             icon: const Icon(Icons.warning),
             onPressed: () => enclose('spoiler'),
-            tooltip: 'Spoiler',
+            tooltip: '剧透',
           ),
         ],
       );
@@ -130,22 +130,22 @@ class _DTextEditorBarState extends State<DTextEditorBar> {
           IconButton(
             icon: const Icon(Icons.format_bold),
             onPressed: () => enclose('b'),
-            tooltip: 'Bold',
+            tooltip: '粗体',
           ),
           IconButton(
             icon: const Icon(Icons.format_italic),
             onPressed: () => enclose('i'),
-            tooltip: 'Italic',
+            tooltip: '斜体',
           ),
           IconButton(
             icon: const Icon(Icons.format_underlined),
             onPressed: () => enclose('u'),
-            tooltip: 'Underlined',
+            tooltip: '下划线',
           ),
           IconButton(
             icon: const Icon(Icons.format_strikethrough),
             onPressed: () => enclose('s'),
-            tooltip: 'Strikethrough',
+            tooltip: '删除线',
           ),
         ],
       );

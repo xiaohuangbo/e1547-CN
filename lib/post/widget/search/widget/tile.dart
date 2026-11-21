@@ -3,10 +3,11 @@ import 'dart:math';
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostImageTile extends StatelessWidget {
@@ -31,6 +32,20 @@ class PostImageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isSkeleton(context)) {
+      final CardThemeData card = Theme.of(context).cardTheme;
+      final ShapeBorder? shape = card.shape;
+      return Padding(
+        padding: card.margin ?? const EdgeInsets.all(4),
+        child: Bone(
+          width: double.infinity,
+          height: double.infinity,
+          borderRadius: shape is RoundedRectangleBorder
+              ? shape.borderRadius
+              : BorderRadius.circular(AppStyle.of(context).smallRadius),
+        ),
+      );
+    }
     return Card(
       clipBehavior: Clip.antiAlias,
       child: SelectionItemOverlay(
@@ -45,8 +60,12 @@ class PostImageTile extends StatelessWidget {
                 Expanded(
                   child: PostTileOverlay(
                     post: post,
-                    child: Hero(
+                    child: ContentHero(
                       tag: post.link,
+                      content: FittedContent(
+                        fit: fit ?? BoxFit.cover,
+                        aspectRatio: post.width / post.height,
+                      ),
                       child: PostImageWidget(
                         post: post,
                         size: size ?? PostImageSize.sample,
@@ -100,31 +119,16 @@ class PostImageTag extends StatelessWidget {
 class PostTileOverlay extends StatelessWidget {
   const PostTileOverlay({super.key, required this.post, required this.child});
 
-  final Post post;
+  final PostSummary post;
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    return PostsConnector(
-      post: post,
-      builder: (context, post) {
-        PostController? controller = context.watch<PostController?>();
-        if (post.isDeleted) {
-          return const Center(child: Text('已删除'));
-        }
-        if (post.type == PostType.unsupported) {
-          return const Center(child: Text('不支持'));
-        }
-        if (post.file == null) {
-          return const Center(child: Text('不可用'));
-        }
-        if (controller?.isDenied(post) ?? false) {
-          return const Center(child: Text('已拉黑'));
-        }
-        return child;
-      },
-    );
-  }
+  Widget build(BuildContext context) => switch (postFileIcon(context, post)) {
+    final IconData icon => Center(
+      child: Icon(icon, color: dimTextColor(context)),
+    ),
+    null => child,
+  };
 }
 
 class PostInfoBar extends StatelessWidget {
@@ -149,18 +153,18 @@ class PostInfoBar extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(post.vote.score.toString()),
+                        Text(post.score.toString()),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Icon(
-                            post.vote.score >= 0
+                            post.score >= 0
                                 ? Icons.arrow_upward
                                 : Icons.arrow_downward,
-                            color: {
-                              VoteStatus.upvoted: Colors.deepOrange,
-                              VoteStatus.downvoted: Colors.blue,
-                              VoteStatus.unknown: null,
-                            }[post.vote.status],
+                            color: switch (post.vote) {
+                              1 => Colors.deepOrange,
+                              -1 => Colors.blue,
+                              _ => null,
+                            },
                           ),
                         ),
                       ],
@@ -210,21 +214,20 @@ class PostInfoBar extends StatelessWidget {
 }
 
 void defaultPushPostDetail(BuildContext context, Post post) {
-  PostController? controller = context.read<PostController?>();
   int? cacheSize = context.read<ImageCacheSize>().size;
+  final params = context.read<PostParamsController?>();
+  final filter = context.read<PostFilter?>();
   Navigator.of(context).push(
-    MaterialPageRoute(
+    DismissRoute<void>(
       builder: (context) => ImageCacheSizeProvider(
         size: cacheSize,
-        child: controller != null
-            ? PostsRouteConnector(
-                controller: controller,
-                child: PostDetailGallery(
-                  controller: controller,
-                  initialPage: controller.items!.indexOf(post),
-                ),
-              )
-            : PostDetail(post: post),
+        child: PostRouteScope(
+          params: params,
+          filter: filter,
+          child: params != null
+              ? PostDetailGallery(initialPostId: post.id)
+              : PostDetail(post: post),
+        ),
       ),
     ),
   );
@@ -300,58 +303,51 @@ class PostFeedTile extends StatelessWidget {
                 Text(post.commentCount.toString()),
               ],
             ),
-            VoteDisplay(
-              status: post.vote.status,
-              score: post.vote.score,
-              onUpvote: (isLiked) async {
-                PostController controller = context.read<PostController>();
-                ScaffoldMessengerState messenger = ScaffoldMessenger.of(
-                  context,
-                );
-                if (context.read<Client>().hasLogin) {
-                  controller
-                      .vote(post: post, upvote: true, replace: !isLiked)
-                      .then((value) {
-                        if (!value) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              duration: const Duration(seconds: 1),
-                              content: Text(
-                                '点赞帖子 #${post.id} 失败',
+            MutationBuilder(
+              mutation: context.watch<Client>().posts.useVote(id: post.id),
+              builder: (context, state, mutate) {
+                final client = context.watch<Client>();
+                final messenger = ScaffoldMessenger.of(context);
+                final enabled = client.hasLogin && !state.isLoading;
+
+                return VoteDisplay(
+                  vote: post.vote,
+                  score: post.score,
+                  onUpvote: enabled
+                      ? (isLiked) async {
+                          if ((await mutate((
+                            upvote: true,
+                            replace: !isLiked,
+                          ))).isError) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                duration: const Duration(seconds: 1),
+                                content: Text('点赞帖子 #${post.id} 失败'),
                               ),
-                            ),
-                          );
+                            );
+                            return isLiked;
+                          }
+                          return !isLiked;
                         }
-                      });
-                  return !isLiked;
-                } else {
-                  return false;
-                }
-              },
-              onDownvote: (isLiked) async {
-                PostController controller = context.read<PostController>();
-                ScaffoldMessengerState messenger = ScaffoldMessenger.of(
-                  context,
-                );
-                if (context.read<Client>().hasLogin) {
-                  controller
-                      .vote(post: post, upvote: false, replace: !isLiked)
-                      .then((value) {
-                        if (!value) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              duration: const Duration(seconds: 1),
-                              content: Text(
-                                '点踩帖子 #${post.id} 失败',
+                      : null,
+                  onDownvote: enabled
+                      ? (isLiked) async {
+                          if ((await mutate((
+                            upvote: false,
+                            replace: !isLiked,
+                          ))).isError) {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                duration: const Duration(seconds: 1),
+                                content: Text('点踩帖子 #${post.id} 失败'),
                               ),
-                            ),
-                          );
+                            );
+                            return isLiked;
+                          }
+                          return !isLiked;
                         }
-                      });
-                  return !isLiked;
-                } else {
-                  return false;
-                }
+                      : null,
+                );
               },
             ),
             Row(
@@ -395,34 +391,28 @@ class PostFeedTile extends StatelessWidget {
     }
 
     Widget image() {
+      final params = context.read<PostParamsController?>();
+      final filter = context.read<PostFilter?>();
       return ConstrainedBox(
         constraints: const BoxConstraints(maxHeight: 400),
         child: AspectRatio(
           aspectRatio: max(post.width / post.height, 0.9),
           child: PostImageTile(
             post: post,
-            onTap: () {
-              PostController? controller = context.read<PostController?>();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PostVideoRoute(
-                    post: post,
-                    child: ImageCacheSizeProvider(
-                      size: cacheSize,
-                      child: controller != null
-                          ? ChangeNotifierProvider.value(
-                              value: controller,
-                              child: PostsRouteConnector(
-                                controller: controller,
-                                child: PostFullscreen(post: post),
-                              ),
-                            )
-                          : PostFullscreen(post: post),
-                    ),
+            onTap: () => Navigator.of(context).push(
+              DismissRoute<void>(
+                builder: (context) => ImageCacheSizeProvider(
+                  size: cacheSize,
+                  child: PostRouteScope(
+                    params: params,
+                    filter: filter,
+                    child: params != null
+                        ? PostFullscreenGallery(initialPostId: post.id)
+                        : PostFullscreen(post: post),
                   ),
                 ),
-              );
-            },
+              ),
+            ),
           ),
         ),
       );

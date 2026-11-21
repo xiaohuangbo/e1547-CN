@@ -1,7 +1,7 @@
 import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class FollowSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
@@ -17,7 +17,7 @@ class FollowSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
       child: child,
       titleBuilder: (context, data) => data.selections.length == 1
           ? Text(data.selections.first.name)
-          : Text('${data.selections.length} follows'),
+          : Text('${data.selections.length} 个关注'),
       actionBuilder: (context, data) {
         int unseen = data.selections.fold(0, (a, b) => a + (b.unseen ?? 0));
         bool bookmarked = data.selections.every(
@@ -56,7 +56,7 @@ class FollowSelectionAppBar extends StatelessWidget with AppBarBuilderWidget {
             ),
           IconButton(
             icon: Icon(bookmarked ? Icons.person_add : Icons.bookmark),
-            tooltip: bookmarked ? 'Subscribe' : 'Bookmark',
+            tooltip: bookmarked ? '订阅' : '书签',
             onPressed: () async {
               data.clear();
               if (bookmarked) {

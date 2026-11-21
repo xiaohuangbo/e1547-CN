@@ -1,4 +1,4 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,11 +48,11 @@ class WikiInfo extends StatelessWidget {
           if (wiki.otherNames case final otherNames?)
             textInfoRow('别名', otherNames.join(', ')),
           textInfoRow(
-            '创建于',
+            'created',
             DateFormatting.dateTime(wiki.createdAt.toLocal()),
           ),
           textInfoRow(
-            '更新于',
+            'updated',
             DateFormatting.dateTime(
               (wiki.updatedAt ?? wiki.createdAt).toLocal(),
             ),

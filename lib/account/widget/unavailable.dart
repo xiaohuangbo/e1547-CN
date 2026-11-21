@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:e1547/account/account.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
-class HostUnvailablePage extends StatelessWidget {
-  const HostUnvailablePage({super.key, this.offerResolve = false});
+class HostUnavailablePage extends StatelessWidget {
+  const HostUnavailablePage({super.key, this.offerResolve = false});
 
   final bool offerResolve;
 
@@ -33,8 +33,8 @@ class HostUnvailablePage extends StatelessWidget {
               const SizedBox(height: 16),
               if (offerResolve && (Platform.isAndroid || Platform.isIOS)) ...[
                 const Text(
-                  'Please resolve the issue in the following browser window. '
-                  '\n\nCloudflare captcha cookies will be saved. ',
+                  '请在以下浏览器窗口中解决问题。'
+                  '\n\nCloudflare 验证 Cookie 将被保存。',
                 ),
                 const SizedBox(height: 16),
                 TextButton(
@@ -43,7 +43,7 @@ class HostUnvailablePage extends StatelessWidget {
                       builder: (context) => const CookieCapturePage(),
                     ),
                   ),
-                  child: const Text('Resolve'),
+                  child: const Text('解决'),
                 ),
               ] else
                 Dimmed(

@@ -1,11 +1,11 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sub/flutter_sub.dart';
 
 class TagListActions extends StatelessWidget {
   const TagListActions({super.key, required this.tag});
@@ -18,259 +18,235 @@ class TagListActions extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return Consumer<Client>(
-      builder: (context, client, child) => SubStream<Follow?>(
-        create: () => client.follows.getByTags(tags: tag).streamed,
-        keys: [client, tag],
-        builder: (context, snapshot) => ValueListenableBuilder(
-          valueListenable: client.traits,
-          builder: (context, traits, child) {
-            if ([
-              ConnectionState.none,
-              ConnectionState.waiting,
-            ].contains(snapshot.connectionState)) {
-              return const AnimatedSwitcher(
-                duration: defaultAnimationDuration,
-                child: SizedBox.shrink(),
+      builder: (context, client, child) {
+        final query = client.follows.useAll(
+          query: FollowsQuery(tags: tag).toQuery(),
+        );
+        return QueryBuilder(
+          query: query,
+          builder: (context, followState) => ValueListenableBuilder(
+            valueListenable: client.traits,
+            builder: (context, traits, child) {
+              final Follow? follow = followState.data?.firstWhereOrNull(
+                (f) => f.tags == tag,
               );
-            }
+              final bool hasFollow = follow != null;
 
-            Follow? follow = snapshot.data;
-            bool hasFollow = follow != null;
+              final bool following =
+                  hasFollow &&
+                  const [
+                    FollowType.update,
+                    FollowType.notify,
+                  ].contains(follow.type);
 
-            bool following = [
-              FollowType.update,
-              FollowType.notify,
-            ].contains(follow?.type);
+              final bool notifying =
+                  hasFollow && follow.type == FollowType.notify;
+              final bool bookmarked =
+                  hasFollow && follow.type == FollowType.bookmark;
+              final bool denied = traits.denylist.contains(tag);
 
-            bool notifying = follow?.type == FollowType.notify;
-            bool bookmarked = follow?.type == FollowType.bookmark;
-            bool denied = traits.denylist.contains(tag);
-
-            VoidCallback followBookmarkToggle(FollowType type) {
-              return () {
+              Future<void> applyFollowMutation(FollowType type) async {
                 if (hasFollow) {
                   if (follow.type == type) {
-                    client.follows.delete(follow.id);
-                  }
-                  if (follow.type == FollowType.notify &&
+                    await client.follows.delete(follow.id);
+                  } else if (follow.type == FollowType.notify &&
                       type == FollowType.update) {
-                    client.follows.delete(follow.id);
+                    await client.follows.delete(follow.id);
                   } else {
-                    client.follows.update(id: follow.id, type: type);
+                    await client.follows.update(id: follow.id, type: type);
                   }
                 } else {
-                  client.follows.create(tags: tag, type: type);
+                  await client.follows.create(tags: tag, type: type);
                   if (denied) {
                     client.traits.value = traits.copyWith(
                       denylist: traits.denylist..remove(tag),
                     );
                   }
                 }
-              };
-            }
+                query.invalidate();
+              }
 
-            return AnimatedSwitcher(
-              duration: defaultAnimationDuration,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CrossFade(
-                    showChild: !denied,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ActionButton(
-                          icon: following
-                              ? const Icon(Icons.person_remove_alt_1)
-                              : const Icon(Icons.person_add_alt_1),
-                          label: following
-                              ? const Text('Unfollow')
-                              : const Text('Follow'),
-                          onTap: followBookmarkToggle(FollowType.update),
-                        ),
-                        CrossFade(
-                          showChild: following,
-                          child: ActionButton(
-                            icon: notifying
-                                ? const Icon(Icons.notifications_active)
-                                : const Icon(Icons.notifications_none),
-                            label: notifying
-                                ? const Text('Mute')
-                                : const Text('Notify'),
-                            onTap: () {
-                              if (notifying) {
-                                client.follows.update(
-                                  id: follow!.id,
-                                  type: FollowType.update,
-                                );
-                              } else {
-                                client.follows.update(
-                                  id: follow!.id,
-                                  type: FollowType.notify,
-                                );
-                              }
-                            },
+              return AnimatedSwitcher(
+                duration: defaultAnimationDuration,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CrossFade(
+                      showChild: !denied,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ActionButton(
+                            icon: following
+                                ? const Icon(Icons.person_remove_alt_1)
+                                : const Icon(Icons.person_add_alt_1),
+                            label: following
+                                ? const Text('取消关注')
+                                : const Text('关注'),
+                            onTap: () => applyFollowMutation(FollowType.update),
                           ),
-                        ),
-                        ActionButton(
-                          icon: bookmarked
-                              ? const Icon(Icons.turned_in)
-                              : const Icon(Icons.turned_in_not),
-                          label: bookmarked
-                              ? const Text('Unbookmark')
-                              : const Text('Bookmark'),
-                          onTap: followBookmarkToggle(FollowType.bookmark),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CrossFade(
-                    showChild: !hasFollow,
-                    child: ActionButton(
-                      icon: CrossFade(
-                        showChild: denied,
-                        secondChild: const Icon(Icons.block),
-                        child: const Icon(Icons.check),
+                          CrossFade(
+                            showChild: following,
+                            child: ActionButton(
+                              icon: notifying
+                                  ? const Icon(Icons.notifications_active)
+                                  : const Icon(Icons.notifications_none),
+                              label: notifying
+                                  ? const Text('静音')
+                                  : const Text('通知'),
+                              onTap: () async {
+                                if (!hasFollow) return;
+                                await client.follows.update(
+                                  id: follow.id,
+                                  type: notifying
+                                      ? FollowType.update
+                                      : FollowType.notify,
+                                );
+                                query.invalidate();
+                              },
+                            ),
+                          ),
+                          ActionButton(
+                            icon: bookmarked
+                                ? const Icon(Icons.turned_in)
+                                : const Icon(Icons.turned_in_not),
+                            label: bookmarked
+                                ? const Text('取消书签')
+                                : const Text('书签'),
+                            onTap: () =>
+                                applyFollowMutation(FollowType.bookmark),
+                          ),
+                        ],
                       ),
-                      label: denied
-                          ? const Text('Unblock')
-                          : const Text('Block'),
-                      onTap: () {
-                        if (denied) {
-                          client.accounts.push(
-                            traits: traits.copyWith(
-                              denylist: traits.denylist
-                                  .whereNot((element) => element == tag)
-                                  .toList(),
-                            ),
-                          );
-                        } else {
-                          if (hasFollow) {
-                            client.follows.delete(follow.id);
-                          }
-                          client.accounts.push(
-                            traits: traits.copyWith(
-                              denylist: [...traits.denylist, tag],
-                            ),
-                          );
-                        }
-                      },
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
+                    CrossFade(
+                      showChild: !hasFollow,
+                      child: ActionButton(
+                        icon: CrossFade(
+                          showChild: denied,
+                          secondChild: const Icon(Icons.block),
+                          child: const Icon(Icons.check),
+                        ),
+                        label: denied ? const Text('取消拉黑') : const Text('拉黑'),
+                        onTap: () async {
+                          if (denied) {
+                            await client.accounts.push(
+                              traits: traits.copyWith(
+                                denylist: traits.denylist
+                                    .whereNot((element) => element == tag)
+                                    .toList(),
+                              ),
+                            );
+                          } else {
+                            if (hasFollow) {
+                              await client.follows.delete(follow.id);
+                              query.invalidate();
+                            }
+                            await client.accounts.push(
+                              traits: traits.copyWith(
+                                denylist: [...traits.denylist, tag],
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
 
 class RemoveTagAction extends StatelessWidget {
-  const RemoveTagAction({
-    super.key,
-    required this.controller,
-    required this.tag,
-  });
+  const RemoveTagAction({super.key, required this.tag});
 
-  final PostController controller;
   final String tag;
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<PostParamsController>();
+
     return ActionButton(
       icon: const Icon(Icons.search_off),
-      label: const Text('Remove'),
+      label: const Text('移除'),
       onTap: () {
         Navigator.of(context).maybePop();
-        QueryMap result = controller.query.toQuery();
-        result['tags'] = (TagMap(result['tags'])..remove(tag)).toString();
-        controller.query = result;
+        controller.removeTag(tag);
       },
     );
   }
 }
 
 class AddTagAction extends StatelessWidget {
-  const AddTagAction({super.key, required this.controller, required this.tag});
+  const AddTagAction({super.key, required this.tag});
 
-  final PostController controller;
   final String tag;
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<PostParamsController>();
+
     return ActionButton(
       icon: const Icon(Icons.zoom_in),
-      label: const Text('Add'),
+      label: const Text('添加'),
       onTap: () {
         Navigator.of(context).maybePop();
-        final result = controller.query.toQuery();
-        result['tags'] = (TagMap(result['tags'])..add(tag)).toString();
-        controller.query = result;
+        controller.addTag(tag);
       },
     );
   }
 }
 
 class SubtractTagAction extends StatelessWidget {
-  const SubtractTagAction({
-    super.key,
-    required this.controller,
-    required this.tag,
-  });
+  const SubtractTagAction({super.key, required this.tag});
 
-  final PostController controller;
   final String tag;
 
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<PostParamsController>();
+
     return ActionButton(
       icon: const Icon(Icons.zoom_out),
-      label: const Text('Subtract'),
+      label: const Text('排除'),
       onTap: () {
         Navigator.of(context).maybePop();
-        final result = controller.query.toQuery();
-        result['tags'] = (TagMap(result['tags'])..add('-$tag')).toString();
-        controller.query = result;
+        controller.subtractTag(tag);
       },
     );
   }
 }
 
 class TagSearchActions extends StatelessWidget {
-  const TagSearchActions({
-    super.key,
-    required this.tag,
-    required this.controller,
-  });
+  const TagSearchActions({super.key, required this.tag});
 
   final String tag;
-  final PostController controller;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        if (!controller.canSearch || tag.contains(' ')) {
-          return const SizedBox.shrink();
-        }
+    final controller = context.watch<PostParamsController>();
 
-        bool isSearched = TagMap(controller.query['tags']).containsKey(tag);
+    if (tag.contains(' ')) {
+      return const SizedBox.shrink();
+    }
 
-        if (isSearched) {
-          return RemoveTagAction(controller: controller, tag: tag);
-        } else {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AddTagAction(controller: controller, tag: tag),
-              SubtractTagAction(controller: controller, tag: tag),
-            ],
-          );
-        }
-      },
-    );
+    bool isSearched = controller.hasTag(tag);
+
+    if (isSearched) {
+      return RemoveTagAction(tag: tag);
+    } else {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AddTagAction(tag: tag),
+          SubtractTagAction(tag: tag),
+        ],
+      );
+    }
   }
 }

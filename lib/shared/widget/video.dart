@@ -10,22 +10,88 @@ import 'package:rxdart/rxdart.dart';
 export 'package:media_kit_video/media_kit_video.dart';
 
 class VideoPlayer extends Player {
-  VideoPlayer() {
-    controller.waitUntilFirstFrameRendered.then((_) => _initialized.add(true));
-    stream.error.first.then((_) => _initialized.add(true));
+  VideoPlayer({super.platformPlayer}) {
+    _subscriptions.addAll([
+      stream.videoParams.listen((event) {
+        _hasParams = event.w != null && event.h != null;
+        _update();
+      }),
+      stream.error.listen((_) {
+        _failed = true;
+        _update();
+      }),
+    ]);
+    unawaited(
+      controller.waitUntilFirstFrameRendered
+          .then((_) {
+            _rendered = true;
+            _update();
+          })
+          .catchError((_) {}),
+    );
   }
 
   late final VideoController _controller = VideoController(this);
   VideoController get controller => _controller;
 
+  final List<StreamSubscription> _subscriptions = [];
+
   final BehaviorSubject<bool> _initialized = BehaviorSubject.seeded(false);
   Stream<bool> get initialized => _initialized.stream;
 
   bool get isInitialized => _initialized.value;
+
+  bool _rendered = false;
+  bool _hasParams = false;
+  bool _failed = false;
+
+  String? _media;
+  String? get media => _media;
+
+  int _leases = 0;
+
+  bool get isLeased => _leases > 0;
+
+  void _update() {
+    if (_initialized.isClosed) return;
+    bool value = _failed || (_rendered && _hasParams);
+    if (_initialized.value == value) return;
+    _initialized.add(value);
+  }
+
+  Future<void> load(String media) async {
+    _media = media;
+    _failed = false;
+    _hasParams = false;
+    _update();
+    if (platform case NativePlayer native) {
+      await native.setProperty('stream-buffer-size', '32MiB');
+    }
+    await open(Media(media), play: false);
+  }
+
+  Future<void> unload() async {
+    _media = null;
+    _failed = false;
+    _hasParams = false;
+    _update();
+    await stop();
+  }
+
+  @override
+  Future<void> dispose() async {
+    for (final subscription in _subscriptions) {
+      await subscription.cancel();
+    }
+    await _initialized.close();
+    await super.dispose();
+  }
 }
 
 class VideoService extends ChangeNotifier {
-  VideoService({bool muteVideos = false}) : _muteVideos = muteVideos;
+  VideoService({bool muteVideos = false, VideoPlayer Function()? createPlayer})
+    : _muteVideos = muteVideos,
+      _createPlayer = createPlayer ?? VideoPlayer.new;
 
   static void ensureInitialized() => MediaKit.ensureInitialized();
 
@@ -33,9 +99,15 @@ class VideoService extends ChangeNotifier {
   // the list of all loaded videos is global.
   static final Map<String, VideoPlayer> _videos = {};
 
+  // Disposing a Player closes the mpv wakeup callback,
+  // which mpv can still invoke afterwards, aborting the process.
+  static final List<VideoPlayer> _idle = [];
+
   final Logger _logger = Logger('Videos');
 
   final int maxLoaded = 3;
+
+  final VideoPlayer Function() _createPlayer;
 
   bool _muteVideos;
 
@@ -45,36 +117,58 @@ class VideoService extends ChangeNotifier {
     _muteVideos = value;
     _videos.values.forEach((e) => e.setVolume(muteVideos ? 0 : 100));
     notifyListeners();
-    _logger.fine('${_muteVideos ? 'Muted' : 'Unmuted'} all controllers');
+    _logger.debug('Videos muted: {muted}', {'muted': _muteVideos});
   }
 
   VideoPlayer getVideo(String key) {
-    while (true) {
-      Map<String, VideoPlayer> loaded = Map.of(_videos);
-      loaded.remove(key);
-      if (loaded.length < maxLoaded) break;
-      _logger.fine('Too many (${loaded.length}) videos loaded!');
-      disposeVideo(loaded.keys.first);
+    // Re-inserting moves the key to the back of the map,
+    // so that eviction walks from least to most recently used.
+    VideoPlayer? player = _videos.remove(key);
+    if (player != null) return _videos[key] = player;
+    while (_videos.length >= maxLoaded) {
+      String? spare;
+      for (final MapEntry(:key, :value) in _videos.entries) {
+        if (value.isLeased) continue;
+        spare = key;
+        break;
+      }
+      if (spare == null) {
+        _logger.debug('Loading {loaded} videos, all others in use', {
+          'loaded': _videos.length + 1,
+        });
+        break;
+      }
+      _logger.debug('Evicting {spare}, {loaded} of {max} videos loaded', {
+        'spare': spare,
+        'loaded': _videos.length,
+        'max': maxLoaded,
+      });
+      unloadVideo(spare);
     }
-    return _videos.putIfAbsent(key, () {
-      VideoPlayer player = VideoPlayer();
-      // TODO: this is missing client auth headers
-      player.open(Media(key), play: false);
-      player.setPlaylistMode(PlaylistMode.single);
-      player.setVolume(_muteVideos ? 0 : 100);
-      return player;
-    });
+    player = _idle.isNotEmpty ? _idle.removeAt(0) : _createPlayer();
+    _videos[key] = player;
+    player.setPlaylistMode(PlaylistMode.single);
+    player.setVolume(_muteVideos ? 0 : 100);
+    // TODO: this is missing client auth headers
+    player.load(key);
+    _logger.debug('Loaded {video}', {'video': key});
+    return player;
   }
 
-  Future<void> disposeVideo(String key) async {
-    VideoPlayer? controller = _videos[key];
-    if (controller != null) {
-      _videos.remove(key);
-      await controller.pause();
-      await controller.dispose();
-      notifyListeners();
-      _logger.fine('Unloaded $key');
-    }
+  /// Keeps the player out of recycling until a matching [release].
+  void acquire(VideoPlayer player) => player._leases++;
+
+  void release(VideoPlayer player) {
+    if (player._leases == 0) return;
+    player._leases--;
+  }
+
+  void unloadVideo(String key) {
+    VideoPlayer? player = _videos.remove(key);
+    if (player == null) return;
+    _idle.add(player);
+    player.unload();
+    _logger.debug('Unloaded {video}', {'video': key});
   }
 }
 

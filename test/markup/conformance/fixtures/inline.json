@@ -1,0 +1,798 @@
+[
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Bold",
+                  "type": "text"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b]Bold[/b]",
+    "label": "bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Italics",
+                  "type": "text"
+                }
+              ],
+              "type": "italic"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[i]Italics[/i]",
+    "label": "italic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Strikeout",
+                  "type": "text"
+                }
+              ],
+              "type": "strikeout"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[s]Strikeout[/s]",
+    "label": "strikeout"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Underline",
+                  "type": "text"
+                }
+              ],
+              "type": "underline"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[u]Underline[/u]",
+    "label": "underline"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Superscript",
+                  "type": "text"
+                }
+              ],
+              "type": "superscript"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[sup]Superscript[/sup]",
+    "label": "superscript"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Subscript",
+                  "type": "text"
+                }
+              ],
+              "type": "subscript"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[sub]Subscript[/sub]",
+    "label": "subscript"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "here is ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "I'm a spoiler!",
+                  "type": "text"
+                }
+              ],
+              "type": "inline_spoiler"
+            },
+            {
+              "content": " hidden",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "here is [spoiler]I'm a spoiler![/spoiler] hidden",
+    "label": "inline spoiler in paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "inline code",
+              "type": "inline_code"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "`inline code`",
+    "label": "inline code basic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "`",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\\`",
+    "label": "escaped backtick"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "I'm red!",
+                  "type": "text"
+                }
+              ],
+              "color": "red",
+              "type": "color"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[color=red]I'm red![/color]",
+    "label": "color named red"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "hue",
+                  "type": "text"
+                }
+              ],
+              "color": "#abc",
+              "type": "color"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[color=#abc]hue[/color]",
+    "label": "color hex short"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "I'm red!",
+                  "type": "text"
+                }
+              ],
+              "color": "#ff0000",
+              "type": "color"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[color=#ff0000]I'm red![/color]",
+    "label": "color hex long"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "I'm an artist!",
+                  "type": "text"
+                }
+              ],
+              "color": "artist",
+              "type": "color"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[color=artist]I'm an artist![/color]",
+    "label": "color tag-category artist"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Character",
+                  "type": "text"
+                }
+              ],
+              "color": "character",
+              "type": "color"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[color=character]Character[/color]",
+    "label": "color tag-category character"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "content": "Bold and Italic",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "italic"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b][i]Bold and Italic[/i][/b]",
+    "label": "nested bold and italic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Bold",
+                  "type": "text"
+                }
+              ],
+              "type": "bold"
+            },
+            {
+              "content": " and ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "Italic",
+                  "type": "text"
+                }
+              ],
+              "type": "italic"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b]Bold[/b] and [i]Italic[/i]",
+    "label": "bold and italic side by side"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "bold ",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "and italic",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "italic"
+                },
+                {
+                  "content": " mix",
+                  "type": "text"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b]bold [i]and italic[/i] mix[/b]",
+    "label": "bold containing italic and plain"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "x",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "2",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "superscript"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b]x[sup]2[/sup][/b]",
+    "label": "superscript inside bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "x",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "i",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "subscript"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b]x[sub]i[/sub][/b]",
+    "label": "subscript inside bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Look at ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "a ",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "bold",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "bold"
+                },
+                {
+                  "content": " spoiler",
+                  "type": "text"
+                }
+              ],
+              "type": "inline_spoiler"
+            },
+            {
+              "content": "!",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "Look at [spoiler]a [b]bold[/b] spoiler[/spoiler]!",
+    "label": "inline spoiler with formatting inside"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "before ",
+              "type": "text"
+            },
+            {
+              "content": "code",
+              "type": "inline_code"
+            },
+            {
+              "content": " after",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "before `code` after",
+    "label": "inline code beside text"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "<script>alert(\"xss\")</script>",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "<script>alert(\"xss\")</script>",
+    "label": "html entities are escaped"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Tom & Jerry",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "Tom & Jerry",
+    "label": "ampersand becomes entity"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Mix ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "bold",
+                  "type": "text"
+                }
+              ],
+              "type": "bold"
+            },
+            {
+              "content": ", ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "italic",
+                  "type": "text"
+                }
+              ],
+              "type": "italic"
+            },
+            {
+              "content": ", ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "strike",
+                  "type": "text"
+                }
+              ],
+              "type": "strikeout"
+            },
+            {
+              "content": ", ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "under",
+                  "type": "text"
+                }
+              ],
+              "type": "underline"
+            },
+            {
+              "content": ".",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "Mix [b]bold[/b], [i]italic[/i], [s]strike[/s], [u]under[/u].",
+    "label": "mixed inline tags in sentence"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "one",
+              "type": "text"
+            },
+            {
+              "type": "line_break"
+            },
+            {
+              "content": "two",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "one\ntwo",
+    "label": "line break inside paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "under ",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "strike",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "strikeout"
+                },
+                {
+                  "content": " inside",
+                  "type": "text"
+                }
+              ],
+              "type": "underline"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[u]under [s]strike[/s] inside[/u]",
+    "label": "underline containing strikeout"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "not ",
+                  "type": "text"
+                },
+                {
+                  "children": [
+                    {
+                      "content": "just",
+                      "type": "text"
+                    }
+                  ],
+                  "type": "bold"
+                },
+                {
+                  "content": " red",
+                  "type": "text"
+                }
+              ],
+              "color": "red",
+              "type": "color"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[color=red]not [b]just[/b] red[/color]",
+    "label": "color around bold"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "content": "all three",
+                          "type": "text"
+                        }
+                      ],
+                      "type": "underline"
+                    }
+                  ],
+                  "type": "italic"
+                }
+              ],
+              "type": "bold"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[b][i][u]all three[/u][/i][/b]",
+    "label": "deep nested inline"
+  }
+]

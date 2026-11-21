@@ -1,32 +1,5 @@
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
-
-class SizedCircularProgressIndicator extends StatelessWidget {
-  const SizedCircularProgressIndicator({
-    super.key,
-    required this.size,
-    this.value,
-    this.strokeWidth = 4,
-  });
-
-  final double size;
-  final double? value;
-  final double strokeWidth;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: size,
-      width: size,
-      child: Padding(
-        padding: EdgeInsets.all(strokeWidth / 2),
-        child: CircularProgressIndicator(
-          value: value,
-          strokeWidth: strokeWidth,
-        ),
-      ),
-    );
-  }
-}
 
 class IconMessage extends StatelessWidget {
   const IconMessage({
@@ -88,15 +61,21 @@ class LoadingPage extends StatelessWidget {
     this.isBuilt,
     this.pageBuilder,
     this.loadingBuilder,
+    this.skeleton,
     this.onEmpty,
     this.onError,
   });
 
   final WidgetBuilder child;
+  final WidgetBuilder? skeleton;
   final Widget Function(BuildContext context, WidgetBuilder child)? pageBuilder;
   final Widget Function(BuildContext context, WidgetBuilder child)?
   loadingBuilder;
+
+  /// Title shown inside the empty state's [IconMessage].
   final Widget? onEmpty;
+
+  /// Title shown inside the failed state's [IconMessage].
   final Widget? onError;
   final bool isLoading;
   final bool isEmpty;
@@ -118,22 +97,24 @@ class LoadingPage extends StatelessWidget {
       }
     }
 
+    if (skeleton case final skeleton? when state == LoadingPageState.loading) {
+      return SkeletonPage(child: Builder(builder: skeleton));
+    }
+
     Widget content(BuildContext context) {
       switch (state) {
         case LoadingPageState.loading:
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: HexagonalLoadingIndicator());
         case LoadingPageState.error:
-          return onError ??
-              const IconMessage(
-                icon: Icon(Icons.warning_amber_outlined),
-                title: Text('Failed to load'),
-              );
+          return IconMessage(
+            icon: const Icon(Icons.warning_amber_outlined),
+            title: onError ?? const Text('加载失败'),
+          );
         case LoadingPageState.empty:
-          return onEmpty ??
-              const IconMessage(
-                icon: Icon(Icons.clear),
-                title: Text('Nothing to see here'),
-              );
+          return IconMessage(
+            icon: const Icon(Icons.clear),
+            title: onEmpty ?? const Text('这里什么都没有'),
+          );
         case LoadingPageState.done:
           return child(context);
       }
@@ -150,7 +131,12 @@ class LoadingPage extends StatelessWidget {
       return body ?? content(context);
     }
 
-    return Material(child: body());
+    return Material(
+      type: state == LoadingPageState.done
+          ? MaterialType.transparency
+          : MaterialType.canvas,
+      child: body(),
+    );
   }
 }
 

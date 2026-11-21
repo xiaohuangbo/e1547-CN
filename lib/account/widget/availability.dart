@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:e1547/account/account.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/identity/identity.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class AvailabilityCheck extends StatefulWidget {
@@ -31,41 +32,54 @@ class _AvailabilityCheckState extends State<AvailabilityCheck> {
 
   Future<void> check(BuildContext context) async {
     bool? offerResolve;
-    Client client = context.read<Client>();
+    final client = context.read<Client>();
+    final identities = context.read<IdentityClient>();
+    final Logger scope = logger.child({'host': client.host});
     try {
       await client.accounts.available();
-      logger.info('Client is available!');
+      scope.info('Client is available');
     } on ClientException catch (e, stacktrace) {
       if (CancelToken.isCancel(e)) {
-        logger.fine('Client availability check cancelled!');
+        scope.debug('Availability check cancelled');
         return;
       }
-      int? statusCode = e.response?.statusCode;
-      if (statusCode == null) return;
-      switch (statusCode) {
-        case HttpStatus.serviceUnavailable:
-          logger.warning('Client is unavailable, attempting resolve!');
-          offerResolve = true;
-          break;
-        case HttpStatus.forbidden:
-          logger.warning('Client has denied access! Failing silently...');
-          // This could potentially logout the user.
-          // However, it might be returned during Cloudflare API blockages.
-          // Logout the user, and if theyre already logged out, trigger Resolver?
-          break;
-        case >= 500 && < 600:
-          logger.warning('Client is unavailable, resolve not possible!');
-          offerResolve = false;
-          return;
-        default:
-          logger.severe('Availability Check failed!', e, stacktrace);
+      if (isCloudflareChallenge(e.response)) {
+        scope.warn('Behind a Cloudflare challenge, resolving');
+        await dropCloudflareCookies(identities);
+        offerResolve = true;
+      } else {
+        int? statusCode = e.response?.statusCode;
+        if (statusCode == null) return;
+        switch (statusCode) {
+          case HttpStatus.forbidden:
+            scope.warn('Client denied access ({status}), failing silently', {
+              'status': statusCode,
+            });
+            // This could potentially logout the user.
+            // However, it might be returned during Cloudflare API blockages.
+            // Logout the user, and if theyre already logged out, trigger Resolver?
+            break;
+          case >= 500 && < 600:
+            scope.warn('Client unavailable ({status}), cannot resolve', {
+              'status': statusCode,
+            });
+            offerResolve = false;
+            break;
+          default:
+            scope.warn(
+              'Availability check failed ({status})',
+              {'status': statusCode},
+              e,
+              stacktrace,
+            );
+        }
       }
     }
 
     if (offerResolve case final bool offerResolve) {
       widget.navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (context) => HostUnvailablePage(offerResolve: offerResolve),
+          builder: (context) => HostUnavailablePage(offerResolve: offerResolve),
         ),
       );
     }

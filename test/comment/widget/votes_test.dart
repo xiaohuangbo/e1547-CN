@@ -1,0 +1,73 @@
+import 'package:e1547/client/client.dart';
+import 'package:e1547/comment/comment.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import '../../_support/environment.dart';
+import '../../_support/harness.dart';
+
+void main() {
+  setUpAll(initializeTestApp);
+
+  late TestEnvironment env;
+
+  setUp(
+    () async => env = await TestEnvironment.start(
+      credentials: const Credentials(username: 'tester', password: 'key'),
+    ),
+  );
+
+  tearDown(() => env.dispose());
+
+  final Comment comment = Comment(
+    id: 999999,
+    postId: 1,
+    body: 'a comment',
+    createdAt: DateTime(2026),
+    updatedAt: DateTime(2026),
+    creatorId: 1,
+    creatorName: 'tester',
+    score: 0,
+    vote: null,
+    warning: null,
+    hidden: false,
+  );
+
+  for (final (IconData icon, String verb) in [
+    (Icons.arrow_upward, 'upvote'),
+    (Icons.arrow_downward, 'downvote'),
+  ]) {
+    displayTest('a comment $verb the site refuses says so and stays off', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        env.app(Scaffold(body: CommentVotes(comment: comment))),
+      );
+      await tester.tap(find.byIcon(icon));
+      await env.settle(tester);
+
+      expect(
+        find.text('${verb == 'upvote' ? '点赞' : '点踩'}评论 #999999 失败'),
+        findsOneWidget,
+      );
+      expect(tester.widget<Icon>(find.byIcon(icon)).color, isNull);
+    });
+  }
+
+  displayTest('a comment vote waits for the last one to finish', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      env.app(Scaffold(body: CommentVotes(comment: comment))),
+    );
+    await tester.tap(find.byIcon(Icons.arrow_upward));
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.arrow_downward));
+    await env.settle(tester);
+
+    expect(
+      env.fake.requests.where((e) => e.path.endsWith('/votes.json')),
+      hasLength(1),
+    );
+  });
+}

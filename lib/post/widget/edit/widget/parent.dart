@@ -41,7 +41,7 @@ class _ParentEditDisplayState extends State<ParentEditDisplay> {
 
       final parentId = int.tryParse(value);
       if (parentId == null) {
-        setState(() => _errorText = 'Invalid number format');
+        setState(() => _errorText = '数字格式无效');
         return;
       }
 
@@ -49,7 +49,7 @@ class _ParentEditDisplayState extends State<ParentEditDisplay> {
         await context.read<Client>().posts.get(id: parentId);
         setState(() => _errorText = null);
       } on ClientException {
-        setState(() => _errorText = 'Invalid parent post');
+        setState(() => _errorText = '无效的父级帖子');
       }
     }
   }
@@ -61,14 +61,14 @@ class _ParentEditDisplayState extends State<ParentEditDisplay> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Parent ID (optional)', style: TextStyle(fontSize: 16)),
+          const Text('父级 ID（可选）', style: TextStyle(fontSize: 16)),
           const SizedBox(height: 8),
           TextFormField(
             controller: widget.controller,
             focusNode: _focusNode,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              hintText: 'Parent post ID',
+              hintText: '父级帖子 ID',
               errorText: _errorText,
             ),
             keyboardType: TextInputType.number,

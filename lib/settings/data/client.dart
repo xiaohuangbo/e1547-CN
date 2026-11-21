@@ -3,37 +3,30 @@ import 'dart:io';
 
 import 'package:deep_pick/deep_pick.dart';
 import 'package:dio/dio.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/settings/settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:native_dio_adapter/native_dio_adapter.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 class AppInfoClient {
-  AppInfoClient() {
+  AppInfoClient({required this.queryCache}) {
+    _dio.httpClientAdapter = NativeAdapter();
     _dio.interceptors.add(LoggingDioInterceptor());
-    _dio.interceptors.add(
-      ClientCacheInterceptor(options: ClientCacheConfig(store: cache)),
-    );
   }
 
   final AppInfo info = AppInfo.instance;
-  final CacheStore? cache = MemCacheStore();
+  final CachedQuery queryCache;
   late final Dio _dio = Dio(
     BaseOptions(headers: {HttpHeaders.userAgentHeader: info.userAgent}),
   );
 
-  Future<List<AppVersion>> getVersions({bool force = false}) async {
+  Future<List<AppVersion>> getVersions() async {
     if (kDebugMode) return []; // Do not check for updates in debug mode
     return _dio
-        .get(
-          'https://api.github.com/repos/${info.github}/releases',
-          options: ClientCacheConfig(
-            store: cache,
-            policy: force ? CachePolicy.refresh : CachePolicy.request,
-          ).toOptions(),
-        )
+        .get('https://api.github.com/repos/${info.github}/releases')
         .then((response) {
           try {
             return pick(response.data).asListOrEmpty(
@@ -65,11 +58,8 @@ class AppInfoClient {
   /// versions newer than 7 days will be ignored.
   ///
   /// This is because we give the store a chance to automatically update the app.
-  Future<List<AppVersion>> getNewVersions({
-    bool force = false,
-    bool beta = false,
-  }) async {
-    List<AppVersion> versions = await getVersions(force: force);
+  Future<List<AppVersion>> getNewVersions({bool beta = false}) async {
+    List<AppVersion> versions = await getVersions();
     AppVersion current = AppVersion(
       version: Version.parse('${info.version}+${info.buildNumber}'),
     );
@@ -124,14 +114,10 @@ class AppInfoClient {
   }
 
   /// Returns donors from the GitHub repository.
-  Future<List<Donor>> getDonors({bool force = false}) async {
+  Future<List<Donor>> getDonors() async {
     List<dynamic> donors = await _dio
         .get(
           'https://raw.githubusercontent.com/${AppInfo.instance.github}/master/assets/static/donations.json',
-          options: ClientCacheConfig(
-            store: cache,
-            policy: force ? CachePolicy.refresh : CachePolicy.request,
-          ).toOptions(),
         )
         .then((e) => jsonDecode(e.data));
     return donors.map((e) => Donor.fromJson(e)).toList();

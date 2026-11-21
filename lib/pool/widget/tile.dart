@@ -1,10 +1,8 @@
-import 'dart:math';
-
-import 'package:collection/collection.dart';
-import 'package:e1547/interface/interface.dart';
-import 'package:e1547/markup/markup.dart';
+import 'package:e1547/client/client.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -14,104 +12,153 @@ class PoolTile extends StatelessWidget {
   final Pool pool;
   final VoidCallback? onPressed;
 
+  static const double titleLineHeight = 20;
+
   @override
   Widget build(BuildContext context) {
-    Widget title() {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                tagToName(pool.name),
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleMedium,
-                maxLines: 1,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              pool.postIds.length.toString(),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
-      );
-    }
-
-    Widget? image;
-    PoolController? controller = context.watch<PoolController?>();
-
-    if (pool.postIds.isNotEmpty && controller != null) {
-      int thumbnail = pool.postIds.first;
-      Post? post = controller.thumbnails.items?.firstWhereOrNull(
-        (e) => e.id == thumbnail,
-      );
-      if (post != null) {
-        image = ChangeNotifierProvider<PostController>.value(
-          value: controller.thumbnails,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 400),
-              child: AspectRatio(
-                aspectRatio: max(post.width / post.height, 0.9),
-                child: PostImageTile(post: post),
-              ),
-            ),
-          ),
-        );
-      }
-    }
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(4),
-          child: Stack(
-            fit: StackFit.passthrough,
+    final TileLayoutData layout = TileLayout.of(context);
+    final bool staggered = layout.stagger == GridQuilt.vertical;
+    final Widget title = Text(
+      tagToName(pool.name),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontSize: 14, height: titleLineHeight / 14),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: 6,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: AnimatedSize(
-                  duration: defaultAnimationDuration,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      title(),
-                      if (pool.description.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Opacity(
-                            opacity: 0.5,
-                            child: DText(
-                              pool.description.ellipse(
-                                image == null ? 400 : 200,
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (image != null) image,
-                    ],
-                  ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  AppStyle.of(context).smallRadius,
                 ),
+                child: staggered
+                    ? PoolCover(
+                        id: pool.postIds.firstOrNull,
+                        adaptive: true,
+                        emptyRatio: PostGhost
+                            .ratios[pool.id.abs() % PostGhost.ratios.length],
+                      )
+                    : AspectRatio(
+                        aspectRatio: 1 / layout.tileHeightFactor,
+                        child: PoolCover(id: pool.postIds.firstOrNull),
+                      ),
               ),
-              Positioned.fill(
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: InkWell(
-                    onTap: onPressed,
-                    onLongPress: () =>
-                        showPoolPrompt(context: context, pool: pool),
-                    onSecondaryTap: () =>
-                        showPoolPrompt(context: context, pool: pool),
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (staggered)
+                      title
+                    else
+                      SizedBox(
+                        height: titleLineHeight * 2,
+                        child: Align(
+                          alignment: AlignmentDirectional.topStart,
+                          child: title,
+                        ),
+                      ),
+                    Text(
+                      '${pool.postCount} 个帖子',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: dimTextColor(context),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-        const Divider(indent: 8, endIndent: 8),
-      ],
+          Positioned.fill(
+            child: Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: onPressed,
+                onLongPress: () => showPoolPrompt(context: context, pool: pool),
+                onSecondaryTap: () =>
+                    showPoolPrompt(context: context, pool: pool),
+                borderRadius: BorderRadius.circular(
+                  AppStyle.of(context).smallRadius,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PoolCover extends StatelessWidget {
+  const PoolCover({
+    super.key,
+    required this.id,
+    this.adaptive = false,
+    this.emptyRatio = 0.8,
+  });
+
+  final int? id;
+  final bool adaptive;
+  final double emptyRatio;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget empty = ColoredBox(color: AppStyle.of(context).skeleton);
+    Widget shape(Widget child, [double? ratio]) => adaptive
+        ? AspectRatio(aspectRatio: ratio ?? emptyRatio, child: child)
+        : SizedBox.expand(child: child);
+    if (isSkeleton(context)) {
+      return shape(const Bone(width: double.infinity, height: double.infinity));
+    }
+    final int? id = this.id;
+    if (id == null) return shape(empty);
+    final Client client = context.watch<Client>();
+    return QueryBuilder(
+      query: client.posts.useGet(id: id, vendored: true),
+      builder: (context, state) {
+        final Post? post = state.data;
+        if (post == null) return shape(empty);
+        final FilterController<Post>? filter = context
+            .watch<FilterController<Post>?>();
+        if (filter != null && !filter.filter(post)) {
+          return shape(
+            Stack(
+              fit: StackFit.expand,
+              children: [
+                empty,
+                Center(child: Icon(Icons.block, color: dimTextColor(context))),
+              ],
+            ),
+          );
+        }
+        return shape(
+          Stack(
+            fit: StackFit.expand,
+            children: [
+              empty,
+              PostTileOverlay(
+                post: post,
+                child: PostImageWidget(
+                  post: post,
+                  size: PostImageSize.sample,
+                  fit: BoxFit.cover,
+                  showProgress: false,
+                  withLowRes: false,
+                ),
+              ),
+            ],
+          ),
+          post.file == null
+              ? emptyRatio
+              : (post.width / post.height).clamp(0.6, 1.4),
+        );
+      },
     );
   }
 }

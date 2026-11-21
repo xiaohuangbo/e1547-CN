@@ -1,7 +1,8 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/follow/follow.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 import 'package:intl/intl.dart';
@@ -13,10 +14,13 @@ class FollowMarkReadTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FollowController>(
-      builder: (context, controller, child) {
+    final client = context.watch<Client>();
+    final controller = context.watch<FollowParamsController>();
+    return QueryBuilder(
+      query: client.follows.useAll(query: controller.value.toQuery()),
+      builder: (context, state) {
         int unseenCount =
-            controller.items?.fold<int>(0, (a, b) => a + (b.unseen ?? 0)) ?? 0;
+            state.data?.fold<int>(0, (a, b) => a + (b.unseen ?? 0)) ?? 0;
         return ListTile(
           enabled: unseenCount > 0,
           leading: Icon(unseenCount > 0 ? Icons.mark_email_read : Icons.drafts),
@@ -32,7 +36,7 @@ class FollowMarkReadTile extends StatelessWidget {
               : const Text('没有未读帖子'),
           onTap: () {
             Scaffold.of(context).closeEndDrawer();
-            context.read<Client>().follows.markAllSeen(null);
+            client.follows.markAllSeen(null);
             onTap?.call();
           },
         );
@@ -59,7 +63,7 @@ class FollowFilterReadTile extends StatelessWidget {
         ),
         title: const Text('优先显示未读'),
         subtitle: filterUnseenFollows
-            ? const Text('正在筛选未读')
+            ? const Text('仅显示未读')
             : const Text('显示所有帖子'),
       ),
     );
@@ -91,7 +95,7 @@ class FollowForceSyncTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final client = context.watch<Client>();
     return SubStream<FollowSync?>(
-      create: () => client.follows.syncStream,
+      create: () => client.followServer.syncStream,
       keys: [client],
       builder: (context, syncSnapshot) {
         bool enabled = false;
@@ -109,13 +113,13 @@ class FollowForceSyncTile extends StatelessWidget {
                 subtitle: (sync?.completed ?? true)
                     ? const Text('同步所有关注')
                     : Text(
-                        '正在同步关注... '
+                        'syncing follows... '
                         '${NumberFormat('0.#%').format(progressSnapshot.data ?? 0)}',
                       ),
                 enabled: enabled,
                 onTap: () {
                   // Scaffold.of(context).closeEndDrawer();
-                  client.follows.sync(force: true);
+                  client.followServer.sync(force: true);
                 },
               ),
               if (sync != null)

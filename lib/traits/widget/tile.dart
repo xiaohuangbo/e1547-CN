@@ -1,4 +1,4 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:flutter/material.dart';
 
@@ -39,12 +39,12 @@ class DenylistTile extends StatelessWidget {
                     itemBuilder: (context) => [
                       PopupMenuTile(
                         value: onEdit,
-                        title: 'Edit',
+                        title: '编辑',
                         icon: Icons.edit,
                       ),
                       PopupMenuTile(
                         value: onDelete,
-                        title: 'Delete',
+                        title: '删除',
                         icon: Icons.delete,
                       ),
                     ],

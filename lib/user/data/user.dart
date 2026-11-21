@@ -1,23 +1,47 @@
+import 'package:e1547/shared/shared.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'ghost.dart';
 part 'user.freezed.dart';
 part 'user.g.dart';
 
+abstract class UserSummary {
+  int get id;
+  String get name;
+  int? get avatarId;
+  bool get hasCroppedAvatar;
+}
+
 @freezed
-class User with _$User {
+abstract class User with _$User implements UserSummary {
   const factory User({
     required int id,
     required String name,
     required int? avatarId,
+    @Default(false) bool hasCroppedAvatar,
     required UserAbout? about,
     required UserStats? stats,
   }) = _User;
+
+  const User._();
 
   factory User.fromJson(dynamic json) => _$UserFromJson(json);
 }
 
 @freezed
-class UserAbout with _$UserAbout {
+abstract class PartialUser with _$PartialUser implements UserSummary {
+  const factory PartialUser({
+    required int id,
+    required String name,
+    required int? avatarId,
+    @Default(false) bool hasCroppedAvatar,
+  }) = _PartialUser;
+
+  factory PartialUser.fromJson(dynamic json) => _$PartialUserFromJson(json);
+}
+
+@freezed
+abstract class UserAbout with _$UserAbout {
   const factory UserAbout({required String? bio, required String? comission}) =
       _UserAbout;
 
@@ -25,7 +49,7 @@ class UserAbout with _$UserAbout {
 }
 
 @freezed
-class UserStats with _$UserStats {
+abstract class UserStats with _$UserStats {
   const factory UserStats({
     required DateTime? createdAt,
     required String? levelString,
@@ -34,6 +58,19 @@ class UserStats with _$UserStats {
     required int? postUploadCount,
     required int? forumPostCount,
     required int? commentCount,
+    required int? poolUpdateCount,
+    required int? artistUpdateCount,
+    required int? wikiUpdateCount,
+    required int? noteUpdateCount,
+    required int? uploadKarma,
+    required int? uploadSlots,
+    required int? positiveFeedbackCount,
+    required int? neutralFeedbackCount,
+    required int? negativeFeedbackCount,
+    @Default(false) bool canApprovePosts,
+    @Default(false) bool canUploadFree,
+    @Default(false) bool isBanned,
+    @Default(true) bool isVerified,
   }) = _UserStats;
 
   factory UserStats.fromJson(dynamic json) => _$UserStatsFromJson(json);

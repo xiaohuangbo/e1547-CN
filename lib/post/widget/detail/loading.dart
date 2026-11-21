@@ -1,8 +1,7 @@
-import 'dart:async';
-
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostLoadingPage extends StatelessWidget {
@@ -12,38 +11,40 @@ class PostLoadingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleFuturePostsProvider(
-      id: id,
-      child: Consumer<Future<PostController>>(
-        builder: (context, controller, child) =>
-            FutureLoadingPage<PostController>(
-              future: controller,
-              builder: (context, value) => PostsRouteConnector(
-                controller: value,
-                child: PostDetailGallery(controller: value),
-              ),
-              title: Text('帖子 #$id'),
-              onError: const Text('无法加载帖子'),
-              onEmpty: const Text('未找到帖子'),
-            ),
+    final client = context.watch<Client>();
+    final Widget page = QueryBuilder(
+      query: client.posts.useGet(id: id),
+      builder: (context, state) => LoadingPage(
+        isLoading: state.isLoading || state.isInitial,
+        isError: state.isError,
+        isEmpty: state.data == null,
+        skeleton: (context) => PostDetail(
+          post: const PostGhost(),
+          summary: client.posts.partialPostCache.get(id),
+        ),
+        onError: const Text('无法加载帖子'),
+        onEmpty: const Text('未找到帖子'),
+        child: (context) => PostDetail(post: state.data!),
       ),
+    );
+    if (context.watch<PostFilter?>() != null) return page;
+    return FilterControllerProvider(
+      create: (_) => PostFilter(client),
+      keys: (_) => [client],
+      child: page,
     );
   }
 }
 
-class SingleFuturePostsProvider
-    extends SubProvider<Client, Future<PostController>> {
-  SingleFuturePostsProvider({required int id, super.child, super.builder})
-    : super(
-        create: (context, client) => Future<PostController>(() async {
-          PostController controller = SinglePostController(
-            id: id,
-            client: client,
-          );
-          await controller.getNextPage();
-          return controller;
-        }),
-        keys: (context) => [id],
-        dispose: (context, value) async => (await value).dispose(),
-      );
+void pushPostLoadingPage(BuildContext context, int id) {
+  final filter = context.read<PostFilter?>();
+  Navigator.of(context).push(
+    DismissRoute<void>(
+      builder: (context) => PostRouteScope(
+        params: null,
+        filter: filter,
+        child: PostLoadingPage(id),
+      ),
+    ),
+  );
 }

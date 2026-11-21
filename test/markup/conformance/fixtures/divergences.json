@@ -1,0 +1,172 @@
+[
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "content": "table",
+                      "type": "text"
+                    }
+                  ],
+                  "href": "/wiki_pages/show_or_new?title=table",
+                  "linkType": "wiki",
+                  "type": "link"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* [[table]]",
+    "label": "A. list-item wiki link to block-tag name collapses doc to raw_block_text"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "content": "x",
+                      "type": "text"
+                    }
+                  ],
+                  "href": "/users/1[/i",
+                  "linkType": "inline",
+                  "type": "link"
+                },
+                {
+                  "content": "]",
+                  "type": "text"
+                }
+              ],
+              "type": "italic"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "After",
+              "type": "text"
+            }
+          ],
+          "level": 4,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[i]\"x\":/users/1[/i]\n\nh4. After",
+    "label": "B. textile URL absorbs a following inline close tag"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "see [[tag||Title]] here",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "see [[tag||Title]] here",
+    "label": "C. wiki link with empty tag side of '||' should be plain text"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "hi",
+                  "type": "text"
+                }
+              ],
+              "color": "red",
+              "type": "color"
+            }
+          ],
+          "level": 4,
+          "type": "header"
+        },
+        {
+          "children": [
+            {
+              "content": "rest",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h4. [color=red]hi\nrest",
+    "label": "D. header containing unclosed inline keeps eating across the newline"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "link",
+                  "type": "text"
+                }
+              ],
+              "href": "http://e.com/x.xml\"",
+              "linkType": "inline",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"link\":http://e.com/x.xml\"",
+    "label": "E. textile URL drops a trailing quote that the reference keeps"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "body [/quote]",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "body [/quote]",
+    "label": "F. stray close tag at top level splits the surrounding paragraph"
+  }
+]

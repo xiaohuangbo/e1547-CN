@@ -1,4 +1,5 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
 
@@ -78,6 +79,9 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
             title: widget.title,
             leading: const CloseButton(),
           ),
+          floatingActionButtonLocation: Handedness.of(
+            context,
+          ).floatingActionButtonLocation,
           floatingActionButton: Builder(
             builder: (context) => FloatingActionButton(
               onPressed: isLoading
@@ -103,7 +107,7 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
                             SnackBar(
                               duration: const Duration(seconds: 1),
                               content: Text(
-                                widget.onSuccess ?? '已提交报告',
+                                widget.onSuccess ?? 'Submitted report',
                               ),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -114,7 +118,7 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
                             SnackBar(
                               duration: const Duration(seconds: 1),
                               content: Text(
-                                widget.onFailure ?? '提交报告失败',
+                                widget.onFailure ?? 'Failed to submit report',
                               ),
                             ),
                           );
@@ -149,7 +153,7 @@ class _ReasonReportScreenState extends State<ReasonReportScreen> {
                       ],
                     ),
                   ),
-                  const ReportFormHeader(title: Text('报告')),
+                  const ReportFormHeader(title: Text('举报')),
                   ReportFormReason(
                     controller: reasonController,
                     isLoading: isLoading,

@@ -2,128 +2,130 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:e1547/app/app.dart';
-import 'package:e1547/app/data/link.dart' as link;
 import 'package:e1547/client/client.dart';
-import 'package:e1547/history/history.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/follow/follow.dart';
+import 'package:e1547/identity/identity.dart';
 import 'package:e1547/logs/logs.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sub/flutter_sub.dart';
 import 'package:local_auth/local_auth.dart';
-
-Future<String> prepareGithubIssue() async {
-  return 'https://github.com/xiaohuangbo/e1547-CN/discussions';
-}
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Client>(
-      builder: (context, client, child) => Scaffold(
+    return Consumer<Settings>(
+      builder: (context, settings, child) => Scaffold(
         appBar: const DefaultAppBar(title: Text('设置')),
-        drawer: const RouterDrawer(),
-        body: Consumer<Settings>(
-          builder: (context, settings, child) => ListView(
+        body: LimitedWidthLayout.builder(
+          builder: (context) => ListView(
+            primary: true,
+            padding: defaultActionListPadding.add(
+              LimitedWidthLayout.of(context).padding,
+            ),
             children: [
-              const ListTileHeader(title: '常规'),
-              ValueListenableBuilder<bool>(
-                valueListenable: settings.autoRotate,
-                builder: (context, value, child) => SwitchListTile(
-                  title: const Text('自动旋转'),
-                  subtitle: Text(value ? '已启用' : '已禁用'),
-                  secondary: const Icon(Icons.screen_rotation),
-                  value: value,
-                  onChanged: (value) => settings.autoRotate.value = value,
+              const SectionHeader(
+                indent: SectionHeader.listTileIndent,
+                title: '账号',
+              ),
+              Consumer<IdentityClient>(
+                builder: (context, client, child) => IdentityTile(
+                  identity: client.identity,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const IdentitiesPage(),
+                    ),
+                  ),
+                  trailing: const Icon(Icons.swap_horiz),
                 ),
               ),
-              ListTile(
-                title: const Text('清除缓存'),
-                subtitle: const Text('清除所有缓存的图片和网络响应'),
-                leading: const Icon(Icons.delete_forever),
-                onTap: () async {
-                  bool? result = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('确认？'),
-                      content: const Text(
-                        '这将从您的设备中删除所有缓存的数据。\n它不会影响您的设置或已保存的媒体。'
-                      ),
-                      actions: [
-                        TextButton(
-                          child: const Text('取消'),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                        TextButton(
-                          child: const Text('确认'),
-                          onPressed: () => Navigator.of(context).pop(true),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (result ?? false) {
-                    await client.clearCache();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('缓存已清除'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    }
-                  }
-                },
+              const Divider(),
+              const SectionHeader(
+                indent: SectionHeader.listTileIndent,
+                title: '用户',
               ),
-              if (client.histories case final HistoryService clientHistories) ...[
-                const Divider(),
-                SubStream<bool>(
-                  create: () => clientHistories.enabledStream,
-                  builder: (context, snapshot) {
-                    return SubFuture<bool>(
-                      create: () async => clientHistories.enabled,
-                      builder: (context, snapshot) {
-                        bool enabled = snapshot.data ?? true;
-                        return ListTile(
+              Consumer<Client>(
+                builder: (context, client, child) => ValueListenableBuilder(
+                  valueListenable: client.traits,
+                  builder: (context, traits, child) => ListTile(
+                    title: const Text('黑名单'),
+                    leading: const Icon(Icons.block),
+                    subtitle: traits.denylist.isNotEmpty
+                        ? Text(
+                            '${traits.denylist.join(' ').split(' ').trim().where((e) => e[0] != '-').length} tags blocked',
+                          )
+                        : null,
+                    onTap: () => Navigator.pushNamed(context, '/blacklist'),
+                  ),
+                ),
+              ),
+              Consumer<Client>(
+                builder: (context, client, child) => SubStream<int>(
+                  create: () => client.follows.count().streamed,
+                  keys: [client],
+                  builder: (context, snapshot) => ListTile(
+                    title: const Text('关注'),
+                    subtitle: snapshot.data != null && snapshot.data != 0
+                        ? Text('已关注 ${snapshot.data} 个搜索')
+                        : null,
+                    leading: const Icon(Icons.person_add),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FollowEditor(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Consumer<Client>(
+                builder: (context, client, child) => SubStream<int>(
+                  create: () => client.histories.count().streamed,
+                  keys: [client],
+                  builder: (context, countSnapshot) {
+                    int? count = countSnapshot.data;
+                    return ValueListenableBuilder(
+                      valueListenable: client.traits,
+                      builder: (context, traits, child) {
+                        bool enabled = traits.writeHistory ?? true;
+                        return DividerListTile(
+                          title: const Text('历史'),
+                          subtitle: enabled && count != null
+                              ? Text('已访问 $count 个页面')
+                              : null,
                           leading: const Icon(Icons.history),
-                          title: const Text('历史记录'),
-                          subtitle: Text(enabled ? '已启用' : '已禁用'),
-                          trailing: enabled
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton(
-                                      child: const Text('清除'),
-                                      onPressed: () async => clientHistories.clear(),
-                                    ),
-                                    Switch(
-                                      value: enabled,
-                                      onChanged: (value) =>
-                                          clientHistories.enabled = value,
-                                    ),
-                                  ],
-                                )
-                              : Switch(
-                                  value: enabled,
-                                  onChanged: (value) =>
-                                      clientHistories.enabled = value,
-                                ),
-                          onTap: () =>
-                              clientHistories.enabled = !enabled,
+                          onTap: () => Navigator.pushNamed(context, '/history'),
+                          onTapSeparated: () => client.traits.value = client
+                              .traits
+                              .value
+                              .copyWith(writeHistory: !enabled),
+                          separated: Switch(
+                            value: enabled,
+                            onChanged: (value) => client.traits.value = client
+                                .traits
+                                .value
+                                .copyWith(writeHistory: value),
+                          ),
                         );
                       },
                     );
                   },
                 ),
-              ],
+              ),
               const Divider(),
-              const ListTileHeader(title: '外观'),
+              const SectionHeader(
+                indent: SectionHeader.listTileIndent,
+                title: '外观',
+              ),
               ValueListenableBuilder<AppTheme>(
                 valueListenable: settings.theme,
                 builder: (context, value, child) => ListTile(
                   title: const Text('主题'),
-                  subtitle: Text(value.title),
+                  subtitle: Text(value.name),
                   leading: const Icon(Icons.brightness_6),
                   onTap: () {
                     showDialog(
@@ -136,7 +138,7 @@ class SettingsPage extends StatelessWidget {
                             children: AppTheme.values
                                 .map(
                                   (theme) => ListTile(
-                                    title: Text(theme.title),
+                                    title: Text(theme.name),
                                     trailing: Container(
                                       height: 28,
                                       width: 28,
@@ -206,31 +208,69 @@ class SettingsPage extends StatelessWidget {
                 valueListenable: settings.showPostInfo,
                 builder: (context, value, child) => SwitchListTile(
                   title: const Text('帖子信息'),
-                  subtitle: Text(
-                    value ? '在帖子格子上显示信息' : '仅显示图片格子',
-                  ),
+                  subtitle: Text(value ? '在帖子格子上显示信息' : '仅显示图片格子'),
                   secondary: const Icon(Icons.subtitles),
                   value: value,
                   onChanged: (value) => settings.showPostInfo.value = value,
                 ),
               ),
+              ValueListenableBuilder<Handedness>(
+                valueListenable: settings.handedness,
+                builder: (context, value, child) => HandednessSettingsTile(
+                  state: value,
+                  onChange: (value) => settings.handedness.value = value,
+                ),
+              ),
               const Divider(),
-              const ListTileHeader(title: '互动'),
+              const SectionHeader(
+                indent: SectionHeader.listTileIndent,
+                title: '互动',
+              ),
+              if (!Platform.isIOS)
+                ValueListenableBuilder<String?>(
+                  valueListenable: settings.downloadPath,
+                  builder: (context, value, child) => ListTile(
+                    title: const Text('下载位置'),
+                    subtitle: value != null
+                        ? Text(FileDownloader.displayPath(value))
+                        : null,
+                    leading: const Icon(Icons.folder),
+                    onTap: () async {
+                      String? result = await FileDownloader.pickDirectory(
+                        initial: value,
+                      );
+                      if (result != null) {
+                        unawaited(FileDownloader.forgetDirectory(value));
+                        settings.downloadPath.value = result;
+                      }
+                    },
+                  ),
+                ),
               ValueListenableBuilder<bool>(
                 valueListenable: settings.upvoteFavs,
                 builder: (context, value, child) => SwitchListTile(
                   title: const Text('点赞收藏'),
-                  subtitle: Text(value ? '同时收藏' : '仅收藏'),
+                  subtitle: Text(value ? '点赞并收藏' : 'favorite only'),
                   secondary: const Icon(Icons.arrow_upward),
                   value: value,
                   onChanged: (value) => settings.upvoteFavs.value = value,
                 ),
               ),
               ValueListenableBuilder<bool>(
+                valueListenable: settings.swipeToClose,
+                builder: (context, value, child) => SwitchListTile(
+                  title: const Text('滑动关闭'),
+                  subtitle: Text(value ? '下滑以关闭' : '按钮和返回手势'),
+                  secondary: const Icon(Icons.swipe_down),
+                  value: value,
+                  onChanged: (value) => settings.swipeToClose.value = value,
+                ),
+              ),
+              ValueListenableBuilder<bool>(
                 valueListenable: settings.muteVideos,
                 builder: (context, value, child) => SwitchListTile(
                   title: const Text('视频音量'),
-                  subtitle: Text(value ? '静音' : '有声'),
+                  subtitle: Text(value ? '已静音' : '有声'),
                   secondary: Icon(value ? Icons.volume_off : Icons.volume_up),
                   value: value,
                   onChanged: (value) => settings.muteVideos.value = value,
@@ -262,14 +302,17 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               const Divider(),
-              const ListTileHeader(title: '安全'),
+              const SectionHeader(
+                indent: SectionHeader.listTileIndent,
+                title: '安全',
+              ),
               if (PlatformCapabilities.hasSecureDisplay)
                 ValueListenableBuilder<bool>(
                   valueListenable: settings.secureDisplay,
                   builder: (context, value, child) => SwitchListTile(
                     title: const Text('安全显示'),
                     subtitle: Text(
-                      value ? '屏幕已保护' : '屏幕可见',
+                      value ? 'screen protected' : 'screen visible',
                     ),
                     secondary: const Icon(Icons.stop_screen_share_outlined),
                     value: value,
@@ -293,13 +336,13 @@ class SettingsPage extends StatelessWidget {
                 builder: (context, value, child) => SwitchListTile(
                   title: const Text('PIN 锁'),
                   subtitle: Text(
-                    value != null ? 'PIN 已启用' : 'PIN 已禁用',
+                    value != null ? 'PIN enabled' : 'PIN disabled',
                   ),
                   secondary: const Icon(Icons.pin),
                   value: value != null,
                   onChanged: (value) async {
                     if (value) {
-                      String? pin = await registerPin(context);
+                      String? pin = await choosePin(context);
                       if (pin != null) {
                         settings.appPin.value = pin;
                       }
@@ -318,7 +361,7 @@ class SettingsPage extends StatelessWidget {
                   builder: (context, value, child) => SwitchListTile(
                     title: const Text('生物识别锁'),
                     subtitle: Text(
-                      value ? '生物识别已启用' : '生物识别已禁用',
+                      value ? 'biometrics enabled' : 'biometrics disabled',
                     ),
                     secondary: const Icon(Icons.fingerprint),
                     value: value,
@@ -329,7 +372,10 @@ class SettingsPage extends StatelessWidget {
                 ),
               ),
               const Divider(),
-              const ListTileHeader(title: '开发'),
+              const SectionHeader(
+                indent: SectionHeader.listTileIndent,
+                title: '开发',
+              ),
               ValueListenableBuilder<bool>(
                 valueListenable: settings.showDev,
                 builder: (context, value, child) {
@@ -344,45 +390,28 @@ class SettingsPage extends StatelessWidget {
                 },
               ),
               if (context.watch<Logs?>() != null) ...[
-                Consumer<Logs>(
-                  builder: (context, logs, child) => SubStream<List<LogRecord>>(
-                    create: () => logs.stream(
-                      filter: (level, type) => level >= Level.SEVERE,
-                    ),
-                    builder: (context, snapshot) => ListTile(
-                      leading: const Icon(Icons.format_list_numbered),
-                      title: const Text('日志'),
-                      subtitle: (snapshot.data?.isNotEmpty ?? false)
-                          ? Text('${snapshot.data!.length} 条目')
-                          : null,
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const LogsPage(),
-                        ),
-                      ),
+                Consumer<LogErrors>(
+                  builder: (context, errors, child) => ListTile(
+                    leading: const Icon(Icons.format_list_numbered),
+                    title: const Text('日志'),
+                    subtitle: errors.isEmpty
+                        ? null
+                        : Text('已记录 ${errors.length} 个错误'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => const LogsPage()),
                     ),
                   ),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.bug_report),
-                  title: const Text('报告错误'),
-                  subtitle: const Text(
-                      '在 Github 上打开一个问题以便我们可以修复它。\n如果您遇到特定帖子的错误，请在该帖子上执行此操作。'
+                  leading: const Icon(Icons.storage),
+                  title: const Text('数据库'),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const DatabaseManagementPage(),
+                    ),
                   ),
-                  onTap: () async => link.launch(await prepareGithubIssue()),
                 ),
               ],
-              const Divider(),
-              ListTile(
-                title: const Text('关于'),
-                leading: const Icon(Icons.info),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const AboutDialog(),
-                  );
-                },
-              ),
             ],
           ),
         ),

@@ -1,5 +1,5 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class PostFullscreenAppBar extends StatelessWidget
@@ -18,17 +18,20 @@ class PostFullscreenAppBar extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return TransparentAppBar(
-      child: DefaultAppBar(
-        actions: isEditing
-            ? null
-            : [
-                PopupMenuButton<VoidCallback>(
-                  icon: const Icon(Icons.more_vert),
-                  onSelected: (value) => value(),
-                  itemBuilder: (context) => postMenuPostActions(context, post),
-                ),
-              ],
+    return DismissFade(
+      child: TransparentAppBar(
+        child: DefaultAppBar(
+          actions: isEditing
+              ? null
+              : [
+                  PopupMenuButton<VoidCallback>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) => value(),
+                    itemBuilder: (context) =>
+                        postMenuPostActions(context, post),
+                  ),
+                ],
+        ),
       ),
     );
   }

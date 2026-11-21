@@ -1,7 +1,7 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/markup/markup.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 Future<bool> replyComment({
@@ -40,22 +40,13 @@ Future<bool> writeComment({
         title: Text('#$postId 评论'),
         content: text ?? (comment?.body),
         onSubmitted: (text) async {
-          ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+          final messenger = ScaffoldMessenger.of(context);
+          final client = context.read<Client>();
           if (text.isNotEmpty) {
-            try {
-              if (comment == null) {
-                await context.read<Client>().comments.create(
-                  postId: postId,
-                  content: text,
-                );
-              } else {
-                await context.read<Client>().comments.update(
-                  id: comment.id,
-                  postId: postId,
-                  content: text,
-                );
-              }
-            } on ClientException {
+            final mutation = comment == null
+                ? client.comments.useCreate(postId: postId)
+                : client.comments.useUpdate(id: comment.id, postId: postId);
+            if ((await mutation.mutate(text)).isError) {
               return '发送评论失败！';
             }
             sent = true;

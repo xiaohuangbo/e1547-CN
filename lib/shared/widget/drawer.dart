@@ -38,7 +38,7 @@ class ContextDrawer extends StatelessWidget {
 }
 
 class ContextDrawerButton extends StatelessWidget {
-  const ContextDrawerButton({super.key, this.icon, this.tooltip = 'Filter'});
+  const ContextDrawerButton({super.key, this.icon, this.tooltip = '筛选'});
 
   final IconData? icon;
   final String? tooltip;

@@ -1,75 +1,238 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
-import 'package:recase/recase.dart';
 
-class LogStringCard extends StatelessWidget {
-  const LogStringCard({super.key, required this.item, this.expanded = false});
+const TextStyle logTextStyle = TextStyle(
+  fontFamily: 'JetBrains Mono',
+  fontSize: 12,
+  height: 1.35,
+);
 
-  final LogString item;
-  final bool expanded;
+class LogEntryTile extends StatelessWidget {
+  const LogEntryTile({super.key, required this.item});
+
+  final LogEntry item;
+
+  bool get detailed =>
+      item.attributes.isNotEmpty ||
+      item.error != null ||
+      (item.stackTrace?.isNotEmpty ?? false);
+
+  static const double stackWidth = 600;
+
+  static double rowPadding(BuildContext context) =>
+      Theme.of(context).isDesktop ? 4 : 16;
 
   @override
   Widget build(BuildContext context) {
-    String long = '${item.logger}: ${item.body}';
-    String short = long.ellipse(100).split('\n').first;
-    return LogRecordExpandable(
-      key: ValueKey(item),
-      color: item.level.color,
-      title: Text(
-        '${item.level.name.pascalCase} | ${logStringDateFormat.format(item.time)}',
+    final Color dim = dimTextColor(context);
+    return ExpandableNotifier(
+      controller: Expandables.of(context, ValueKey(item.id ?? item)),
+      child: Builder(
+        builder: (context) {
+          final ExpandableController controller = ExpandableController.of(
+            context,
+            required: true,
+          )!;
+          final double width =
+              LimitedWidthLayout.maybeOf(context)?.contentWidth ??
+              MediaQuery.sizeOf(context).width;
+          final bool stacked = controller.expanded && width < stackWidth;
+          final Widget message = Text(
+            item.message,
+            style: logTextStyle,
+            maxLines: controller.expanded ? null : 1,
+            overflow: controller.expanded
+                ? TextOverflow.clip
+                : TextOverflow.ellipsis,
+          );
+          return InkWell(
+            onTap: detailed ? controller.toggle : null,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: item.level.color, width: 3),
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 0.5,
+                  ),
+                ),
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: rowPadding(context),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    crossAxisAlignment: controller.expanded
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        logTimeFormat.format(item.time),
+                        style: logTextStyle.copyWith(color: dim),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        item.source,
+                        style: logTextStyle.copyWith(color: item.level.color),
+                      ),
+                      const SizedBox(width: 8),
+                      if (stacked) const Spacer() else Expanded(child: message),
+                      SizedBox(
+                        width: 16,
+                        child: detailed
+                            ? Icon(
+                                controller.expanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                size: 14,
+                                color: dim,
+                              )
+                            : null,
+                      ),
+                    ],
+                  ),
+                  if (stacked)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: message,
+                    ),
+                  if (detailed)
+                    ClipRect(
+                      child: AnimatedAlign(
+                        alignment: Alignment.topLeft,
+                        heightFactor: controller.expanded ? 1 : 0,
+                        duration: defaultAnimationDuration,
+                        curve: Curves.easeOut,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 8,
+                            top: 4,
+                            bottom: 4,
+                          ),
+                          child: LogEntryDetails(item: item),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
-      content: Text(short),
-      fullContent: short != long ? LogStringBody(item: item) : null,
-      expanded: expanded,
     );
   }
 }
 
-class LogStringBody extends StatelessWidget {
-  const LogStringBody({super.key, required this.item});
+class LogEntryDetails extends StatelessWidget {
+  const LogEntryDetails({super.key, required this.item});
 
-  final LogString item;
+  final LogEntry item;
 
   @override
   Widget build(BuildContext context) {
-    String value = '${item.logger}: ${item.body}';
-    value = value.replaceAllMapped(RegExp(r'\r\n'), (_) => '\n');
-    RegExp sectionRegex = RegExp(
-      r'╔(?<title>[^═╗\n]*)(═*╗)?\n(?<content>(║.*?\n)*)(╚═*╝)',
+    final List<String> stackTrace = item.stackTrace ?? const [];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final MapEntry<String, Object?> attribute
+            in item.attributes.entries)
+          LogAttribute(name: attribute.key, value: attribute.value),
+        if (item.error != null)
+          LogAttribute(name: item.error!.type, value: item.error!.message),
+        if (stackTrace.isNotEmpty)
+          LogAttribute(name: 'stack', value: stackTrace.join('\n')),
+      ],
     );
-    List<RegExpMatch> matches = sectionRegex.allMatches(value).toList();
-    if (matches.isEmpty) {
-      return Text(value.ellipse(500).split('\n').take(10).join('\n'));
-    }
-    int processed = 0;
-    List<InlineSpan> spans = [];
-    for (final match in matches) {
-      spans.add(TextSpan(text: value.substring(processed, match.start)));
-      processed = match.end;
-      String title = match.namedGroup('title')!.trim();
-      String content = match
-          .namedGroup('content')!
-          .trim()
-          .split('\n')
-          .map((e) => e.substring(1).trim())
-          .join('\n');
-      String short = content.ellipse(100);
-      content = content.ellipse(1000).split('\n').take(10).join('\n');
-      spans.add(
-        WidgetSpan(
-          child: LogRecordExpandable(
-            key: ValueKey(Object.hash(item, content)),
-            color: item.level.color,
-            title: Text(title),
-            content: Text(short.trim().isNotEmpty ? short : '无内容'),
-            fullContent: short != content ? Text(content) : null,
+  }
+}
+
+class LogAttribute extends StatelessWidget {
+  const LogAttribute({super.key, required this.name, required this.value});
+
+  final String name;
+  final Object? value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '$name  ',
+            style: logTextStyle.copyWith(color: dimTextColor(context)),
+          ),
+          TextSpan(
+            text: '${encodeLogValue(value)}'.ellipse(1000),
+            style: logTextStyle,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SelectionRowOverlay<T> extends StatelessWidget {
+  const SelectionRowOverlay({
+    super.key,
+    required this.child,
+    required this.item,
+  });
+
+  final Widget child;
+  final T item;
+
+  @override
+  Widget build(BuildContext context) {
+    final SelectionLayoutData<T>? layoutData = SelectionLayout.maybeOf<T>(
+      context,
+    );
+    if (layoutData == null) return child;
+    final bool selected = layoutData.selections.contains(item);
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        AnimatedContainer(
+          duration: defaultAnimationDuration,
+          color: selected ? scheme.primary.withValues(alpha: 0.16) : null,
+          child: child,
+        ),
+        Positioned.fill(
+          child: MouseCursorRegion(
+            behavior: HitTestBehavior.translucent,
+            onTap: layoutData.selections.isNotEmpty
+                ? () => layoutData.toggleSelection(item)
+                : null,
+            onLongPress: () => layoutData.toggleSelection(item),
+            onSecondaryTap: () => layoutData.toggleSelection(item),
+            child: ExcludeFocus(
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  duration: defaultAnimationDuration,
+                  opacity: selected ? 1 : 0,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
-      );
-    }
-    spans.add(TextSpan(text: value.substring(processed)));
-
-    return Text.rich(TextSpan(children: spans));
+      ],
+    );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 class SectionWrap extends StatelessWidget {
@@ -15,15 +15,16 @@ class SectionWrap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IndentedCard(
+    return ColoredCard(
       backgroundColor: Theme.of(context).canvasColor,
       color: dimTextColor(context),
+      padding: const EdgeInsets.only(left: ColoredCard.stripeWidth),
       child: ExpandablePanel(
         controller: Expandables.of(context, key!, expanded: expanded),
         header: Padding(
           padding: const EdgeInsets.all(8),
           child: Text(
-            title?.replaceAll('\n', 'replace') ?? '',
+            title?.replaceAll(RegExp(r'\s+'), ' ').trim() ?? '',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 16),
@@ -32,15 +33,10 @@ class SectionWrap extends StatelessWidget {
         collapsed: const SizedBox.shrink(),
         expanded: Padding(
           padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [child],
-                ),
-              ),
-            ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [child],
           ),
         ),
       ),

@@ -1,0 +1,457 @@
+[
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "hello",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "heading",
+              "type": "text"
+            }
+          ],
+          "level": 2,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "hello\n\nh2. heading",
+    "label": "paragraph then header closes cleanly"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "hello",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "world",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "hello\n\nworld",
+    "label": "paragraph then paragraph splits"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "hello",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "world",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "hello\n\n[quote]world[/quote]",
+    "label": "paragraph then quote closes cleanly"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "name": "anchor",
+              "type": "internal_anchor"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "hi",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[#anchor]\n\nhi",
+    "label": "inline anchor then paragraph splits"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "hello",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\nhello",
+    "label": "leading newline"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "hello",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "hello\n",
+    "label": "trailing newline"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "hello",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "hello\n\n",
+    "label": "trailing double newline"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "first",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "second",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "first\n\n\n\nsecond",
+    "label": "multiple blank lines collapse"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "one",
+              "type": "text"
+            },
+            {
+              "type": "line_break"
+            },
+            {
+              "content": "two",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        },
+        {
+          "children": [
+            {
+              "content": "three",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "one\ntwo\n\nthree",
+    "label": "line break then paragraph break"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Title",
+              "type": "text"
+            }
+          ],
+          "level": 2,
+          "type": "header"
+        },
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "item",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "item",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h2. Title\n\n* item\n* item",
+    "label": "header then list"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "T",
+              "type": "text"
+            }
+          ],
+          "level": 1,
+          "type": "header"
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "body",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h1. T\n\n[quote]body[/quote]",
+    "label": "header then quote"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "inside",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "quote"
+        },
+        {
+          "children": [
+            {
+              "content": "after",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[quote]inside[/quote]\n\nafter",
+    "label": "quote then paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "content": "raw",
+          "type": "code_block"
+        },
+        {
+          "children": [
+            {
+              "content": "after",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[code]raw[/code]\n\nafter",
+    "label": "code block then paragraph"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "One",
+              "type": "text"
+            }
+          ],
+          "level": 1,
+          "type": "header"
+        },
+        {
+          "children": [
+            {
+              "content": "Two",
+              "type": "text"
+            }
+          ],
+          "level": 2,
+          "type": "header"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h1. One\n\nh2. Two",
+    "label": "two headers in a row"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Title",
+              "type": "text"
+            }
+          ],
+          "level": 1,
+          "type": "header"
+        },
+        {
+          "content": "raw",
+          "type": "code_block"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "h1. Title\n\n[code]raw[/code]",
+    "label": "header then code block"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "items": [
+            {
+              "children": [
+                {
+                  "content": "one",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            },
+            {
+              "children": [
+                {
+                  "content": "two",
+                  "type": "text"
+                }
+              ],
+              "depth": 1,
+              "type": "list_item"
+            }
+          ],
+          "type": "list"
+        },
+        {
+          "children": [
+            {
+              "content": "after",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "* one\n* two\n\nafter",
+    "label": "list then paragraph"
+  }
+]

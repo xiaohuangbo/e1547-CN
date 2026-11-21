@@ -875,6 +875,24 @@ mixin $FollowRepositoryMixin on i0.DatabaseAccessor<i1.GeneratedDatabase> {
       i3.ReadDatabaseContainer(
         attachedDatabase,
       ).resultSet<i2.$FollowsIdentitiesTableTable>('follows_identities_table');
+  FollowRepositoryManager get managers => FollowRepositoryManager(this);
+}
+
+class FollowRepositoryManager {
+  final $FollowRepositoryMixin _db;
+  FollowRepositoryManager(this._db);
+  i2.$$FollowsTableTableTableManager get followsTable => i2
+      .$$FollowsTableTableTableManager(_db.attachedDatabase, _db.followsTable);
+  i4.$$IdentitiesTableTableTableManager get identitiesTable =>
+      i4.$$IdentitiesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.identitiesTable,
+      );
+  i2.$$FollowsIdentitiesTableTableTableManager get followsIdentitiesTable =>
+      i2.$$FollowsIdentitiesTableTableTableManager(
+        _db.attachedDatabase,
+        _db.followsIdentitiesTable,
+      );
 }
 
 class $FollowsTableTable extends i6.FollowsTable

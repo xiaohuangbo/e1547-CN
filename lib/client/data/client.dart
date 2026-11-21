@@ -7,10 +7,11 @@ import 'package:e1547/flag/flag.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/history/history.dart';
 import 'package:e1547/identity/identity.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/pool/pool.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
 import 'package:e1547/reply/reply.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:e1547/topic/topic.dart';
@@ -23,62 +24,91 @@ export 'package:dio/dio.dart' show CancelToken;
 
 class Client with Disposable {
   Client({required this.identity, required this.traits, required this.storage})
-      : dio = createDefaultDio(identity, cache: storage.httpCache);
+    : dio = createDefaultDio(identity, queryCache: storage.queryCache);
 
   final Dio dio;
   final AppStorage storage;
   final Identity identity;
   final ValueNotifier<Traits> traits;
 
-  late final AccountService accounts = AccountService(
+  late final AccountClient accounts = AccountClient(
     dio: dio,
     identity: identity,
     traits: traits,
     postsService: posts,
   );
-  late final UserService users = UserService(dio: dio);
+  late final UserClient users = UserClient(dio: dio);
 
-  late final PostService posts = PostService(
+  late final PostClient posts = PostClient(
     dio: dio,
+    pools: pools,
+    traits: traits,
     identity: identity,
-    poolsService: pools,
   );
 
-  late final TagService tags = TagService(dio: dio);
-  late final WikiService wikis = WikiService(dio: dio);
+  late final TagClient tags = TagClient(dio: dio);
+  late final WikiClient wikis = WikiClient(dio: dio);
 
-  late final CommentService comments = CommentService(dio: dio);
+  late final CommentClient comments = CommentClient(dio: dio);
 
-  late final PoolService pools = PoolService(dio: dio);
+  late final PoolClient pools = PoolClient(dio: dio);
   // TODO: add Sets
 
-  late final TopicService topics = TopicService(dio: dio);
-  late final ReplyService replies = ReplyService(dio: dio);
+  late final TopicClient topics = TopicClient(dio: dio);
+  late final ReplyClient replies = ReplyClient(dio: dio);
 
-  late final FlagService flags = FlagService(dio: dio);
-  late final TicketService tickets = TicketService(dio: dio);
+  late final FlagClient flags = FlagClient(dio: dio);
+  late final TicketClient tickets = TicketClient(dio: dio);
 
-  late final FollowService follows = FollowService(
+  late final FollowClient follows = FollowClient(
+    database: storage.sqlite,
+    identity: identity,
+    dio: dio,
+  );
+
+  late final FollowServer followServer = FollowServer(
     database: storage.sqlite,
     identity: identity,
     traits: traits,
     postsClient: posts,
     poolsClient: pools,
     tagsClient: tags,
+    onSynced: () => dio.queryCache?.invalidateKey(follows.queryKey),
   );
 
-  late final HistoryService histories = HistoryService(
+  late final HistoryServer historyServer = HistoryServer(
     database: storage.sqlite,
-    preferences: storage.preferences,
     identity: identity,
     traits: traits,
   );
 
-  Future<void> clearCache() => storage.httpCache?.clean() ?? Future.value();
+  late final HistoryClient histories = HistoryClient(
+    server: historyServer,
+    dio: dio,
+  );
 
   @override
   void dispose() {
     dio.close();
+    for (final client in [
+      accounts,
+      users,
+      posts,
+      tags,
+      wikis,
+      comments,
+      pools,
+      topics,
+      replies,
+      flags,
+      tickets,
+      follows,
+      followServer,
+      historyServer,
+      histories,
+    ]) {
+      Disposable.tryDispose(client);
+    }
     super.dispose();
   }
 }

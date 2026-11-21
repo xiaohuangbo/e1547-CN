@@ -7,29 +7,25 @@ class WikiClient {
 
   final Dio dio;
 
-  Future<Wiki> get({
-    required String id,
-    bool? force,
-    CancelToken? cancelToken,
-  }) => dio
-      .get(
-        '/wiki_pages/$id.json',
-        options: forceOptions(force),
-        cancelToken: cancelToken,
-      )
+  Future<Wiki> get({required int id, CancelToken? cancelToken}) =>
+      _get(id.toString(), cancelToken: cancelToken);
+
+  Future<Wiki> getByTitle({required String title, CancelToken? cancelToken}) =>
+      _get(title, cancelToken: cancelToken);
+
+  Future<Wiki> _get(String lookup, {CancelToken? cancelToken}) => dio
+      .get('/wiki_pages/$lookup.json', cancelToken: cancelToken)
       .then((response) => E621Wiki.fromJson(response.data));
 
   Future<List<Wiki>> page({
     int? page,
     int? limit,
     QueryMap? query,
-    bool? force,
     CancelToken? cancelToken,
   }) => dio
       .get(
         '/wiki_pages.json',
         queryParameters: {'page': page, 'limit': limit, ...?query},
-        options: forceOptions(force),
         cancelToken: cancelToken,
       )
       .then(unwrapRailsArray)

@@ -1,21 +1,22 @@
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/history/history.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sub/flutter_sub.dart';
 
 typedef HistoryConnector<T> =
-    void Function(BuildContext context, Client client, T data);
+    HistoryRequest Function(BuildContext context, T data);
 
 class ItemHistoryConnector<T> extends StatefulWidget {
   const ItemHistoryConnector({
     super.key,
     required this.item,
-    required this.addToHistory,
+    required this.getEntry,
     required this.child,
   });
 
   final T item;
-  final HistoryConnector<T> addToHistory;
+  final HistoryConnector<T> getEntry;
   final Widget child;
 
   @override
@@ -24,61 +25,50 @@ class ItemHistoryConnector<T> extends StatefulWidget {
 }
 
 class _ItemHistoryConnectorState<T> extends State<ItemHistoryConnector<T>> {
+  T? added;
+
   @override
-  void initState() {
-    super.initState();
-    Client client = context.read<Client>();
-    widget.addToHistory(context, client, widget.item);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _add();
   }
 
   @override
   void didUpdateWidget(covariant ItemHistoryConnector<T> oldWidget) {
-    if (oldWidget.item != widget.item) {
-      Client client = context.read<Client>();
-      widget.addToHistory(context, client, widget.item);
-    }
     super.didUpdateWidget(oldWidget);
+    _add();
+  }
+
+  void _add() {
+    if (widget.item == added || isSkeleton(context)) return;
+    added = widget.item;
+    final client = context.read<Client>();
+    final request = widget.getEntry(context, widget.item);
+    client.histories.useAdd().mutate(request);
   }
 
   @override
   Widget build(BuildContext context) => widget.child;
 }
 
-class ControllerHistoryConnector<T extends DataController?>
-    extends StatefulWidget {
-  const ControllerHistoryConnector({
+class QueryHistoryConnector<S> extends StatelessWidget {
+  const QueryHistoryConnector({
     super.key,
-    required this.addToHistory,
-    required this.controller,
+    required this.query,
+    required this.getEntry,
     required this.child,
   });
 
-  final T controller;
-  final HistoryConnector<T> addToHistory;
+  final Cacheable<S> query;
+  final HistoryRequest? Function(BuildContext context, S state) getEntry;
   final Widget child;
 
   @override
-  State<ControllerHistoryConnector<T>> createState() =>
-      _ControllerHistoryConnectorState<T>();
-}
-
-class _ControllerHistoryConnectorState<T extends DataController?>
-    extends State<ControllerHistoryConnector<T>> {
-  @override
-  Widget build(BuildContext context) {
-    return SubListener(
-      initialize: true,
-      listenable: Listenable.merge([widget.controller]),
-      listener: () async {
-        T? controller = widget.controller;
-        if (controller == null) return;
-        await controller.waitForNextPage();
-        if (controller.error != null) return;
-        if (!context.mounted) return;
-        Client client = context.read<Client>();
-        widget.addToHistory(context, client, controller);
-      },
-      builder: (context) => widget.child,
-    );
-  }
+  Widget build(BuildContext context) => QueryOnceConnector<S, HistoryRequest>(
+    query: query,
+    getRequest: getEntry,
+    onRequest: (context, request) =>
+        context.read<Client>().histories.useAdd().mutate(request),
+    child: child,
+  );
 }

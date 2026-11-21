@@ -2,8 +2,8 @@ import 'package:e1547/app/app.dart';
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
 import 'package:e1547/flag/flag.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/ticket/ticket.dart';
 import 'package:flutter/material.dart';
 
@@ -36,32 +36,31 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
   BuildContext context,
   Post post,
 ) {
+  final cacheSize = context.read<ImageCacheSize?>()?.size;
   return [
-    if (context.read<PostEditingController?>() != null)
-      PopupMenuTile(
-        title: '编辑',
-        icon: Icons.edit,
-        value: () => guardWithLogin(
-          context: context,
-          callback: context.read<PostEditingController>().startEditing,
-          error: 'You must be logged in to edit posts!',
+    PopupMenuTile(
+      title: '编辑',
+      icon: Icons.edit,
+      value: () => guardWithLogin(
+        context: context,
+        callback: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ImageCacheSizeProvider(
+              size: cacheSize,
+              child: PostEditPage(post: post),
+            ),
+          ),
         ),
+        error: '您必须登录才能编辑帖子！',
       ),
+    ),
     PopupMenuTile(
       title: '评论',
       icon: Icons.comment,
       value: () => guardWithLogin(
         context: context,
-        callback: () async {
-          PostController controller = context.read<PostController>();
-          bool success = await writeComment(context: context, postId: post.id);
-          if (success) {
-            controller.replacePost(
-              post.copyWith(commentCount: post.commentCount + 1),
-            );
-          }
-        },
-        error: 'You must be logged in to comment!',
+        callback: () => writeComment(context: context, postId: post.id),
+        error: '您必须登录才能发表评论！',
       ),
     ),
     PopupMenuTile(
@@ -72,7 +71,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
         callback: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => PostReportScreen(post: post)),
         ),
-        error: 'You must be logged in to report posts!',
+        error: '您必须登录才能举报帖子！',
       ),
     ),
     PopupMenuTile(
@@ -83,7 +82,7 @@ List<PopupMenuItem<VoidCallback>> postMenuUserActions(
         callback: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => PostFlagScreen(post: post)),
         ),
-        error: 'You must be logged in to flag posts!',
+        error: '您必须登录才能标记帖子！',
       ),
     ),
   ];

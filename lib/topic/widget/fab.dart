@@ -8,22 +8,21 @@ class TopicSearchFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TopicController>(
-      builder: (context, controller, child) => SearchPromptFloatingActionButton(
-        tags: controller.query,
-        onSubmit: (value) => controller.query = value,
-        filters: [
-          WrapperFilterConfig(
-            wrapper: (value) => 'search[$value]',
-            unwrapper: (value) => value.substring(7, value.length - 1),
-            filters: [
-              PrimaryFilterConfig(
-                filter: const TextFilterTag(tag: 'title_matches', name: 'Name'),
-              ),
-            ],
-          ),
-        ],
-      ),
+    final controller = context.watch<TopicParamsController>();
+    return SearchPromptFab(
+      tags: controller.value.toQuery(),
+      onSubmit: (value) => controller.value = TopicParams.fromQuery(value),
+      filters: [
+        PrimaryFilterConfig(
+          filter: TopicParams.titleFilter,
+          filters: [
+            TopicParams.categoryFilter,
+            TopicParams.orderFilter,
+            TopicParams.stickyFilter,
+            TopicParams.lockedFilter,
+          ],
+        ),
+      ],
     );
   }
 }

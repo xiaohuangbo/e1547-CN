@@ -115,6 +115,43 @@ Builds an exe installer with fastforge and InnoSetup
 
 ----
 
+
+## linux
+
+### linux bootstrap
+
+```sh
+[bundle exec] fastlane linux bootstrap
+```
+
+Ensures flutter is installed
+
+### linux build
+
+```sh
+[bundle exec] fastlane linux build
+```
+
+Builds the linux bundle
+
+### linux install
+
+```sh
+[bundle exec] fastlane linux install
+```
+
+Installs the linux bundle
+
+### linux pkgdeb
+
+```sh
+[bundle exec] fastlane linux pkgdeb
+```
+
+Packages the staging root into a deb
+
+----
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).

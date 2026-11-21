@@ -1,4 +1,3 @@
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/user/user.dart';
@@ -42,10 +41,7 @@ class ArtistDisplay extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => UserLoadingPage(
-                        post.uploaderId.toString(),
-                        initalPage: UserPageSection.uploads,
-                      ),
+                      builder: (context) => UserLoadingPage(post.uploaderId),
                     ),
                   ),
                   child: Padding(
@@ -79,12 +75,7 @@ class ArtistName extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, List<String>> tags = context
-        .select<PostEditingController?, Map<String, List<String>>>(
-          (value) => value?.value?.tags ?? post.tags,
-        );
-
-    List<String> artists = filterArtists((tags)['artist'] ?? []);
+    List<String> artists = filterArtists(post.tags['artist'] ?? []);
     if (artists.isNotEmpty) {
       return OverflowBar(
         children: [
@@ -117,7 +108,7 @@ class ArtistName extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.all(8),
         child: Text(
-          '没有艺术家',
+          'no artist',
           style: TextStyle(
             color: Theme.of(context).textTheme.titleSmall!.color,
             fontStyle: FontStyle.italic,

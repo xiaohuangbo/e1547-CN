@@ -14,13 +14,13 @@ class EditReasonDisplay extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Edit reason (optional)', style: TextStyle(fontSize: 16)),
+          const Text('编辑原因（可选）', style: TextStyle(fontSize: 16)),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              hintText: 'Why are you editing this post?',
+              hintText: '您为什么要编辑这个帖子？',
             ),
             enabled: enabled,
           ),

@@ -1,8 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/history/history.dart';
 import 'package:e1547/markup/markup.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/wiki/wiki.dart';
 import 'package:flutter/material.dart';
@@ -10,124 +11,96 @@ import 'package:flutter/material.dart';
 Future<void> showTagSearchPrompt({
   required BuildContext context,
   required String tag,
-}) async {
-  if (Theme.of(context).isDesktop) {
-    return showTagSearchDialog(context: context, tag: tag);
-  }
-
-  return showTagSearchSheet(context: context, tag: tag);
-}
-
-Future<void> showTagSearchSheet({
-  required BuildContext context,
-  required String tag,
-}) async {
-  PostController? controller = context.read<PostController?>();
-  return showDefaultSlidingBottomSheet(
+}) {
+  final controller = context.read<PostParamsController?>();
+  return showPrompt<void>(
     context,
-    (context, sheetState) => TagSearchSheet(tag: tag, controller: controller),
+    pinnedHeader: true,
+    dialogWidth: 800,
+    // A prompt opens in its own route, so the page's controller is out of
+    // scope.
+    parentBuilder: (context, child) => controller == null
+        ? child
+        : ChangeNotifierProvider<PostParamsController>.value(
+            value: controller,
+            child: child,
+          ),
+    header: (context) {
+      final canSearch =
+          context.read<PostParamsController?>()?.canSearch ?? false;
+      return PromptHeader(
+        title: InkWell(
+          onTap: () {
+            Navigator.of(context).maybePop();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PostsPage(params: PostParams(tags: tag)),
+              ),
+            );
+          },
+          child: Text(
+            tagToName(tag),
+            style: Theme.of(context).textTheme.titleLarge,
+            softWrap: true,
+          ),
+        ),
+        actions: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (canSearch) TagSearchActions(tag: tag),
+              TagListActions(tag: tag),
+            ],
+          ),
+        ),
+      );
+    },
+    body: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          // Keeps the dialog from jumping as each tag resolves.
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            alignment: Alignment.topCenter,
+            child: TagSearchInfo(tag: tag),
+          ),
+        ),
+      ],
+    ),
   );
 }
 
-class TagSearchSheet extends StatelessWidget {
-  const TagSearchSheet({super.key, required this.tag, this.controller});
-
-  final String tag;
-  final PostController? controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultSheetBody(
-      title: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Flexible(
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).maybePop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              PostsSearchPage(query: {'tags': tag}),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(tagToName(tag)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            const Divider(indent: 4, endIndent: 4),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (controller != null)
-                    TagSearchActions(tag: tag, controller: controller!),
-                  TagListActions(tag: tag),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 600),
-          child: TagSearchInfo(tag: tag, controller: controller),
-        ),
-      ),
-    );
-  }
-}
-
 class TagSearchInfo extends StatelessWidget {
-  const TagSearchInfo({super.key, required this.tag, this.controller});
+  const TagSearchInfo({super.key, required this.tag});
 
   final String tag;
-  final PostController? controller;
 
   @override
   Widget build(BuildContext context) {
     List<String> tags = TagMap(tag).toString().split(' ');
 
     if (tags.length > 1) {
-      return SingleChildScrollView(
-        primary: true,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: tags
-              .map((e) => TagSearchInfoChild(tag: e, controller: controller))
-              .toList(),
-        ),
-      );
-    } else {
-      return SingleChildScrollView(
-        primary: true,
-        child: SearchTagDisplay(tag: tag),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: tags.map((e) => TagSearchInfoChild(tag: e)).toList(),
       );
     }
+    return SearchTagDisplay(tag: tag);
   }
 }
 
 class TagSearchInfoChild extends StatelessWidget {
-  const TagSearchInfoChild({super.key, required this.tag, this.controller});
+  const TagSearchInfoChild({super.key, required this.tag});
 
   final String tag;
-  final PostController? controller;
 
   @override
   Widget build(BuildContext context) {
+    final canSearch = context.read<PostParamsController?>()?.canSearch ?? false;
     Widget actions(String tag, bool alignRight) {
       return SingleChildScrollView(
         reverse: alignRight,
@@ -138,22 +111,20 @@ class TagSearchInfoChild extends StatelessWidget {
               : MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (controller != null)
-              TagSearchActions(tag: tag, controller: controller!),
+            if (canSearch) TagSearchActions(tag: tag),
             TagListActions(tag: tag),
           ],
         ),
       );
     }
 
-    bool alignRight =
-        context.findAncestorWidgetOfExactType<TagSearchDialog>() != null;
+    final bool onDesktop = Theme.of(context).isDesktop;
     return ExpandableNotifier(
       child: ExpandableTheme(
         data: ExpandableThemeData(
           headerAlignment: ExpandablePanelHeaderAlignment.center,
           iconColor: Theme.of(context).iconTheme.color,
-          iconPlacement: alignRight ? ExpandablePanelIconPlacement.left : null,
+          iconPlacement: onDesktop ? ExpandablePanelIconPlacement.left : null,
         ),
         child: ExpandablePanel(
           header: Builder(
@@ -173,7 +144,7 @@ class TagSearchInfoChild extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (expanded && alignRight) actions(tag, alignRight),
+                  if (expanded && onDesktop) actions(tag, onDesktop),
                 ],
               );
             },
@@ -183,7 +154,7 @@ class TagSearchInfoChild extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!alignRight) actions(tag, alignRight),
+              if (!onDesktop) actions(tag, onDesktop),
               const SizedBox(height: 8),
               Flexible(
                 child: Padding(
@@ -212,7 +183,7 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
   late Future<Wiki?> wiki = retrieveWiki();
 
   Future<Wiki?> retrieveWiki() async {
-    Client client = context.read<Client>();
+    final client = context.read<Client>();
     List<Wiki> results = await client.wikis.page(
       query: {'search[title]': tagToRaw(widget.tag)},
     );
@@ -223,13 +194,15 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
   void initState() {
     super.initState();
     // TODO: history connector?
-    Client client = context.read<Client>();
+    final client = context.read<Client>();
     wiki.then((value) {
       if (value != null) {
-        client.histories.addWiki(wiki: value);
+        client.histories.add(WikiHistoryRequest.item(wiki: value));
       } else {
-        client.histories.addWikiSearch(
-          query: {'search[title]': tagToRaw(widget.tag)},
+        client.histories.add(
+          WikiHistoryRequest.search(
+            query: {'search[title]': tagToRaw(widget.tag)},
+          ),
         );
       }
     });
@@ -258,7 +231,7 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    '没有百科条目',
+                    'no wiki entry',
                     style: TextStyle(
                       color: dimTextColor(context, 0.5),
                       fontStyle: FontStyle.italic,
@@ -269,81 +242,7 @@ class _SearchTagDisplayState extends State<SearchTagDisplay> {
             );
           }
         },
-        secondChild: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-Future<void> showTagSearchDialog({
-  required BuildContext context,
-  required String tag,
-}) {
-  PostController? controller = context.read<PostController?>();
-  return showDialog(
-    context: context,
-    builder: (context) => TagSearchDialog(tag: tag, controller: controller),
-  );
-}
-
-class TagSearchDialog extends StatelessWidget {
-  const TagSearchDialog({super.key, required this.tag, this.controller});
-
-  final String tag;
-  final PostController? controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: AnimatedSize(
-        duration: const Duration(milliseconds: 200),
-        child: SizedBox(
-          width: 800,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      tagToName(tag),
-                      style: Theme.of(context).textTheme.titleLarge,
-                      softWrap: true,
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (controller != null)
-                        TagSearchActions(tag: tag, controller: controller!),
-                      TagListActions(tag: tag),
-                    ],
-                  ),
-                ],
-              ),
-              const Divider(indent: 4, endIndent: 4),
-              Flexible(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TagSearchInfo(tag: tag, controller: controller),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        secondChild: Skeletonizer(child: DText(const WikiGhost().body)),
       ),
     );
   }

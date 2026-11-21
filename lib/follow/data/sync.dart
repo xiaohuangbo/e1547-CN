@@ -5,13 +5,13 @@ import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:e1547/follow/follow.dart';
 import 'package:e1547/identity/identity.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/logs/logs.dart';
-import 'package:e1547/pool/data/service.dart';
+import 'package:e1547/pool/data/client.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:e1547/tag/tag.dart';
 import 'package:e1547/traits/traits.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:rxdart/rxdart.dart';
 
 class FollowSync {
@@ -25,7 +25,11 @@ class FollowSync {
     this.force,
   });
 
-  late final Logger logger = Logger('$runtimeType#$hashCode');
+  late final Logger logger = Logger('FollowSync', {
+    'identity': identity.id,
+    'user': identity.usernameOrAnon,
+    'host': identity.host,
+  });
 
   final int refreshAmount = 5;
   final Duration refreshRate = const Duration(hours: 1);
@@ -33,9 +37,9 @@ class FollowSync {
   final FollowRepository repository;
   final Identity identity;
   final ValueNotifier<Traits> traits;
-  final PostService postsClient;
-  final PoolService? poolsClient;
-  final TagService? tagsClient;
+  final PostClient postsClient;
+  final PoolClient? poolsClient;
+  final TagClient? tagsClient;
   final bool? force;
 
   CancelableOperation<void>? _operation;
@@ -47,7 +51,7 @@ class FollowSync {
   bool get cancelled => _operation?.isCanceled ?? false;
 
   void cancel() {
-    logger.fine('Sync cancelled!');
+    logger.debug('Sync cancelled for {user} on {host}');
     _operation?.cancel();
   }
 
@@ -59,16 +63,32 @@ class FollowSync {
 
   late final StreamController<int> _remaining = BehaviorSubject()
     ..stream.listen(
-      (value) => logger.fine('Syncing ${(_total ?? 0) - value} follows...'),
+      (value) => logger.debug('Synced {done} of {total} follows', {
+        'done': (_total ?? 0) - value,
+        'total': _total,
+      }),
       onError: (exception, stacktrace) {
         _error = exception;
+        // an Error means we are wrong, an Exception means the world is
         if (exception is Error) {
-          logger.shout('Sync failed!', exception, stacktrace);
+          logger.error(
+            'Sync failed for {user} on {host}',
+            null,
+            exception,
+            stacktrace,
+          );
         } else {
-          logger.warning('Sync failed!', exception, stacktrace);
+          logger.warn(
+            'Sync failed for {user} on {host}',
+            null,
+            exception,
+            stacktrace,
+          );
         }
       },
-      onDone: () => logger.info('Sync finished!'),
+      onDone: () => logger.info('Synced {total} follows for {user} on {host}', {
+        'total': _total,
+      }),
     );
 
   int? _total;
@@ -86,17 +106,14 @@ class FollowSync {
 
   Future<void> run() async {
     _operation ??= CancelableOperation.fromFuture(_run());
-    return _operation!.value;
+    await _operation!.valueOrCancellation();
   }
 
   Future<void> _run() async {
-    logger.info(
-      'Sync started for '
-      '${identity.usernameOrAnon} on ${identity.host}',
-    );
+    logger.info('Sync started for {user} on {host}');
     try {
       if (force ?? false) {
-        logger.fine('Force refreshing follows...');
+        logger.debug('Force refreshing all follows');
         await repository.transaction(() async {
           List<Follow> follows = await repository.all(
             types: [FollowType.notify, FollowType.update],
@@ -162,7 +179,7 @@ class FollowSync {
 
     int limit = follows.length * refreshAmount;
     List<Post> allPosts = await rateLimit(
-      postsClient.byTags(tags: tags, page: 1, limit: limit, force: force),
+      postsClient.byTags(tags: tags, page: 1, limit: limit),
     );
 
     Map<Follow, List<Post>> assign(List<Follow> follows, List<Post> posts) {
@@ -184,10 +201,10 @@ class FollowSync {
       List<Post> picked = updates.values.flattened.toList();
       List<Post> leftovers = allPosts.whereNot(picked.contains).toList();
       if (leftovers.isNotEmpty) {
-        logger.info(
-          'Sync found ${leftovers.length} leftover posts!\n'
-          '${prettyLogObject(leftovers, header: 'Leftovers')}',
-        );
+        logger.info('Sync found {count} leftover posts', {
+          'count': leftovers.length,
+          'posts': leftovers.map((e) => e.id).toList(),
+        });
       }
       return leftovers.isNotEmpty;
     }
@@ -230,12 +247,7 @@ class FollowSync {
     _assertNoDuplicates([follow.tags]);
 
     List<Post> posts = await rateLimit(
-      postsClient.page(
-        query: {'tags': follow.tags},
-        limit: refreshAmount,
-        ordered: false,
-        force: force,
-      ),
+      postsClient.page(query: {'tags': follow.tags}, limit: refreshAmount),
     );
     posts.removeWhere((e) => e.isDeniedBy(traits.value.denylist));
     follow = follow.withUnseen(posts);
@@ -244,17 +256,14 @@ class FollowSync {
       if (follow.title == null && match != null) {
         try {
           follow = follow.withPool(
-            await poolsClient!.get(
-              id: int.parse(match.namedGroup('id')!),
-              force: force,
-            ),
+            await poolsClient!.get(id: int.parse(match.namedGroup('id')!)),
           );
         } on ClientException catch (e) {
           if (e.response?.statusCode == HttpStatus.notFound) {
             follow = follow.copyWith(type: FollowType.bookmark);
-            logger.info(
-              'Sync found no pool for ${follow.tags}. Set to bookmarked!',
-            );
+            logger.info('No pool for {tags}, set to bookmarked', {
+              'tags': follow.tags,
+            });
           } else {
             rethrow;
           }

@@ -1,10 +1,13 @@
+import 'package:e1547/shared/shared.dart';
+import 'package:e1547/topic/data/params.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'ghost.dart';
 part 'topic.freezed.dart';
 part 'topic.g.dart';
 
 @freezed
-class Topic with _$Topic {
+abstract class Topic with _$Topic {
   const factory Topic({
     required int id,
     required int creatorId,
@@ -20,6 +23,8 @@ class Topic with _$Topic {
     required bool hidden,
     required int categoryId,
   }) = _Topic;
+
+  const Topic._();
 
   factory Topic.fromJson(dynamic json) => _$TopicFromJson(json);
 }

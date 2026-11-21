@@ -1,0 +1,4 @@
+### Fixed
+- Videos playing on after swiping away from them
+- Follows staying unread after visiting them
+- System bars showing and hiding

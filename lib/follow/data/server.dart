@@ -19,6 +19,7 @@ class FollowServer with Disposable {
     required this.postsClient,
     this.poolsClient,
     this.tagsClient,
+    this.onSynced,
   }) : repository = FollowRepository(database: database);
 
   final FollowRepository repository;
@@ -27,6 +28,7 @@ class FollowServer with Disposable {
   final PostClient postsClient;
   final PoolClient? poolsClient;
   final TagClient? tagsClient;
+  final VoidCallback? onSynced;
 
   final StreamController<FollowSync?> _syncStream =
       BehaviorSubject<FollowSync?>();
@@ -52,6 +54,7 @@ class FollowServer with Disposable {
     await sync.run();
     _currentSync = null;
     _syncStream.add(null);
+    onSynced?.call();
   }
 
   Future<void> syncWith({
@@ -59,23 +62,25 @@ class FollowServer with Disposable {
     List<Post>? posts,
     Pool? pool,
     bool? seen,
-  }) =>
-      ((repository.update(
-        repository.followsTable,
-      ))..where((tbl) => tbl.id.equals(id))).write(
-        FollowCompanion(
-          latest: posts?.isNotEmpty ?? false
-              ? Value(posts!.first.id)
-              : const Value.absent(),
-          thumbnail: posts?.isNotEmpty ?? false
-              ? Value(posts!.first.sample)
-              : const Value.absent(),
-          title: pool?.name != null
-              ? Value(tagToName(pool!.name))
-              : const Value.absent(),
-          unseen: seen ?? true ? const Value(0) : const Value.absent(),
-        ),
-      );
+  }) async {
+    final latest = posts == null || posts.isEmpty
+        ? null
+        : posts.reduce((a, b) => a.id > b.id ? a : b);
+    await ((repository.update(
+      repository.followsTable,
+    ))..where((tbl) => tbl.id.equals(id))).write(
+      FollowCompanion(
+        latest: latest != null ? Value(latest.id) : const Value.absent(),
+        thumbnail: latest != null
+            ? Value(latest.sample ?? latest.preview)
+            : const Value.absent(),
+        title: pool != null
+            ? Value(tagToName(pool.name))
+            : const Value.absent(),
+        unseen: seen ?? true ? const Value(0) : const Value.absent(),
+      ),
+    );
+  }
 
   @override
   void dispose() {

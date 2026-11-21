@@ -1,0 +1,1128 @@
+[
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "https://example.com",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "https://example.com",
+    "label": "bare https url"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "http://example.com",
+                  "type": "text"
+                }
+              ],
+              "href": "http://example.com",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "http://example.com",
+    "label": "bare http url"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "https://example.com/link_(test)",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com/link_(test)",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "<https://example.com/link_(test)>",
+    "label": "delimited url with parens"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "A link",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com/",
+              "linkType": "inline",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"A link\":https://example.com/",
+    "label": "textile link bare"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "A link",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com/link_(test)",
+              "linkType": "inline",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"A link\":[https://example.com/link_(test)]",
+    "label": "textile link bracketed"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "A link",
+                  "type": "text"
+                }
+              ],
+              "href": "/users",
+              "linkType": "inline",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"A link\":/users",
+    "label": "textile relative link"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "simple background",
+                  "type": "text"
+                }
+              ],
+              "href": "/wiki_pages/show_or_new?title=simple_background",
+              "linkType": "wiki",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[[simple background]]",
+    "label": "wiki link basic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Some Text",
+                  "type": "text"
+                }
+              ],
+              "href": "/wiki_pages/show_or_new?title=wiki_page",
+              "linkType": "wiki",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[[wiki page|Some Text]]",
+    "label": "wiki link with title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "anchor": "quote",
+              "children": [
+                {
+                  "content": "#quote",
+                  "type": "text"
+                }
+              ],
+              "href": "#quote",
+              "linkType": "wiki",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[[#quote]]",
+    "label": "wiki link anchor only"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "anchor": "anchors",
+              "children": [
+                {
+                  "content": "Anchors work too!",
+                  "type": "text"
+                }
+              ],
+              "href": "#anchors",
+              "linkType": "wiki",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[[#anchors|Anchors work too!]]",
+    "label": "wiki link anchor with title"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "anchor": "equine",
+              "children": [
+                {
+                  "content": "mammal#equine",
+                  "type": "text"
+                }
+              ],
+              "href": "/wiki_pages/show_or_new?title=mammal#equine",
+              "linkType": "wiki",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[[mammal#equine]]",
+    "label": "wiki link with anchor"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "mammal -cat",
+                  "type": "text"
+                }
+              ],
+              "href": "/posts?tags=mammal%20-cat",
+              "linkType": "post_search",
+              "tags": "mammal -cat",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "{{mammal -cat}}",
+    "label": "post search bare"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Custom Title",
+                  "type": "text"
+                }
+              ],
+              "href": "/posts?tags=search",
+              "linkType": "post_search",
+              "tags": "search",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "{{search|Custom Title}}",
+    "label": "post search titled"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "post #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/posts/1234",
+              "id": "1234",
+              "idType": "post",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "post #1234",
+    "label": "id link post"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "post changes #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/post_versions?search[post_id]=1234",
+              "id": "1234",
+              "idType": "post_changes",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "post changes #1234",
+    "label": "id link post changes"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "topic #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/forum_topics/1234",
+              "id": "1234",
+              "idType": "topic",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "topic #1234",
+    "label": "id link topic"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "comment #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/comments/1234",
+              "id": "1234",
+              "idType": "comment",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "comment #1234",
+    "label": "id link comment"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "blip #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/blips/1234",
+              "id": "1234",
+              "idType": "blip",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "blip #1234",
+    "label": "id link blip"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "pool #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/pools/1234",
+              "id": "1234",
+              "idType": "pool",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "pool #1234",
+    "label": "id link pool"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "set #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/post_sets/1234",
+              "id": "1234",
+              "idType": "set",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "set #1234",
+    "label": "id link set"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "takedown #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/takedowns/1234",
+              "id": "1234",
+              "idType": "takedown",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "takedown #1234",
+    "label": "id link takedown"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "record #4321",
+                  "type": "text"
+                }
+              ],
+              "href": "/user_feedbacks/4321",
+              "id": "4321",
+              "idType": "record",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "record #4321",
+    "label": "id link record"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "ticket #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/tickets/1234",
+              "id": "1234",
+              "idType": "ticket",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "ticket #1234",
+    "label": "id link ticket"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "user #42",
+                  "type": "text"
+                }
+              ],
+              "href": "/users/42",
+              "id": "42",
+              "idType": "user",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "user #42",
+    "label": "id link user"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "forum #42",
+                  "type": "text"
+                }
+              ],
+              "href": "/forum_posts/42",
+              "id": "42",
+              "idType": "forum_post",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "forum #42",
+    "label": "id link forum"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "mod action #99",
+                  "type": "text"
+                }
+              ],
+              "href": "/mod_actions/99",
+              "id": "99",
+              "idType": "mod_action",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "mod action #99",
+    "label": "id link mod action"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "flag #5",
+                  "type": "text"
+                }
+              ],
+              "href": "/post_flags/5",
+              "id": "5",
+              "idType": "flag",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "flag #5",
+    "label": "id link flag"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "note #7",
+                  "type": "text"
+                }
+              ],
+              "href": "/notes/7",
+              "id": "7",
+              "idType": "note",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "note #7",
+    "label": "id link note"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "forum ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "post #1234",
+                  "type": "text"
+                }
+              ],
+              "href": "/posts/1234",
+              "id": "1234",
+              "idType": "post",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "forum post #1234",
+    "label": "id link forum_post"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "artist #11",
+                  "type": "text"
+                }
+              ],
+              "href": "/artists/11",
+              "id": "11",
+              "idType": "artist",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "artist #11",
+    "label": "id link artist"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "ban #2",
+                  "type": "text"
+                }
+              ],
+              "href": "/bans/2",
+              "id": "2",
+              "idType": "ban",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "ban #2",
+    "label": "id link ban"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "BUR #5",
+                  "type": "text"
+                }
+              ],
+              "href": "/bulk_update_requests/5",
+              "id": "5",
+              "idType": "bur",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "BUR #5",
+    "label": "id link bur uppercase"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "alias #3",
+                  "type": "text"
+                }
+              ],
+              "href": "/tag_aliases/3",
+              "id": "3",
+              "idType": "alias",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "alias #3",
+    "label": "id link alias"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "implication #8",
+                  "type": "text"
+                }
+              ],
+              "href": "/tag_implications/8",
+              "id": "8",
+              "idType": "implication",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "implication #8",
+    "label": "id link implication"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "wiki #99",
+                  "type": "text"
+                }
+              ],
+              "href": "/wiki_pages/99",
+              "id": "99",
+              "idType": "wiki",
+              "linkType": "id_link",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "wiki #99",
+    "label": "id link wiki"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "name": "some_anchor",
+              "type": "internal_anchor"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[#some_anchor]",
+    "label": "internal anchor lowercase preserved"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "name": "My_Anchor",
+              "type": "internal_anchor"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "[#My_Anchor]",
+    "label": "internal anchor lowercased on parse"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Privileged",
+                  "type": "text"
+                }
+              ],
+              "href": "/help/accounts#privileged",
+              "linkType": "inline",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"Privileged\":[/help/accounts#privileged]",
+    "label": "textile link standalone bracketed internal"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "content": "Text ",
+              "type": "text"
+            },
+            {
+              "children": [
+                {
+                  "content": "Privileged",
+                  "type": "text"
+                }
+              ],
+              "href": "/help/accounts#privileged",
+              "linkType": "inline",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "Text \"Privileged\":[/help/accounts#privileged]",
+    "label": "textile link with text before"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Privileged",
+                  "type": "text"
+                }
+              ],
+              "href": "/help/accounts#privileged",
+              "linkType": "inline",
+              "type": "link"
+            },
+            {
+              "content": " text",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"Privileged\":[/help/accounts#privileged] text",
+    "label": "textile link with text after"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "Privileged",
+                  "type": "text"
+                }
+              ],
+              "href": "/help/accounts#privileged",
+              "linkType": "inline",
+              "type": "link"
+            },
+            {
+              "content": " &",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "\"Privileged\":[/help/accounts#privileged] &",
+    "label": "textile link with space then ampersand"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "https://example.com:8080/path",
+                  "type": "text"
+                }
+              ],
+              "href": "https://example.com:8080/path",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "https://example.com:8080/path",
+    "label": "url with port number"
+  },
+  {
+    "expected": {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "content": "https://a.b.example.com/x/y/z",
+                  "type": "text"
+                }
+              ],
+              "href": "https://a.b.example.com/x/y/z",
+              "linkType": "url",
+              "type": "link"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "document"
+    },
+    "input": "https://a.b.example.com/x/y/z",
+    "label": "url with multiple path segments"
+  }
+]

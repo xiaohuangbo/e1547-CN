@@ -1,30 +1,33 @@
 import 'package:e1547/client/client.dart';
 import 'package:e1547/comment/comment.dart';
-import 'package:e1547/interface/interface.dart';
-import 'package:flutter/widgets.dart';
+import 'package:e1547/query/query.dart';
+import 'package:e1547/shared/shared.dart';
+import 'package:flutter/material.dart';
 
-class CommentLoadingPage extends StatefulWidget {
+class CommentLoadingPage extends StatelessWidget {
   const CommentLoadingPage(this.id, {super.key});
 
   final int id;
 
   @override
-  State<CommentLoadingPage> createState() => _CommentLoadingPageState();
-}
-
-class _CommentLoadingPageState extends State<CommentLoadingPage> {
-  late Future<Comment> comment = context.read<Client>().comments.get(
-    id: widget.id,
-  );
-
-  @override
   Widget build(BuildContext context) {
-    return FutureLoadingPage<Comment>(
-      future: comment,
-      builder: (context, value) => PostCommentsPage(postId: value.postId),
-      title: Text('Comment #${widget.id}'),
-      onError: const Text('Failed to load comment'),
-      onEmpty: const Text('Comment not found'),
+    final client = context.watch<Client>();
+    return QueryBuilder(
+      query: client.comments.useGet(id: id),
+      builder: (context, state) => LoadingPage(
+        isLoading: state.isLoading || state.isInitial,
+        isError: state.isError,
+        isEmpty: state.data == null,
+        loadingBuilder: (context, child) => Scaffold(
+          appBar: AppBar(leading: const CloseButton(), title: Text('评论 #$id')),
+          body: child(context),
+        ),
+        skeleton: (context) =>
+            PostCommentsPage(postId: const CommentGhost().postId),
+        onError: const Text('加载评论失败'),
+        onEmpty: const Text('未找到评论'),
+        child: (context) => PostCommentsPage(postId: state.data!.postId),
+      ),
     );
   }
 }

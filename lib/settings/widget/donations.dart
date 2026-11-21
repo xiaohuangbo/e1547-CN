@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:e1547/identity/data/service.dart';
-import 'package:e1547/interface/interface.dart';
+import 'package:e1547/identity/data/client.dart';
 import 'package:e1547/settings/settings.dart';
+import 'package:e1547/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -57,18 +57,25 @@ class Donors extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? username = context.watch<IdentityService>().identity.username;
+    String? username = context.watch<IdentityClient>().identity.username;
     return Column(
       children: [
         ...donors.sortByDonation().map(
           (summary) => ListTile(
             selected: username != null && summary.handles['e621'] == username,
-            leading: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              backgroundImage: summary.avatar != null
-                  ? CachedNetworkImageProvider(summary.avatar!)
-                  : null,
-              child: summary.avatar == null ? const Icon(Icons.person) : null,
+            leading: Container(
+              decoration: const BoxDecoration(shape: BoxShape.circle),
+              clipBehavior: Clip.antiAlias,
+              width: 40,
+              height: 40,
+              child: summary.avatar != null
+                  ? CachedNetworkImage(
+                      imageUrl: summary.avatar!,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.person),
+                    )
+                  : const Icon(Icons.person),
             ),
             title: Text(summary.name),
             subtitle: Text(summary.formattedAmounts()),
@@ -77,7 +84,7 @@ class Donors extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(4),
           child: Text(
-            'Not on the list? contact us!',
+            '不在列表中？请联系我们！',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ),

@@ -1,6 +1,6 @@
 import UIKit
 import Flutter
-import workmanager
+import workmanager_apple
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -17,7 +17,10 @@ import workmanager
         GeneratedPluginRegistrant.register(with: registry)
     }
 
-    WorkmanagerPlugin.registerTask(withIdentifier: "net.clynamic.e1547.follows")
+    WorkmanagerPlugin.registerPeriodicTask(
+      withIdentifier: "net.clynamic.e1547.follows",
+      frequency: nil,
+    )
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

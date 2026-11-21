@@ -13,7 +13,7 @@ class PagedChildBuilderRetryButton extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.all(4),
-      child: TextButton(onPressed: onRetry, child: const Text('Try again')),
+      child: TextButton(onPressed: onRetry, child: const Text('重试')),
     );
   }
 }
@@ -23,6 +23,7 @@ PagedChildBuilderDelegate<T> defaultPagedChildBuilderDelegate<T>({
   VoidCallback? onRetry,
   Widget? onEmpty,
   Widget? onError,
+  Widget? onEnd,
   Widget Function(BuildContext context, Widget child)? pageBuilder,
 }) {
   pageBuilder ??= (context, child) => child;
@@ -33,44 +34,42 @@ PagedChildBuilderDelegate<T> defaultPagedChildBuilderDelegate<T>({
       const Material(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [CircularProgressIndicator()],
+          children: [HexagonalLoadingIndicator()],
         ),
       ),
     ),
     newPageProgressIndicatorBuilder: (context) => pageBuilder!(
       context,
-      const Material(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      ),
+      const LoadMoreFooter(state: HexagonState.loading),
     ),
     noItemsFoundIndicatorBuilder: (context) => pageBuilder!(
       context,
       IconMessage(
         icon: const Icon(Icons.clear),
-        title: onEmpty ?? const Text('Nothing to see here'),
+        title: onEmpty ?? const Text('这里什么都没有'),
       ),
     ),
     firstPageErrorIndicatorBuilder: (context) => pageBuilder!(
       context,
       IconMessage(
         icon: const Icon(Icons.warning_amber_outlined),
-        title: onError ?? const Text('Failed to load'),
+        title: onError ?? const Text('加载失败'),
         action: PagedChildBuilderRetryButton(onRetry),
       ),
     ),
     newPageErrorIndicatorBuilder: (context) => pageBuilder!(
       context,
-      IconMessage(
-        direction: Axis.horizontal,
-        icon: const Icon(Icons.warning_amber_outlined),
-        title: onError ?? const Text('Failed to load'),
-        action: PagedChildBuilderRetryButton(onRetry),
+      LoadMoreFooter(
+        state: HexagonState.failed,
+        label: onError ?? const Text('加载失败'),
+        onRetry: onRetry,
       ),
     ),
+    noMoreItemsIndicatorBuilder: onEnd == null
+        ? null
+        : (context) => pageBuilder!(
+            context,
+            LoadMoreFooter(state: HexagonState.end, label: onEnd),
+          ),
   );
 }

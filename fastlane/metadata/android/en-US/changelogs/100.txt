@@ -1,0 +1,6 @@
+### Added
+- Download and favorite task UI
+
+### Fixed
+- Tag alias crash on dynamic lookup
+- DText parser edge cases

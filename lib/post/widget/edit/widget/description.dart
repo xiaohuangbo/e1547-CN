@@ -36,7 +36,7 @@ class _DescriptionEditDisplayState extends State<DescriptionEditDisplay> {
             Row(
               children: [
                 const Expanded(
-                  child: Text('Description', style: TextStyle(fontSize: 16)),
+                  child: Text('描述', style: TextStyle(fontSize: 16)),
                 ),
                 IconButton(
                   onPressed: (widget.enabled ?? true)
@@ -47,9 +47,7 @@ class _DescriptionEditDisplayState extends State<DescriptionEditDisplay> {
                             : () => Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) => DTextEditor(
-                                    title: Text(
-                                      '#${widget.postId} description',
-                                    ),
+                                    title: Text('#${widget.postId} 描述'),
                                     content: widget.controller.text,
                                     onSubmitted: (text) {
                                       widget.controller.text = text;
@@ -81,7 +79,7 @@ class _DescriptionEditDisplayState extends State<DescriptionEditDisplay> {
                 child: widget.controller.text.trim().isNotEmpty
                     ? DText(widget.controller.text)
                     : Text(
-                        'No description',
+                        '无描述',
                         style: TextStyle(
                           color: dimTextColor(context),
                           fontStyle: FontStyle.italic,
@@ -93,7 +91,7 @@ class _DescriptionEditDisplayState extends State<DescriptionEditDisplay> {
                 controller: widget.controller,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: 'Enter post description...',
+                  hintText: '输入帖子描述…',
                 ),
                 maxLines: null,
                 enabled: widget.enabled,
@@ -109,7 +107,7 @@ class _DescriptionEditDisplayState extends State<DescriptionEditDisplay> {
                 child: widget.controller.text.trim().isNotEmpty
                     ? DText(widget.controller.text)
                     : Text(
-                        'No description',
+                        '无描述',
                         style: TextStyle(
                           color: dimTextColor(context),
                           fontStyle: FontStyle.italic,

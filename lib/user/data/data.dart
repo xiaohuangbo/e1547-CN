@@ -1,4 +1,5 @@
 export 'actions.dart';
-export 'controller.dart';
-export 'service.dart';
+export 'client.dart';
+export 'json.dart';
+export 'query.dart';
 export 'user.dart';

@@ -1,113 +1,182 @@
-import 'package:collection/collection.dart';
 import 'package:e1547/client/client.dart';
-import 'package:e1547/interface/interface.dart';
 import 'package:e1547/post/post.dart';
+import 'package:e1547/query/query.dart';
 import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-mixin PostFilterableController<KeyType> on DataController<KeyType, Post> {
-  Client get client;
-  PostFilterMode get filterMode;
+part 'filter.freezed.dart';
 
-  List<String> _denylist = [];
-
-  Map<Post, List<String>>? _deniedPosts;
-  Map<Post, List<String>>? get deniedPosts {
-    if (_deniedPosts == null) return null;
-    return Map.unmodifiable(_deniedPosts!);
+class PostFilter extends FilterController<Post>
+    implements ValueNotifier<PostFilterValue> {
+  PostFilter(this.client, [PostFilterValue? value])
+    : _value = value ?? const PostFilterValue() {
+    client.traits.addListener(_updateDenyList);
   }
 
-  bool _denying = true;
-  bool get denying => _denying;
-  set denying(bool value) {
-    if (_denying == value) return;
-    _denying = value;
-    applyFilter();
+  final Client client;
+
+  PostFilterValue _value;
+
+  final Map<int, _PostFilterCache> _filterCache = {};
+
+  static const Duration _staleAfter = Duration(minutes: 5);
+
+  DateTime _evictedAt = DateTime.now();
+
+  void _updateDenyList() {
+    _filterCache.clear();
+    notifyListeners();
   }
-
-  List<String> _allowedTags = [];
-  List<String> get allowedTags => List.unmodifiable(_allowedTags);
-  set allowedTags(List<String> value) {
-    if (const DeepCollectionEquality().equals(_allowedTags, value)) return;
-    _allowedTags = List.from(value);
-    applyFilter();
-  }
-
-  List<int> _allowedPosts = [];
-  List<int> get allowedPosts => List.unmodifiable(_allowedPosts);
-
-  bool isAllowed(Post post) {
-    assertOwnsItem(post);
-    return _allowedPosts.contains(post.id);
-  }
-
-  void allow(Post post) {
-    assertOwnsItem(post);
-    _allowedPosts.add(post.id);
-    applyFilter();
-  }
-
-  void unallow(Post post) {
-    assertOwnsItem(post);
-    _allowedPosts.remove(post.id);
-    applyFilter();
-  }
-
-  List<String>? getDeniers(Post post) {
-    assertOwnsItem(post);
-    if (_deniedPosts![post] == null) return null;
-    return List.unmodifiable(_deniedPosts![post]!);
-  }
-
-  bool isDenied(Post post) => getDeniers(post) != null;
 
   @override
-  @protected
-  List<Post>? filter(List<Post>? items) {
-    List<String> denylist = [];
-    if (denying && filterMode != PostFilterMode.unavailable) {
-      denylist = client.traits.value.denylist
-          .whereNot(_allowedTags.contains)
-          .toList();
-    }
+  Object idOf(Post post) => post.id;
 
-    Map<Post, List<String>>? previousDeniedPosts;
-    if (listEquals(_denylist, denylist)) {
-      previousDeniedPosts = _deniedPosts;
+  @override
+  bool filter(Post post) => allows(post);
+
+  bool allows(PostSummary post) => !denies(post);
+
+  @override
+  PostFilterValue get value => _value;
+
+  @override
+  set value(PostFilterValue value) {
+    if (_value == value) return;
+    _value = value;
+    notifyListeners();
+  }
+
+  bool get denying => value.denying;
+  set denying(bool enabled) => value = value.copyWith(denying: enabled);
+
+  List<String> get allowedEntries => value.allowedEntries;
+  set allowedEntries(List<String> entries) {
+    final newValue = value.copyWith(allowedEntries: entries);
+    if (value == newValue) return;
+    _filterCache.clear();
+    value = newValue;
+  }
+
+  List<int> get allowedPosts => value.allowedPosts;
+  set allowedPosts(List<int> posts) =>
+      value = value.copyWith(allowedPosts: posts);
+
+  void allow(int postId) {
+    if (!allowedPosts.contains(postId)) {
+      allowedPosts = [...allowedPosts, postId];
+    }
+  }
+
+  void disallow(int postId) {
+    allowedPosts = allowedPosts.where((id) => id != postId).toList();
+  }
+
+  void enable(String entry) {
+    if (!allowedEntries.contains(entry)) {
+      allowedEntries = [...allowedEntries, entry];
+    }
+  }
+
+  void disable(String entry) {
+    if (allowedEntries.contains(entry)) {
+      allowedEntries = allowedEntries.where((e) => e != entry).toList();
+    }
+  }
+
+  void toggle(String entry) {
+    if (allowedEntries.contains(entry)) {
+      disable(entry);
     } else {
-      _denylist = denylist;
+      enable(entry);
+    }
+  }
+
+  Map<String, int> get blockedCountsByEntry {
+    if (!denying) return const {};
+    final counts = <String, int>{};
+    for (final post in tracked) {
+      if (allowedPosts.contains(post.id)) continue;
+      for (final entry in entriesFor(post)) {
+        if (allowedEntries.contains(entry)) continue;
+        counts[entry] = (counts[entry] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }
+
+  List<String> entriesFor(PostSummary post) {
+    final now = DateTime.now();
+    _evictStaleEntries(now);
+
+    final cached = _filterCache[post.id];
+
+    if (cached == null ||
+        (!identical(cached.post, post) && cached.hash != post.hashCode)) {
+      final deniers = post.getDeniers(client.traits.value.denylist).toList();
+      _filterCache[post.id] = (
+        post: post,
+        hash: post.hashCode,
+        entries: deniers,
+        lastAccessed: now,
+      );
+      return deniers;
     }
 
-    _deniedPosts = {};
-    List<Post>? result = super.filter(items);
-    if (result != null) {
-      result = {for (final p in result) p.id: p}.values.toList();
-    }
+    _filterCache[post.id] = (
+      post: post,
+      hash: cached.hash,
+      entries: cached.entries,
+      lastAccessed: now,
+    );
+    return cached.entries;
+  }
 
-    result?.removeWhere((item) {
-      if (_allowedPosts.contains(item.id)) return false;
-      List<String>? deniers;
-      if (previousDeniedPosts?.containsKey(item) ?? false) {
-        deniers = previousDeniedPosts![item]!;
-      } else {
-        deniers = item.getDeniers(denylist).toList();
-      }
-      if (deniers.isNotEmpty) {
-        _deniedPosts![item] = deniers;
-        if (filterMode != PostFilterMode.plain) return true;
-      }
-      return false;
-    });
-    return result;
+  void _evictStaleEntries(DateTime now) {
+    if (now.difference(_evictedAt) < _staleAfter) return;
+    _evictedAt = now;
+    final cutoff = now.subtract(_staleAfter);
+    _filterCache.removeWhere((_, entry) => entry.lastAccessed.isBefore(cutoff));
+  }
+
+  bool blocks(PostSummary post) {
+    if (!denying) return false;
+    return entriesFor(post).any((entry) => !allowedEntries.contains(entry));
+  }
+
+  bool denies(PostSummary post) {
+    if (allowedPosts.contains(post.id)) return false;
+    return blocks(post);
   }
 
   @override
-  @protected
-  @mustCallSuper
-  void reset() {
-    _deniedPosts = null;
-    _allowedPosts = [];
-    super.reset();
+  void dispose() {
+    client.traits.removeListener(_updateDenyList);
+    super.dispose();
   }
 }
 
-enum PostFilterMode { unavailable, filtering, plain }
+class FavoritePostFilter extends PostFilter {
+  FavoritePostFilter(super.client, [super.value]);
+
+  @override
+  bool allows(PostSummary post) {
+    if (post.isFavorited) return true;
+    return super.allows(post);
+  }
+}
+
+typedef _PostFilterCache = ({
+  PostSummary post,
+  int hash,
+  List<String> entries,
+  DateTime lastAccessed,
+});
+
+@freezed
+abstract class PostFilterValue with _$PostFilterValue {
+  const factory PostFilterValue({
+    @Default(true) bool denying,
+    @Default([]) List<String> allowedEntries,
+    @Default([]) List<int> allowedPosts,
+  }) = _PostFilterValue;
+}
